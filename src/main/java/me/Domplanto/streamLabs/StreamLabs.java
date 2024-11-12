@@ -108,6 +108,7 @@ public class StreamLabs extends JavaPlugin {
         double amount = 0.0;
         String displayMessage = "";
 
+        // Calculate amount based on event type
         switch (eventType) {
             case DONATION:
                 amount = Double.parseDouble((String) data.get("amount"));
@@ -116,15 +117,17 @@ public class StreamLabs extends JavaPlugin {
                 break;
 
             case TWITCH_BITS:
-                amount = ((Long) data.get("amount")).doubleValue() / 100.0; // Convert bits to dollars
+                amount = ((Long) data.get("amount")).doubleValue() / 100.0;
                 displayMessage = ChatColor.DARK_PURPLE + username + " cheered " + data.get("amount") + " bits!";
                 break;
 
             case TWITCH_SUBSCRIPTION:
-                amount = 5.0; // Standard sub amount
                 String tier = (String) data.get("sub_plan");
-                if ("2000".equals(tier)) amount = 10.0;
-                if ("3000".equals(tier)) amount = 25.0;
+                amount = switch (tier) {
+                    case "2000" -> 10.0;
+                    case "3000" -> 25.0;
+                    default -> 5.0;
+                };
                 displayMessage = ChatColor.BLUE + username + " subscribed with Tier " + tier.charAt(0) + "!";
                 break;
 
@@ -149,31 +152,34 @@ public class StreamLabs extends JavaPlugin {
                 break;
         }
 
-        // Broadcast the message
+        // Broadcast the message if not empty
         if (!displayMessage.isEmpty()) {
             Bukkit.broadcastMessage(displayMessage);
         }
 
-        // Execute commands for this event type
-        executeEventCommands(eventType.name().toLowerCase(), username, amount);
+        // Process actions for this event
+        String eventTypeName = eventType.name().toLowerCase();
+        List<RewardsConfig.Action> actions = rewardsConfig.getActionsForEvent(eventTypeName);
+
+        for (RewardsConfig.Action action : actions) {
+            if (!action.isEnabled()) continue;
+            if (amount >= action.getThreshold()) {
+                executeAction(action, username, amount);
+            }
+        }
     }
 
-    private void executeEventCommands(String eventType, String username, double amount) {
-        List<String> commands = rewardsConfig.getCommands(eventType);
-        double threshold = rewardsConfig.getThreshold(eventType);
+    private void executeAction(RewardsConfig.Action action, String username, double amount) {
+        for (String command : action.getCommands()) {
+            // Replace placeholders
+            command = command.replace("{player}", username)
+                    .replace("{amount}", String.valueOf((int)amount))
+                    .replace("{amount_double}", String.format("%.2f", amount));
 
-        if (amount >= threshold) {
-            for (String command : commands) {
-                // Replace placeholders
-                command = command.replace("{player}", username)
-                        .replace("{amount}", String.valueOf((int)amount))
-                        .replace("{amount_double}", String.format("%.2f", amount));
-
-                // Execute command
-                String finalCommand = command;
-                Bukkit.getScheduler().runTask(this, () ->
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
-            }
+            // Execute command
+            String finalCommand = command;
+            Bukkit.getScheduler().runTask(this, () ->
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
         }
     }
 
