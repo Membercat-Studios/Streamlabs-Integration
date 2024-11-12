@@ -1,42 +1,56 @@
 streamlabs:
   socket_token: "your_socket_token_here"
 
-events:
-  donation:
+actions:
+  donation_reward:
+    enabled: true
+    action: donation
     threshold: 5.0
     commands:
       - "give {player} diamond {amount}"
       - "effect give {player} regeneration 30 1"
       - "title @a title [\"\",{\"text\":\"New Donation!\",\"color\":\"green\"}]"
 
-  twitch_bits:
-    threshold: 1.0  # $1 worth of bits
+  bits_reward:
+    enabled: true
+    action: twitch_bits
+    threshold: 1.0
     commands:
       - "give {player} emerald {amount}"
       - "effect give {player} speed 30 1"
 
-  twitch_subscription:
+  sub_reward:
+    enabled: true
+    action: twitch_subscription
     threshold: 0.0
     commands:
       - "give {player} golden_apple 5"
       - "effect give {player} strength 60 1"
 
-  twitch_follow:
+  follow_reward:
+    enabled: true
+    action: twitch_follow
     commands:
       - "title {player} title {\"text\":\"Thanks for Following!\",\"color\":\"aqua\"}"
 
-  twitch_raid:
+  raid_reward:
+    enabled: true
+    action: twitch_raid
     commands:
       - "summon firework_rocket ~ ~ ~ {LifeTime:30,FireworksItem:{id:firework_rocket,Count:1}}"
       - "effect give @a glowing 30 1"
 
-  youtube_superchat:
+  superchat_reward:
+    enabled: true
+    action: youtube_superchat
     threshold: 1.0
     commands:
       - "give {player} diamond {amount}"
       - "effect give {player} regeneration 30 1"
 
-  youtube_subscription:
+  youtube_sub_reward:
+    enabled: true
+    action: youtube_subscription
     commands:
       - "give {player} golden_apple 3"
       - "effect give {player} strength 30 1"
