@@ -170,8 +170,9 @@ public class StreamLabs extends JavaPlugin {
                         .replace("{amount_double}", String.format("%.2f", amount));
 
                 // Execute command
+                String finalCommand = command;
                 Bukkit.getScheduler().runTask(this, () ->
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
             }
         }
     }
