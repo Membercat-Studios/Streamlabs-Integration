@@ -48,7 +48,7 @@ public class StreamLabs extends JavaPlugin {
 
     private void connectToStreamlabs() {
         try {
-            String websocketUrl = "wss://sockets.streamlabs.com/socket.io/?token=" + socketToken;
+            String websocketUrl = "wss://sockets.streamlabs.com/socket.io/?token=" + socketToken + "&transport=websocket";
             websocket = new WebSocketClient(new URI(websocketUrl)) {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
