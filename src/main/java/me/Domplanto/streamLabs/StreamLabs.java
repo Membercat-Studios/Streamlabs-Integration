@@ -1,5 +1,8 @@
 package me.Domplanto.streamLabs;
 
+import com.google.gson.Gson;
+import io.socket.client.IO;
+import io.socket.client.Socket;
 import me.Domplanto.streamLabs.config.RewardsConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEventType;
 import org.bukkit.Bukkit;
@@ -10,15 +13,17 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
 public class StreamLabs extends JavaPlugin {
-    private WebSocketClient websocket;
+    private Socket websocket;
     private String socketToken;
     private boolean isConnected = false;
     private RewardsConfig rewardsConfig;
@@ -48,8 +53,21 @@ public class StreamLabs extends JavaPlugin {
 
     private void connectToStreamlabs() {
         try {
-            String websocketUrl = "wss://sockets.streamlabs.com/socket.io/?token=" + socketToken;
-            websocket = new WebSocketClient(new URI(websocketUrl)) {
+            URI uri = URI.create("https://sockets.streamlabs.com?token=" + socketToken);
+            websocket = IO.socket(uri);
+            websocket.io().on(Socket.EVENT_MESSAGE, args -> {
+                Arrays.stream(args).forEach(e -> getLogger().info(e::toString));
+            });
+            websocket.io().on(Socket.EVENT_CONNECTING, args -> {
+                getLogger().info("Connecting...");
+            });
+            websocket.io().on(Socket.EVENT_CONNECT, args ->
+                    getLogger().info("Connected!"));
+            websocket.io().on(Socket.EVENT_CONNECT_ERROR, args -> {
+                getLogger().warning("Failed to connect!");
+            });
+            websocket.connect();
+            /*websocket = new WebSocketClient(new URI(websocketUrl)) {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
                     isConnected = true;
@@ -60,9 +78,10 @@ public class StreamLabs extends JavaPlugin {
                 @Override
                 public void onMessage(String message) {
                     try {
-                        JSONParser parser = new JSONParser();
-                        JSONObject jsonMessage = (JSONObject) parser.parse(message);
+                        if (!message.startsWith("42")) return;
 
+                        message = message.substring(2);
+                        JSONObject jsonMessage = new Gson().fromJson(message, JSONObject.class);
                         handleStreamlabsEvent(jsonMessage);
                     } catch (Exception e) {
                         getLogger().log(Level.WARNING, "Error processing Streamlabs message", e);
@@ -82,13 +101,13 @@ public class StreamLabs extends JavaPlugin {
                 }
             };
 
-            websocket.connect();
+            websocket.connect();*/
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Error connecting to Streamlabs", e);
         }
     }
 
-    private void handleStreamlabsEvent(JSONObject jsonMessage) {
+    private void handleStreamlabsEvent(JSONObject jsonMessage) throws JSONException {
         String type = (String) jsonMessage.get("type");
         String platform = (String) jsonMessage.get("platform");
         JSONObject messageData = (JSONObject) jsonMessage.get("message");
@@ -103,7 +122,7 @@ public class StreamLabs extends JavaPlugin {
         }
     }
 
-    private void processEvent(StreamlabsEventType eventType, JSONObject data) {
+    private void processEvent(StreamlabsEventType eventType, JSONObject data) throws JSONException {
         String username = (String) data.get("name");
         double amount = 0.0;
         String displayMessage = "";
@@ -173,7 +192,7 @@ public class StreamLabs extends JavaPlugin {
         for (String command : action.getCommands()) {
             // Replace placeholders
             command = command.replace("{player}", username)
-                    .replace("{amount}", String.valueOf((int)amount))
+                    .replace("{amount}", String.valueOf((int) amount))
                     .replace("{amount_double}", String.format("%.2f", amount));
 
             // Execute command
