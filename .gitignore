@@ -1,2 +1,4 @@
 .idea
 run
+target
+dependency-reduced-pom.xml
