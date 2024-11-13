@@ -15,6 +15,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.util.List;
@@ -28,7 +29,6 @@ public class StreamLabs extends JavaPlugin {
     private WebSocketClient websocket;
     private Timer timer;
     private String socketToken;
-    private boolean isConnected = false;
     private RewardsConfig rewardsConfig;
 
     @Override
@@ -50,7 +50,7 @@ public class StreamLabs extends JavaPlugin {
     @Override
     public void onDisable() {
         timer.cancel();
-        if (websocket != null && isConnected) {
+        if (websocket != null && websocket.isOpen()) {
             websocket.close();
         }
     }
@@ -61,7 +61,6 @@ public class StreamLabs extends JavaPlugin {
             websocket = new WebSocketClient(new URI(websocketUrl)) {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
-                    isConnected = true;
                     getLogger().info("Connected to Streamlabs!");
                     Bukkit.broadcastMessage(ChatColor.GREEN + "Streamlabs connection established!");
                 }
@@ -81,7 +80,6 @@ public class StreamLabs extends JavaPlugin {
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
-                    isConnected = false;
                     getLogger().warning("Disconnected from Streamlabs: " + reason);
                     Bukkit.broadcastMessage(ChatColor.RED + "Streamlabs connection lost!");
                 }
@@ -151,7 +149,7 @@ public class StreamLabs extends JavaPlugin {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, String[] args) {
         if (command.getName().equalsIgnoreCase("streamlabs")) {
             if (!sender.hasPermission("streamlabs.admin")) {
                 sender.sendMessage(ChatColor.RED + "You don't have permission to use this command!");
@@ -161,7 +159,7 @@ public class StreamLabs extends JavaPlugin {
             if (args.length == 1) {
                 switch (args[0].toLowerCase()) {
                     case "connect":
-                        if (!isConnected) {
+                        if (!websocket.isOpen()) {
                             connectToStreamlabs();
                             sender.sendMessage(ChatColor.GREEN + "Connecting to Streamlabs...");
                         } else {
@@ -170,7 +168,7 @@ public class StreamLabs extends JavaPlugin {
                         return true;
 
                     case "disconnect":
-                        if (isConnected && websocket != null) {
+                        if (websocket.isOpen() && websocket != null) {
                             timer.cancel();
                             websocket.close();
                             sender.sendMessage(ChatColor.RED + "Disconnected from Streamlabs!");
@@ -181,7 +179,7 @@ public class StreamLabs extends JavaPlugin {
 
                     case "status":
                         sender.sendMessage(ChatColor.BLUE + "Streamlabs Status: " +
-                                (isConnected ? ChatColor.GREEN + "Connected" : ChatColor.RED + "Disconnected"));
+                                (websocket.isOpen() ? ChatColor.GREEN + "Connected" : ChatColor.RED + "Disconnected"));
                         return true;
 
                     case "reload":
