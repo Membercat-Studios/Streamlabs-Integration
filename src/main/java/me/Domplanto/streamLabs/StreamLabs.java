@@ -1,8 +1,7 @@
 package me.Domplanto.streamLabs;
 
 import com.google.gson.Gson;
-import io.socket.client.IO;
-import io.socket.client.Socket;
+import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.RewardsConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEventType;
 import org.bukkit.Bukkit;
@@ -13,17 +12,13 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Level;
 
 public class StreamLabs extends JavaPlugin {
-    private Socket websocket;
+    private WebSocketClient websocket;
     private String socketToken;
     private boolean isConnected = false;
     private RewardsConfig rewardsConfig;
@@ -53,21 +48,8 @@ public class StreamLabs extends JavaPlugin {
 
     private void connectToStreamlabs() {
         try {
-            URI uri = URI.create("https://sockets.streamlabs.com?token=" + socketToken);
-            websocket = IO.socket(uri);
-            websocket.io().on(Socket.EVENT_MESSAGE, args -> {
-                Arrays.stream(args).forEach(e -> getLogger().info(e::toString));
-            });
-            websocket.io().on(Socket.EVENT_CONNECTING, args -> {
-                getLogger().info("Connecting...");
-            });
-            websocket.io().on(Socket.EVENT_CONNECT, args ->
-                    getLogger().info("Connected!"));
-            websocket.io().on(Socket.EVENT_CONNECT_ERROR, args -> {
-                getLogger().warning("Failed to connect!");
-            });
-            websocket.connect();
-            /*websocket = new WebSocketClient(new URI(websocketUrl)) {
+            String websocketUrl = String.format("wss://sockets.streamlabs.com/socket.io/?token=%s&transport=websocket", socketToken);
+            websocket = new WebSocketClient(new URI(websocketUrl)) {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
                     isConnected = true;
@@ -81,7 +63,7 @@ public class StreamLabs extends JavaPlugin {
                         if (!message.startsWith("42")) return;
 
                         message = message.substring(2);
-                        JSONObject jsonMessage = new Gson().fromJson(message, JSONObject.class);
+                        JsonObject jsonMessage = new Gson().fromJson(message, JsonObject.class);
                         handleStreamlabsEvent(jsonMessage);
                     } catch (Exception e) {
                         getLogger().log(Level.WARNING, "Error processing Streamlabs message", e);
@@ -101,16 +83,16 @@ public class StreamLabs extends JavaPlugin {
                 }
             };
 
-            websocket.connect();*/
+            websocket.connect();
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Error connecting to Streamlabs", e);
         }
     }
 
-    private void handleStreamlabsEvent(JSONObject jsonMessage) throws JSONException {
-        String type = (String) jsonMessage.get("type");
-        String platform = (String) jsonMessage.get("platform");
-        JSONObject messageData = (JSONObject) jsonMessage.get("message");
+    private void handleStreamlabsEvent(JsonObject jsonMessage) {
+        String type = jsonMessage.get("type").getAsString();
+        String platform = jsonMessage.get("platform").getAsString();
+        JsonObject messageData = (JsonObject) jsonMessage.get("message");
 
         for (StreamlabsEventType eventType : StreamlabsEventType.values()) {
             if (eventType.getEventName().equals(type) &&
@@ -122,26 +104,26 @@ public class StreamLabs extends JavaPlugin {
         }
     }
 
-    private void processEvent(StreamlabsEventType eventType, JSONObject data) throws JSONException {
-        String username = (String) data.get("name");
+    private void processEvent(StreamlabsEventType eventType, JsonObject data) {
+        String username = data.get("name").getAsString();
         double amount = 0.0;
         String displayMessage = "";
 
         // Calculate amount based on event type
         switch (eventType) {
             case DONATION:
-                amount = Double.parseDouble((String) data.get("amount"));
-                String currency = (String) data.get("currency");
+                amount = Double.parseDouble(data.get("amount").getAsString());
+                String currency = data.get("currency").getAsString();
                 displayMessage = ChatColor.GREEN + username + " donated " + amount + " " + currency + "!";
                 break;
 
             case TWITCH_BITS:
-                amount = ((Long) data.get("amount")).doubleValue() / 100.0;
+                amount = ((Long) data.get("amount").getAsLong()).doubleValue() / 100.0;
                 displayMessage = ChatColor.DARK_PURPLE + username + " cheered " + data.get("amount") + " bits!";
                 break;
 
             case TWITCH_SUBSCRIPTION:
-                String tier = (String) data.get("sub_plan");
+                String tier = data.get("sub_plan").getAsString();
                 amount = switch (tier) {
                     case "2000" -> 10.0;
                     case "3000" -> 25.0;
@@ -151,7 +133,7 @@ public class StreamLabs extends JavaPlugin {
                 break;
 
             case YOUTUBE_SUPERCHAT:
-                amount = Double.parseDouble((String) data.get("amount"));
+                amount = Double.parseDouble(data.get("amount").getAsString());
                 displayMessage = ChatColor.RED + username + " sent a Superchat of " + amount + "!";
                 break;
 
@@ -161,12 +143,12 @@ public class StreamLabs extends JavaPlugin {
                 break;
 
             case TWITCH_RAID:
-                Long viewers = (Long) data.get("viewers");
+                long viewers = data.get("viewers").getAsLong();
                 displayMessage = ChatColor.GOLD + username + " raided with " + viewers + " viewers!";
                 break;
 
             case TWITCH_HOST:
-                viewers = (Long) data.get("viewers");
+                viewers = data.get("viewers").getAsLong();
                 displayMessage = ChatColor.YELLOW + username + " hosted with " + viewers + " viewers!";
                 break;
         }
