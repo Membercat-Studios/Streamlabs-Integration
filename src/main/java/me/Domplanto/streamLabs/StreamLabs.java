@@ -1,9 +1,12 @@
 package me.Domplanto.streamLabs;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.RewardsConfig;
-import me.Domplanto.streamLabs.events.StreamlabsEventType;
+import me.Domplanto.streamLabs.events.BasicDonationEvent;
+import me.Domplanto.streamLabs.events.StreamlabsEvent;
+import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -21,6 +24,7 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 
 public class StreamLabs extends JavaPlugin {
+    private static final Set<? extends StreamlabsEvent> STREAMLABS_EVENTS = StreamlabsEvent.findEventClasses();
     private WebSocketClient websocket;
     private Timer timer;
     private String socketToken;
@@ -45,6 +49,7 @@ public class StreamLabs extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        timer.cancel();
         if (websocket != null && isConnected) {
             websocket.close();
         }
@@ -67,7 +72,7 @@ public class StreamLabs extends JavaPlugin {
                         if (!message.startsWith("42")) return;
 
                         message = message.substring(2);
-                        JsonObject jsonMessage = new Gson().fromJson(message, JsonObject.class);
+                        JsonElement jsonMessage = new Gson().fromJson(message, JsonElement.class);
                         handleStreamlabsEvent(jsonMessage);
                     } catch (Exception e) {
                         getLogger().log(Level.WARNING, "Error processing Streamlabs message", e);
@@ -101,82 +106,31 @@ public class StreamLabs extends JavaPlugin {
         }
     }
 
-    private void handleStreamlabsEvent(JsonObject jsonMessage) {
-        String type = jsonMessage.get("type").getAsString();
-        String platform = jsonMessage.get("platform").getAsString();
-        JsonObject messageData = (JsonObject) jsonMessage.get("message");
+    private void handleStreamlabsEvent(JsonElement data) throws UnexpectedJsonFormatException {
+        JsonObject object = data.getAsJsonArray().get(1).getAsJsonObject();
+        String type = object.get("type").getAsString();
+        String platform = object.has("for") ? object.get("for").getAsString() : "streamlabs";
 
-        for (StreamlabsEventType eventType : StreamlabsEventType.values()) {
-            if (eventType.getEventName().equals(type) &&
-                    (eventType.getPlatform() == null || eventType.getPlatform().equals(platform))) {
+        StreamlabsEvent event = STREAMLABS_EVENTS.stream()
+                .filter(e -> e.getId().equals(type) && e.getPlatform().compare(platform))
+                .findFirst().orElse(null);
+        if (event == null) return;
 
-                processEvent(eventType, messageData);
-                break;
-            }
-        }
-    }
 
-    private void processEvent(StreamlabsEventType eventType, JsonObject data) {
-        String username = data.get("name").getAsString();
-        double amount = 0.0;
-        String displayMessage = "";
-
-        // Calculate amount based on event type
-        switch (eventType) {
-            case DONATION:
-                amount = Double.parseDouble(data.get("amount").getAsString());
-                String currency = data.get("currency").getAsString();
-                displayMessage = ChatColor.GREEN + username + " donated " + amount + " " + currency + "!";
-                break;
-
-            case TWITCH_BITS:
-                amount = ((Long) data.get("amount").getAsLong()).doubleValue() / 100.0;
-                displayMessage = ChatColor.DARK_PURPLE + username + " cheered " + data.get("amount") + " bits!";
-                break;
-
-            case TWITCH_SUBSCRIPTION:
-                String tier = data.get("sub_plan").getAsString();
-                amount = switch (tier) {
-                    case "2000" -> 10.0;
-                    case "3000" -> 25.0;
-                    default -> 5.0;
-                };
-                displayMessage = ChatColor.BLUE + username + " subscribed with Tier " + tier.charAt(0) + "!";
-                break;
-
-            case YOUTUBE_SUPERCHAT:
-                amount = Double.parseDouble(data.get("amount").getAsString());
-                displayMessage = ChatColor.RED + username + " sent a Superchat of " + amount + "!";
-                break;
-
-            case TWITCH_FOLLOW:
-            case YOUTUBE_FOLLOW:
-                displayMessage = ChatColor.AQUA + username + " followed!";
-                break;
-
-            case TWITCH_RAID:
-                long viewers = data.get("viewers").getAsLong();
-                displayMessage = ChatColor.GOLD + username + " raided with " + viewers + " viewers!";
-                break;
-
-            case TWITCH_HOST:
-                viewers = data.get("viewers").getAsLong();
-                displayMessage = ChatColor.YELLOW + username + " hosted with " + viewers + " viewers!";
-                break;
+        JsonObject baseObject = event.getBaseObject(object);
+        String message = event.getMessage(baseObject);
+        if (message != null && !message.isEmpty()) {
+            Bukkit.broadcastMessage(message);
         }
 
-        // Broadcast the message if not empty
-        if (!displayMessage.isEmpty()) {
-            Bukkit.broadcastMessage(displayMessage);
-        }
-
-        // Process actions for this event
-        String eventTypeName = eventType.name().toLowerCase();
-        List<RewardsConfig.Action> actions = rewardsConfig.getActionsForEvent(eventTypeName);
-
+        List<RewardsConfig.Action> actions = rewardsConfig.getActionsForEvent(type.toLowerCase());
         for (RewardsConfig.Action action : actions) {
             if (!action.isEnabled()) continue;
-            if (amount >= action.getThreshold()) {
+
+            if (event.checkThreshold(baseObject, action.getThreshold())) {
+                String username = event.getRelatedUser(baseObject);
+                double amount = event instanceof BasicDonationEvent donationEvent
+                        ? donationEvent.calculateAmount(baseObject) : 0;
                 executeAction(action, username, amount);
             }
         }
