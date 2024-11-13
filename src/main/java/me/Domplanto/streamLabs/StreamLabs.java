@@ -15,10 +15,13 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 
 public class StreamLabs extends JavaPlugin {
     private WebSocketClient websocket;
+    private Timer timer;
     private String socketToken;
     private boolean isConnected = false;
     private RewardsConfig rewardsConfig;
@@ -84,6 +87,14 @@ public class StreamLabs extends JavaPlugin {
             };
 
             websocket.connect();
+            timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (websocket != null && websocket.isOpen())
+                        websocket.send("2");
+                }
+            }, 15000, 15000);
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Error connecting to Streamlabs", e);
         }
@@ -205,6 +216,7 @@ public class StreamLabs extends JavaPlugin {
 
                     case "disconnect":
                         if (isConnected && websocket != null) {
+                            timer.cancel();
                             websocket.close();
                             sender.sendMessage(ChatColor.RED + "Disconnected from Streamlabs!");
                         } else {
