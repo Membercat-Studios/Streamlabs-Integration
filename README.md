@@ -24,7 +24,7 @@ A simple plugin that allows your YouTube and Twitch chat to interact with your M
 actions:
   (name):
     enabled: true
-    action: ([Action](#Actions))
+    action: (Actions)
     threshold: 5.0
     commands:
       - "give {player} diamond {amount}"
@@ -32,3 +32,24 @@ actions:
 ```
 
 ## Actions
+
+ - streamlabs_donation
+   When someone donates on streamlabs
+   
+ - twitch_follow
+   When someone follows on Twitch
+   
+ - twitch_bits
+   When someone donates Bits on Twitch
+   
+ - twitch_subscription
+   When someone subscribed on Twitch
+   
+ - twitch_raid
+   When someone raides your stream on Twitch
+   
+ - twitch_host
+ - youtube_subscription
+ - youtube_superchat
+ - youtube_membership
+ - youtube_gift_memberships
