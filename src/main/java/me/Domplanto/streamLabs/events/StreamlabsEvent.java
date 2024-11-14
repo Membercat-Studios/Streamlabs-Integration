@@ -26,6 +26,7 @@ public abstract class StreamlabsEvent {
         this.apiName = apiName;
         this.platform = platform;
         this.placeholders = new HashSet<>();
+        this.addPlaceholder("user", this::getRelatedUser);
     }
 
     protected void addPlaceholder(String name, Function<JsonObject, String> valueFunction) {
