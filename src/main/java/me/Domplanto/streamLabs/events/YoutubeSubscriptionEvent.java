@@ -7,11 +7,11 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 public class YoutubeSubscriptionEvent extends StreamlabsEvent {
     public YoutubeSubscriptionEvent() {
-        super("subscription", StreamlabsPlatform.YOUTUBE);
+        super("youtube_membership", "subscription", StreamlabsPlatform.YOUTUBE);
     }
 
     @Override
-    public @Nullable String getMessage(JsonObject object)  {
+    public @Nullable String getMessage(JsonObject object) {
         return String.format("%s%s became a member!", ChatColor.DARK_GREEN, getRelatedUser(object));
     }
 }

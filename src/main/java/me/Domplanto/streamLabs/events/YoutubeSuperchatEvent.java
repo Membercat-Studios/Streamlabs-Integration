@@ -7,11 +7,11 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 public class YoutubeSuperchatEvent extends BasicDonationEvent {
     public YoutubeSuperchatEvent() {
-        super("superchat", StreamlabsPlatform.YOUTUBE);
+        super("youtube_superchat", "superchat", StreamlabsPlatform.YOUTUBE);
     }
 
     @Override
-    public @Nullable String getMessage(JsonObject object)  {
+    public @Nullable String getMessage(JsonObject object) {
         return String.format("%s%s sent a superchat of %s%s!", ChatColor.RED, getRelatedUser(object), calculateAmount(object), getCurrency(object));
     }
 }

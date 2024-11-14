@@ -4,7 +4,7 @@ streamlabs:
 actions:
   donation_reward:
     enabled: true
-    action: donation
+    action: streamlabs_donation
     threshold: 5.0
     commands:
       - "give {player} diamond {amount}"
@@ -48,9 +48,9 @@ actions:
       - "give {player} diamond {amount}"
       - "effect give {player} regeneration 30 1"
 
-  youtube_sub_reward:
+  youtube_membership_reward:
     enabled: true
-    action: youtube_subscription
+    action: youtube_membership
     commands:
       - "give {player} golden_apple 3"
       - "effect give {player} strength 30 1"

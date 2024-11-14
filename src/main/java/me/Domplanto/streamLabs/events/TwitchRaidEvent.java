@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 public class TwitchRaidEvent extends BasicDonationEvent {
     public TwitchRaidEvent() {
-        super("raid", StreamlabsPlatform.TWITCH);
+        super("twitch_raid", "raid", StreamlabsPlatform.TWITCH);
     }
 
     public double calculateAmount(JsonObject object) {

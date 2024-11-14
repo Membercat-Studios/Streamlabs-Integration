@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 public class TwitchFollowEvent extends BasicDonationEvent {
     public TwitchFollowEvent() {
-        super("follow", StreamlabsPlatform.TWITCH);
+        super("twitch_follow", "follow", StreamlabsPlatform.TWITCH);
     }
 
     @Override

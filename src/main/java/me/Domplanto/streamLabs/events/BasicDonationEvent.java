@@ -8,11 +8,11 @@ import org.jetbrains.annotations.Nullable;
 public class BasicDonationEvent extends StreamlabsEvent {
     @SuppressWarnings("unused")
     public BasicDonationEvent() {
-        super("donation", StreamlabsPlatform.STREAMLABS);
+        super("streamlabs_donation", "donation", StreamlabsPlatform.STREAMLABS);
     }
 
-    public BasicDonationEvent(String id, StreamlabsPlatform platform) {
-        super(id, platform);
+    public BasicDonationEvent(String id, String apiName, StreamlabsPlatform platform) {
+        super(id, apiName, platform);
     }
 
     public double calculateAmount(JsonObject object) {
@@ -24,7 +24,7 @@ public class BasicDonationEvent extends StreamlabsEvent {
     }
 
     @Override
-    public @Nullable String getMessage(JsonObject object)  {
+    public @Nullable String getMessage(JsonObject object) {
         return String.format("%s%s donated %s%s!", ChatColor.GREEN, getRelatedUser(object), calculateAmount(object), getCurrency(object));
     }
 

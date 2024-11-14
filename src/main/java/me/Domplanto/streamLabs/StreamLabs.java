@@ -69,7 +69,7 @@ public class StreamLabs extends JavaPlugin {
         String platform = object.has("for") ? object.get("for").getAsString() : "streamlabs";
 
         StreamlabsEvent event = STREAMLABS_EVENTS.stream()
-                .filter(e -> e.getId().equals(type) && e.getPlatform().compare(platform))
+                .filter(e -> e.getApiName().equals(type) && e.getPlatform().compare(platform))
                 .findFirst().orElse(null);
         if (event == null) return;
 
@@ -80,7 +80,7 @@ public class StreamLabs extends JavaPlugin {
             Bukkit.broadcastMessage(message);
         }
 
-        List<RewardsConfig.Action> actions = rewardsConfig.getActionsForEvent(type.toLowerCase());
+        List<RewardsConfig.Action> actions = rewardsConfig.getActionsForEvent(event.getId());
         for (RewardsConfig.Action action : actions) {
             if (!action.isEnabled()) continue;
 

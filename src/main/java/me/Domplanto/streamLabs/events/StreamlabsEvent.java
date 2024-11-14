@@ -12,11 +12,14 @@ import java.util.stream.Collectors;
 
 public abstract class StreamlabsEvent {
     @NotNull
+    private final String apiName;
+    @NotNull
     private final String id;
     private final StreamlabsPlatform platform;
 
-    public StreamlabsEvent(@NotNull String id, StreamlabsPlatform platform) {
+    public StreamlabsEvent(@NotNull String id, @NotNull String apiName, StreamlabsPlatform platform) {
         this.id = id;
+        this.apiName = apiName;
         this.platform = platform;
     }
 
@@ -34,6 +37,10 @@ public abstract class StreamlabsEvent {
 
     public @NotNull String getRelatedUser(JsonObject object) {
         return object.get("name").getAsString();
+    }
+
+    public @NotNull String getApiName() {
+        return apiName;
     }
 
     public @NotNull String getId() {

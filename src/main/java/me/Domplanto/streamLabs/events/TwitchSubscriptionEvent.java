@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("unused")
 public class TwitchSubscriptionEvent extends BasicDonationEvent {
     public TwitchSubscriptionEvent() {
-        super("subscription", StreamlabsPlatform.TWITCH);
+        super("twitch_subscription", "subscription", StreamlabsPlatform.TWITCH);
     }
 
     public double calculateAmount(JsonObject object) {
