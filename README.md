@@ -2,27 +2,34 @@
 
 A simple plugin that allows your YouTube and Twitch chat to interact with your Minecraft game .
 
-## Features
-
-- Custom alerts integration
-
 ## Installation
 
-1. Download the latest release from the Releases page
-2. Open Streamlabs Desktop
-3. Navigate to Settings → Advanced
-4. Click on "Install Plugin"
-5. Select the downloaded .streamlabsplugin file
-6. Restart Streamlabs Desktop
+1. Download the latest release from the Releases page on Github
+2. Put the plugin it the plugins folder
+3. Restart the server
+4. Go to The Streamlabs dashboard. Than in the top right go to you account and go to Account Settings
+5. Than go to api settings than api tokens and copy the Socket API Token
+6. Go to /plugins/Streamlabs/config.yml and paste the Socket API Token in de config
+7. than do /streamlabs reload
 
 ## Usage
 
-1. After installation, go to your Streamlabs Dashboard
-2. Find the plugin under the "Installed Plugins" section
-3. Configure your desired settings
-4. Add the plugin widget to your scene using the + button
+1. to connect use /streamlabs connect
+2. to disconnect use /streamlabs disconnect
+3. to see the status use /streamlabs status
+4. to reload the config use /streamlabs reload
 
 ## Configuration
+```bash
+actions:
+  (name):
+    enabled: true
+    action: (action)
+    threshold: 5.0
+    commands:
+      - "give {player} diamond {amount}"
+      - "effect give {player} regeneration 30 1"
+```
 
 ### Basic Settings
 - `Alert Duration`: How long alerts appear (in seconds)
