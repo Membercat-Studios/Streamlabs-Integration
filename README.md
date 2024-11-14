@@ -20,7 +20,7 @@ A simple plugin that allows your YouTube and Twitch chat to interact with your M
 4. to reload the config use /streamlabs reload
 
 ## Configuration
-
+```
 actions:
   (name):
     enabled: true
@@ -29,6 +29,6 @@ actions:
     commands:
       - "give {player} diamond {amount}"
       - "effect give {player} regeneration 30 1"
-
+```
 
 ## Actions
