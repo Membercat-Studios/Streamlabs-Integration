@@ -98,10 +98,13 @@ public class StreamLabs extends JavaPlugin {
                         placeholder.valueFunction().apply(baseObject));
             }
 
-            // Execute command
-            String finalCommand = command;
-            Bukkit.getScheduler().runTask(this, () ->
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
+            List<String> players = command.contains("{player}") ?
+                    getConfig().getStringList("affected_players") : List.of("");
+            for (String player : players) {
+                String finalCommand = command.replace("{player}", player);
+                Bukkit.getScheduler().runTask(this, () ->
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
+            }
         }
     }
 
@@ -113,7 +116,7 @@ public class StreamLabs extends JavaPlugin {
                 return true;
             }
 
-            if (args.length == 1) {
+            if (args.length >= 1) {
                 switch (args[0].toLowerCase()) {
                     case "connect":
                         if (!socketClient.isOpen()) {
@@ -142,6 +145,28 @@ public class StreamLabs extends JavaPlugin {
                         reloadConfig();
                         rewardsConfig = new RewardsConfig(getConfig());
                         sender.sendMessage(ChatColor.GREEN + "Configuration reloaded!");
+                        return true;
+
+                    case "player":
+                        if (args.length != 3) {
+                            sender.sendMessage(ChatColor.RED + "Please specify a player name");
+                            return true;
+                        }
+
+                        FileConfiguration config = getConfig();
+                        List<String> players = config.getStringList("affected_players");
+                        if (args[1].equals("add")) {
+                            players.add(args[2]);
+                            sender.sendMessage(ChatColor.GREEN + String.format("%s added to affected players", args[2]));
+                        } else if (args[1].equals("remove")) {
+                            players.removeIf(player -> player.equals(args[2]));
+                            sender.sendMessage(ChatColor.GREEN + String.format("%s removed from affected players", args[2]));
+                        } else {
+                            sender.sendMessage(ChatColor.RED + String.format("Unknown sub-command \"%s\"", args[1]));
+                        }
+
+                        getConfig().set("affected_players", players);
+                        saveConfig();
                         return true;
                 }
             }

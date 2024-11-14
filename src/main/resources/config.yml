@@ -1,5 +1,9 @@
 streamlabs:
-  socket_token: "your_socket_token_here"
+  socket_token: "" # Put your Streamlabs socket token here
+
+affected_players:
+  - "domplanto"
+  - "codingcat"
 
 actions:
   donation_reward:
