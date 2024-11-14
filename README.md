@@ -33,23 +33,13 @@ actions:
 
 ## Actions
 
- - streamlabs_donation
-   When someone donates on streamlabs
-   
- - twitch_follow
-   When someone follows on Twitch
-   
- - twitch_bits
-   When someone donates Bits on Twitch
-   
- - twitch_subscription
-   When someone subscribed on Twitch
-   
- - twitch_raid
-   When someone raides your stream on Twitch
-   
- - twitch_host
- - youtube_subscription
- - youtube_superchat
- - youtube_membership
- - youtube_gift_memberships
+ - `streamlabs_donation`: When someone donates on streamlabs
+ - `twitch_follow`: When someone follows on Twitch
+ - `twitch_bits`: When someone donates Bits on Twitch
+ - `twitch_subscription`: When someone subscribed on Twitch
+ - `twitch_raid`: When someone raides your stream on Twitch
+ - `twitch_host`: 
+ - `youtube_subscription`: 
+ - `youtube_superchat`: 
+ - `youtube_membership`: 
+ - `youtube_gift_memberships`: 
