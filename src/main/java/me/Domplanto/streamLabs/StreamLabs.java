@@ -1,34 +1,27 @@
 package me.Domplanto.streamLabs;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.RewardsConfig;
 import me.Domplanto.streamLabs.events.BasicDonationEvent;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
+import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.logging.Level;
 
 public class StreamLabs extends JavaPlugin {
     private static final Set<? extends StreamlabsEvent> STREAMLABS_EVENTS = StreamlabsEvent.findEventClasses();
-    private WebSocketClient websocket;
-    private Timer timer;
-    private String socketToken;
+    private StreamlabsSocketClient socketClient;
     private RewardsConfig rewardsConfig;
 
     @Override
@@ -36,71 +29,37 @@ public class StreamLabs extends JavaPlugin {
         saveDefaultConfig();
 
         FileConfiguration config = getConfig();
-        socketToken = config.getString("streamlabs.socket_token", "");
-        rewardsConfig = new RewardsConfig(config);
-
+        String socketToken = config.getString("streamlabs.socket_token", "");
+        this.rewardsConfig = new RewardsConfig(config);
         if (socketToken.isEmpty()) {
             getLogger().warning("Streamlabs socket token not configured!");
             getLogger().warning("Please set your token in config.yml");
-        } else {
-            connectToStreamlabs();
+            return;
         }
+
+        this.socketClient = new StreamlabsSocketClient(socketToken, getLogger(), this::handleStreamlabsEvent)
+                .setConnectionOpenListener(this::onConnectionOpen)
+                .setConnectionCloseListener(this::onConnectionClosed)
+                .setInvalidTokenListener(this::onInvalidSocketToken);
+        this.socketClient.connect();
+    }
+
+    private void onConnectionOpen(ServerHandshake handshake) {
+        Bukkit.broadcastMessage(ChatColor.GREEN + "Successfully connected to Streamlabs!");
+    }
+
+    private void onConnectionClosed(String message) {
+        Bukkit.broadcastMessage(ChatColor.RED + "Connection to Streamlabs lost!");
+    }
+
+    private void onInvalidSocketToken() {
+        Bukkit.broadcastMessage(ChatColor.YELLOW + "The socket token specified is invalid!");
     }
 
     @Override
     public void onDisable() {
-        timer.cancel();
-        if (websocket != null && websocket.isOpen()) {
-            websocket.close();
-        }
-    }
-
-    private void connectToStreamlabs() {
-        try {
-            String websocketUrl = String.format("wss://sockets.streamlabs.com/socket.io/?token=%s&transport=websocket", socketToken);
-            websocket = new WebSocketClient(new URI(websocketUrl)) {
-                @Override
-                public void onOpen(ServerHandshake handshake) {
-                    getLogger().info("Connected to Streamlabs!");
-                    Bukkit.broadcastMessage(ChatColor.GREEN + "Streamlabs connection established!");
-                }
-
-                @Override
-                public void onMessage(String message) {
-                    try {
-                        if (!message.startsWith("42")) return;
-
-                        message = message.substring(2);
-                        JsonElement jsonMessage = new Gson().fromJson(message, JsonElement.class);
-                        handleStreamlabsEvent(jsonMessage);
-                    } catch (Exception e) {
-                        getLogger().log(Level.WARNING, "Error processing Streamlabs message", e);
-                    }
-                }
-
-                @Override
-                public void onClose(int code, String reason, boolean remote) {
-                    getLogger().warning("Disconnected from Streamlabs: " + reason);
-                    Bukkit.broadcastMessage(ChatColor.RED + "Streamlabs connection lost!");
-                }
-
-                @Override
-                public void onError(Exception ex) {
-                    getLogger().log(Level.SEVERE, "Streamlabs websocket error", ex);
-                }
-            };
-
-            websocket.connect();
-            timer = new Timer();
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    if (websocket != null && websocket.isOpen())
-                        websocket.send("2");
-                }
-            }, 15000, 15000);
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Error connecting to Streamlabs", e);
+        if (socketClient != null && socketClient.isOpen()) {
+            socketClient.close();
         }
     }
 
@@ -159,8 +118,8 @@ public class StreamLabs extends JavaPlugin {
             if (args.length == 1) {
                 switch (args[0].toLowerCase()) {
                     case "connect":
-                        if (!websocket.isOpen()) {
-                            connectToStreamlabs();
+                        if (!socketClient.isOpen()) {
+                            this.socketClient.reconnect();
                             sender.sendMessage(ChatColor.GREEN + "Connecting to Streamlabs...");
                         } else {
                             sender.sendMessage(ChatColor.YELLOW + "Already connected to Streamlabs!");
@@ -168,9 +127,8 @@ public class StreamLabs extends JavaPlugin {
                         return true;
 
                     case "disconnect":
-                        if (websocket.isOpen() && websocket != null) {
-                            timer.cancel();
-                            websocket.close();
+                        if (socketClient.isOpen() && socketClient != null) {
+                            socketClient.close();
                             sender.sendMessage(ChatColor.RED + "Disconnected from Streamlabs!");
                         } else {
                             sender.sendMessage(ChatColor.YELLOW + "Not connected to Streamlabs!");
@@ -179,7 +137,7 @@ public class StreamLabs extends JavaPlugin {
 
                     case "status":
                         sender.sendMessage(ChatColor.BLUE + "Streamlabs Status: " +
-                                (websocket.isOpen() ? ChatColor.GREEN + "Connected" : ChatColor.RED + "Disconnected"));
+                                (socketClient.isOpen() ? ChatColor.GREEN + "Connected" : ChatColor.RED + "Disconnected"));
                         return true;
 
                     case "reload":
