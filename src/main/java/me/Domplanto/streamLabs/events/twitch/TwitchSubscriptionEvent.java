@@ -11,6 +11,10 @@ import org.jetbrains.annotations.Nullable;
 public class TwitchSubscriptionEvent extends BasicDonationEvent {
     public TwitchSubscriptionEvent() {
         super("twitch_subscription", "subscription", StreamlabsPlatform.TWITCH);
+        this.addPlaceholder("months", object -> String.valueOf(object.get("months").getAsInt()));
+        this.addPlaceholder("months_streak", object -> String.valueOf(object.get("streak_months").getAsInt()));
+        this.addPlaceholder("sub_type", object -> object.get("sub_type").getAsString());
+        this.addPlaceholder("sub_plan", object -> object.get("sub_plan_name").getAsString());
     }
 
     public double calculateAmount(JsonObject object) {

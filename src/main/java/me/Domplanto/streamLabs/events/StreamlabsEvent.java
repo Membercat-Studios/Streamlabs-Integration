@@ -30,6 +30,7 @@ public abstract class StreamlabsEvent {
     }
 
     protected void addPlaceholder(String name, Function<JsonObject, String> valueFunction) {
+        this.placeholders.removeIf(placeholder -> placeholder.name().equals(name));
         this.placeholders.add(new ActionPlaceholder(name, valueFunction));
     }
 

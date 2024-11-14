@@ -10,6 +10,8 @@ import org.jetbrains.annotations.Nullable;
 public class YoutubeSuperchatEvent extends BasicDonationEvent {
     public YoutubeSuperchatEvent() {
         super("youtube_superchat", "superchat", StreamlabsPlatform.YOUTUBE);
+        this.addPlaceholder("amount_formatted", object -> object.has("displayString") ? object.get("displayString").getAsString() : "");
+        this.addPlaceholder("message", object -> object.has("comment") ? object.get("comment").getAsString() : "");
     }
 
     @Override
