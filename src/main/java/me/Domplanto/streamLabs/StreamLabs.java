@@ -3,7 +3,7 @@ package me.Domplanto.streamLabs;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.RewardsConfig;
-import me.Domplanto.streamLabs.events.BasicDonationEvent;
+import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;

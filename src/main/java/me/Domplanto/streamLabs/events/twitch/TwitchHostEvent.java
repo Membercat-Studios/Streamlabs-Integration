@@ -1,6 +1,8 @@
-package me.Domplanto.streamLabs.events;
+package me.Domplanto.streamLabs.events.twitch;
 
 import com.google.gson.JsonObject;
+import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
+import me.Domplanto.streamLabs.events.StreamlabsPlatform;
 import org.bukkit.ChatColor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
