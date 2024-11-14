@@ -24,7 +24,7 @@ A simple plugin that allows your YouTube and Twitch chat to interact with your M
 actions:
   (name):
     enabled: true
-    action: ([Link Text](#Actions))
+    action: ([Action](#Actions))
     threshold: 5.0
     commands:
       - "give {player} diamond {amount}"
