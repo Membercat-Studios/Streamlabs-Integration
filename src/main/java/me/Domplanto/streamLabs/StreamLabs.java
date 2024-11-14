@@ -2,8 +2,8 @@ package me.Domplanto.streamLabs;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.RewardsConfig;
-import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
@@ -85,20 +85,18 @@ public class StreamLabs extends JavaPlugin {
             if (!action.isEnabled()) continue;
 
             if (event.checkThreshold(baseObject, action.getThreshold())) {
-                String username = event.getRelatedUser(baseObject);
-                double amount = event instanceof BasicDonationEvent donationEvent
-                        ? donationEvent.calculateAmount(baseObject) : 0;
-                executeAction(action, username, amount);
+                executeAction(action, event, baseObject);
             }
         }
     }
 
-    private void executeAction(RewardsConfig.Action action, String username, double amount) {
+    private void executeAction(RewardsConfig.Action action, StreamlabsEvent event, JsonObject baseObject) {
         for (String command : action.getCommands()) {
             // Replace placeholders
-            command = command.replace("{player}", username)
-                    .replace("{amount}", String.valueOf((int) amount))
-                    .replace("{amount_double}", String.format("%.2f", amount));
+            for (ActionPlaceholder placeholder : event.getPlaceholders()) {
+                command = command.replace(String.format("{%s}", placeholder.name()),
+                        placeholder.valueFunction().apply(baseObject));
+            }
 
             // Execute command
             String finalCommand = command;

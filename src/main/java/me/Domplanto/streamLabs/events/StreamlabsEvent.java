@@ -2,12 +2,15 @@ package me.Domplanto.streamLabs.events;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 
+import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class StreamlabsEvent {
@@ -16,11 +19,17 @@ public abstract class StreamlabsEvent {
     @NotNull
     private final String id;
     private final StreamlabsPlatform platform;
+    private final Set<ActionPlaceholder> placeholders;
 
     public StreamlabsEvent(@NotNull String id, @NotNull String apiName, StreamlabsPlatform platform) {
         this.id = id;
         this.apiName = apiName;
         this.platform = platform;
+        this.placeholders = new HashSet<>();
+    }
+
+    protected void addPlaceholder(String name, Function<JsonObject, String> valueFunction) {
+        this.placeholders.add(new ActionPlaceholder(name, valueFunction));
     }
 
     @NotNull
@@ -49,6 +58,10 @@ public abstract class StreamlabsEvent {
 
     public StreamlabsPlatform getPlatform() {
         return platform;
+    }
+
+    public Set<ActionPlaceholder> getPlaceholders() {
+        return placeholders;
     }
 
     public boolean checkThreshold(JsonObject object, double threshold) {
