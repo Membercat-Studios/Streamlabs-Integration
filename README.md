@@ -41,7 +41,7 @@ actions:
 ```
 
 ## Default configuration
-```
+```yaml
 streamlabs:
   socket_token: "" # Put your Streamlabs socket token here
 
