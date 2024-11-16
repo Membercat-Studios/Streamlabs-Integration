@@ -1,5 +1,7 @@
 package me.Domplanto.streamLabs.config;
 
+import me.Domplanto.streamLabs.config.condition.Condition;
+import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -25,7 +27,7 @@ public class RewardsConfig {
                     actionKey,
                     actionSection.getString("action"),
                     actionSection.getBoolean("enabled", true),
-                    actionSection.getDouble("threshold", 0.0),
+                    actionSection.getStringList("conditions"),
                     actionSection.getStringList("commands")
             );
 
@@ -43,14 +45,14 @@ public class RewardsConfig {
         private final String name;
         private final String eventType;
         private final boolean enabled;
-        private final double threshold;
+        private final List<String> conditionStrings;
         private final List<String> commands;
 
-        public Action(String name, String eventType, boolean enabled, double threshold, List<String> commands) {
+        public Action(String name, String eventType, boolean enabled, List<String> conditionStrings, List<String> commands) {
             this.name = name;
             this.eventType = eventType;
             this.enabled = enabled;
-            this.threshold = threshold;
+            this.conditionStrings = conditionStrings;
             this.commands = commands;
         }
 
@@ -66,8 +68,8 @@ public class RewardsConfig {
             return enabled;
         }
 
-        public double getThreshold() {
-            return threshold;
+        public List<Condition> getConditions(StreamlabsEvent event) {
+            return Condition.parseAll(this.conditionStrings, event);
         }
 
         public List<String> getCommands() {

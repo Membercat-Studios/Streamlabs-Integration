@@ -3,6 +3,8 @@ package me.Domplanto.streamLabs.events;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.RewardsConfig;
+import me.Domplanto.streamLabs.config.condition.Condition;
 import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
@@ -65,7 +67,10 @@ public abstract class StreamlabsEvent {
         return placeholders;
     }
 
-    public boolean checkThreshold(JsonObject object, double threshold) {
+    public boolean checkConditions(RewardsConfig.Action action, JsonObject object) {
+        for (Condition condition : action.getConditions(this))
+            if (!condition.check(object)) return false;
+
         return true;
     }
 

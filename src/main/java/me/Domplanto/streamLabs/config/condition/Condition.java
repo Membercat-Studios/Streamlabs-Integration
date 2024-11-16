@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -48,11 +49,12 @@ public class Condition {
         if (!elementString.startsWith("{") || !elementString.endsWith("}") || elementString.length() < 3)
             return defaultFunc;
 
-        String placeholderName = elementString.substring(1, elementString.length() - 2);
+        String placeholderName = elementString.substring(1, elementString.length() - 1);
         return event.getPlaceholders()
                 .stream()
                 .filter(placeholder -> placeholder.name().equals(placeholderName))
-                .findFirst().map(ActionPlaceholder::valueFunction)
+                .min(Comparator.comparingInt(p -> p.name().length()))
+                .map(ActionPlaceholder::valueFunction)
                 .orElse(defaultFunc);
     }
 }

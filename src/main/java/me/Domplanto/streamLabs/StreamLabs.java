@@ -84,7 +84,7 @@ public class StreamLabs extends JavaPlugin {
         for (RewardsConfig.Action action : actions) {
             if (!action.isEnabled()) continue;
 
-            if (event.checkThreshold(baseObject, action.getThreshold())) {
+            if (event.checkConditions(action, baseObject)) {
                 executeAction(action, event, baseObject);
             }
         }
@@ -144,6 +144,7 @@ public class StreamLabs extends JavaPlugin {
                     case "reload":
                         reloadConfig();
                         rewardsConfig = new RewardsConfig(getConfig());
+                        socketClient.reconnect();
                         sender.sendMessage(ChatColor.GREEN + "Configuration reloaded!");
                         return true;
 

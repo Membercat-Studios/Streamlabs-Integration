@@ -39,9 +39,4 @@ public class BasicDonationEvent extends StreamlabsEvent {
     public @Nullable String getMessage(JsonObject object) {
         return String.format("%s%s donated %s%s!", ChatColor.GREEN, getRelatedUser(object), calculateAmount(object), getCurrency(object));
     }
-
-    @Override
-    public boolean checkThreshold(JsonObject object, double threshold) {
-        return calculateAmount(object) >= threshold;
-    }
 }
