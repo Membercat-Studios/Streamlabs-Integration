@@ -95,6 +95,13 @@ public class StreamLabs extends JavaPlugin {
     }
 
     private void executeAction(RewardsConfig.Action action, StreamlabsEvent event, JsonObject baseObject) {
+        List<String> affectedPlayers = getConfig().getStringList("affected_players");
+        action.getMessages()
+                .stream().map(message -> message.replacePlaceholders(event, baseObject))
+                .forEach(message -> affectedPlayers.stream()
+                        .map(playerName -> getServer().getPlayerExact(playerName))
+                        .forEach(message::send));
+
         for (String command : action.getCommands()) {
             int executeAmount = 1;
             if (command.startsWith("[") && command.contains("]")) {
@@ -108,8 +115,7 @@ public class StreamLabs extends JavaPlugin {
             }
 
             command = ActionPlaceholder.replacePlaceholders(command, event, baseObject);
-            List<String> players = command.contains("{player}") ?
-                    getConfig().getStringList("affected_players") : List.of("");
+            List<String> players = command.contains("{player}") ? affectedPlayers : List.of("");
             for (int i = 0; i < executeAmount; i++) {
                 for (String player : players) {
                     String finalCommand = command.replace("{player}", player);

@@ -2,8 +2,10 @@ package me.Domplanto.streamLabs.config;
 
 import me.Domplanto.streamLabs.config.condition.Condition;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
+import me.Domplanto.streamLabs.message.Message;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -27,6 +29,7 @@ public class RewardsConfig {
                     actionKey,
                     actionSection.getString("action"),
                     actionSection.getBoolean("enabled", true),
+                    actionSection.getStringList("messages"),
                     actionSection.getStringList("conditions"),
                     actionSection.getStringList("commands")
             );
@@ -44,14 +47,16 @@ public class RewardsConfig {
     public static class Action {
         private final String name;
         private final String eventType;
+        private final List<Message> messages;
         private final boolean enabled;
         private final List<String> conditionStrings;
         private final List<String> commands;
 
-        public Action(String name, String eventType, boolean enabled, List<String> conditionStrings, List<String> commands) {
+        public Action(String name, String eventType, boolean enabled, @Nullable List<String> messageStrings, List<String> conditionStrings, List<String> commands) {
             this.name = name;
             this.eventType = eventType;
             this.enabled = enabled;
+            this.messages = messageStrings != null ? Message.parseAll(messageStrings) : List.of();
             this.conditionStrings = conditionStrings;
             this.commands = commands;
         }
@@ -66,6 +71,10 @@ public class RewardsConfig {
 
         public boolean isEnabled() {
             return enabled;
+        }
+
+        public List<Message> getMessages() {
+            return messages;
         }
 
         public List<Condition> getConditions(StreamlabsEvent event) {
