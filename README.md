@@ -18,8 +18,11 @@ A simple plugin that allows your YouTube and Twitch chat to interact with your M
 - to disconnect use /streamlabs disconnect
 - to see the status use /streamlabs status
 - to reload the config use /streamlabs reload
+- to add affected players use /streamlabs player add (Username)
+- to remove affected players use /streamlabs player remove (Username)
 
 ## Configuration
+To create a action you put in in the config.yml in this format
 ```
 actions:
   (name):
@@ -29,6 +32,13 @@ actions:
     commands:
       - "give {player} diamond {amount}"
       - "effect give {player} regeneration 30 1"
+```
+To add affected players edit this in the config.yml
+```
+affected_players:
+  - "Domplanto"
+  - "codingcat"
+  - "(Minecraft Username)"
 ```
 
 ## Actions
