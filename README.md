@@ -68,3 +68,7 @@ streamlabs:
 - `{currency}`: The currency that someone donated in. So USD, EUR or Bits
 - `{message}`: The message that someone has added whan donating. So "Best stream ever! GG"
 
+## Conditions
+
+
+
