@@ -1,4 +1,4 @@
-# https://github.com/Domplanto/StreamLabsPlugin
+# Read the documentation at https://github.com/Domplanto/StreamLabsPlugin
 
 streamlabs:
   socket_token: "" # Put your Streamlabs socket token here
@@ -15,13 +15,13 @@ actions:
       - "{amount}>50"
       - "{amount}<100"
       - "{currency}=USD"
-    messages: # Messages that will be sent when the action triggers. USE A § FOR COLOR CODES NOT A &!
+    messages: # Messages that will be sent when the action triggers. USE § FOR COLOR CODES, NOT &!
       - "[message]§l§6{user} §r§9donated {amount_formatted}!"
       - "[title]§cNew Donation!"
       - "[subtitle]§a{user} §9donated {amount_formatted}!"
     commands: # Commands that will be executed when the action triggers. for "Text" use \"Text\"
-      - "give @a diamond {amount}"
-      - "effect give @a regeneration {amount} 1"
+      - "give {player} diamond {amount}"
+      - "effect give {player} regeneration {amount} 1"
       - "[{amount}/10]execute at {player} run summon zombie ~ ~ ~ {CustomName:'[{\"text\":\"{user}\"}]'}" # [{amount}/10] will be replaced with the amount divided by 10
 
 debug_mode: false # DO NOT change this unless you know what you're doing, it will spam your console with detailed information about Streamlabs API events
