@@ -70,6 +70,6 @@ streamlabs:
 
 ## Conditions
 
-`=`: If {amount}=5 It will execute whan the amount is 5
-`>`: If {amount}>5
+- `=`: If {amount}=5 It will execute whan the amount is 5
+- `>`: If {amount}>5
 
