@@ -3,6 +3,7 @@ package me.Domplanto.streamLabs;
 import com.fathzer.soft.javaluator.DoubleEvaluator;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import me.Domplanto.streamLabs.command.SubCommand;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.RewardsConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
@@ -16,12 +17,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.java_websocket.handshake.ServerHandshake;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
 
 public class StreamLabs extends JavaPlugin {
     private static final Set<? extends StreamlabsEvent> STREAMLABS_EVENTS = StreamlabsEvent.findEventClasses();
+    private final Set<? extends SubCommand> SUB_COMMANDS = SubCommand.findSubCommandClasses(this);
     private StreamlabsSocketClient socketClient;
     private RewardsConfig rewardsConfig;
 
@@ -117,6 +120,14 @@ public class StreamLabs extends JavaPlugin {
         }
     }
 
+    public StreamlabsSocketClient getSocketClient() {
+        return socketClient;
+    }
+
+    public void setRewardsConfig(RewardsConfig rewardsConfig) {
+        this.rewardsConfig = rewardsConfig;
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, String[] args) {
         if (command.getName().equalsIgnoreCase("streamlabs")) {
@@ -125,37 +136,34 @@ public class StreamLabs extends JavaPlugin {
                 return true;
             }
 
-            if (args.length >= 1) {
-                switch (args[0].toLowerCase()) {
-
-                    case "reload":
-
-                        return true;
-
-                    case "player":
-                        if (args.length != 3) {
-                            sender.sendMessage(ChatColor.RED + "Please specify a player name");
-                            return true;
-                        }
-
-                        FileConfiguration config = getConfig();
-                        List<String> players = config.getStringList("affected_players");
-                        if (args[1].equals("add")) {
-                            players.add(args[2]);
-                            sender.sendMessage(ChatColor.GREEN + String.format("%s added to affected players", args[2]));
-                        } else if (args[1].equals("remove")) {
-                            players.removeIf(player -> player.equals(args[2]));
-                            sender.sendMessage(ChatColor.GREEN + String.format("%s removed from affected players", args[2]));
-                        } else {
-                            sender.sendMessage(ChatColor.RED + String.format("Unknown sub-command \"%s\"", args[1]));
-                        }
-
-                        getConfig().set("affected_players", players);
-                        saveConfig();
-                        return true;
-                }
+            if (args.length == 0) {
+                sender.sendMessage(ChatColor.RED + "Please add a sub-command!");
+                return true;
             }
+
+            return SUB_COMMANDS.stream()
+                    .filter(c -> c.getName().equals(args[0]))
+                    .findFirst()
+                    .map(c -> c.onCommand(sender, command, label, args))
+                    .orElseGet(() -> {
+                        sender.sendMessage(ChatColor.RED + "Unknown sub-command!");
+                        return true;
+                    });
         }
         return false;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        if (args.length <= 1) {
+            return SUB_COMMANDS.stream()
+                    .map(SubCommand::getName)
+                    .toList();
+        } else {
+            return SUB_COMMANDS.stream()
+                    .filter(c -> c.getName().equals(args[0]))
+                    .findFirst()
+                    .map(c -> c.onTabComplete(sender, command, alias, args)).orElse(List.of());
+        }
     }
 }
