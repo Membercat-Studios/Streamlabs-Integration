@@ -14,10 +14,10 @@ A simple plugin that allows your YouTube and Twitch chat to interact with your M
 
 ## Usage
 
-1. to connect use /streamlabs connect
-2. to disconnect use /streamlabs disconnect
-3. to see the status use /streamlabs status
-4. to reload the config use /streamlabs reload
+- to connect use /streamlabs connect
+- to disconnect use /streamlabs disconnect
+- to see the status use /streamlabs status
+- to reload the config use /streamlabs reload
 
 ## Configuration
 ```
@@ -38,8 +38,9 @@ actions:
  - `twitch_bits`: When someone donates Bits on Twitch
  - `twitch_subscription`: When someone subscribed on Twitch
  - `twitch_raid`: When someone raides your stream on Twitch
- - `twitch_host`: 
- - `youtube_subscription`: 
- - `youtube_superchat`: 
- - `youtube_membership`: 
- - `youtube_gift_memberships`: 
+ - `youtube_subscription`: When someone subscribes on YouTube
+ - `youtube_superchat`: When someone sends a superchat on YouTube
+ - `youtube_membership`: When someone buys a membership on YouTube
+ - `youtube_gift_memberships`: When someone giftes a membership on YouTube
+
+ - `twitch_host`: No documentation found
