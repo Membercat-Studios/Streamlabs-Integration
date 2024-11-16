@@ -40,7 +40,7 @@ affected_players:
   - "codingcat"
   - "(Minecraft Username)"
 ```
-To make the plugin connect to Streamlabs add your Socket API token here. How to get the API token look hire [(Installation)(#Instalation)]
+To make the plugin connect to Streamlabs add your Socket API token here. How to get the API token look hire [Installation](#Instalation)
 ```
 streamlabs:
   socket_token: "(Your Streamlabs Socket token here)"
