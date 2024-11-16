@@ -12,7 +12,7 @@ A simple plugin that allows your YouTube and Twitch chat to interact with your M
 6. Go to /plugins/Streamlabs/config.yml and paste the Socket API Token in de config
 7. than do /streamlabs reload
 
-## Usage
+## Commands
 
 - to connect use /streamlabs connect
 - to disconnect use /streamlabs disconnect
@@ -39,6 +39,11 @@ affected_players:
   - "Domplanto"
   - "codingcat"
   - "(Minecraft Username)"
+```
+To make the plugin connect to Streamlabs add your Socket API token here. How to get the API token look hire [(Installation)(#Instalation)]
+```
+streamlabs:
+  socket_token: "(Your Streamlabs Socket token here)"
 ```
 
 ## Actions
