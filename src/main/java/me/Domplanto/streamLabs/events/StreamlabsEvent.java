@@ -4,14 +4,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
+import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.reflections.Reflections;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public abstract class StreamlabsEvent {
     @NotNull
@@ -71,17 +70,6 @@ public abstract class StreamlabsEvent {
     }
 
     public static Set<? extends StreamlabsEvent> findEventClasses() {
-        String packageName = StreamlabsEvent.class.getPackageName();
-        return new Reflections(packageName)
-                .getSubTypesOf(StreamlabsEvent.class)
-                .stream()
-                .map(cls -> {
-                    try {
-                        return cls.getConstructor().newInstance();
-                    } catch (ReflectiveOperationException ignored) {
-                        return null;
-                    }
-                })
-                .collect(Collectors.toSet());
+        return ReflectUtil.findClasses(StreamlabsEvent.class);
     }
 }
