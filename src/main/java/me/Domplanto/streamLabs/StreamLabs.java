@@ -1,5 +1,6 @@
 package me.Domplanto.streamLabs;
 
+import com.fathzer.soft.javaluator.DoubleEvaluator;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
@@ -92,18 +93,26 @@ public class StreamLabs extends JavaPlugin {
 
     private void executeAction(RewardsConfig.Action action, StreamlabsEvent event, JsonObject baseObject) {
         for (String command : action.getCommands()) {
-            // Replace placeholders
-            for (ActionPlaceholder placeholder : event.getPlaceholders()) {
-                command = command.replace(String.format("{%s}", placeholder.name()),
-                        placeholder.valueFunction().apply(baseObject));
+            int executeAmount = 1;
+            if (command.startsWith("[") && command.contains("]")) {
+                String content = command.substring(1, command.indexOf(']'));
+                content = ActionPlaceholder.replacePlaceholders(content, event, baseObject);
+                command = command.substring(command.indexOf(']') + 1);
+                try {
+                    executeAmount = new DoubleEvaluator().evaluate(content).intValue();
+                } catch (Exception ignore) {
+                }
             }
 
+            command = ActionPlaceholder.replacePlaceholders(command, event, baseObject);
             List<String> players = command.contains("{player}") ?
                     getConfig().getStringList("affected_players") : List.of("");
-            for (String player : players) {
-                String finalCommand = command.replace("{player}", player);
-                Bukkit.getScheduler().runTask(this, () ->
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
+            for (int i = 0; i < executeAmount; i++) {
+                for (String player : players) {
+                    String finalCommand = command.replace("{player}", player);
+                    Bukkit.getScheduler().runTask(this, () ->
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
+                }
             }
         }
     }
@@ -118,34 +127,9 @@ public class StreamLabs extends JavaPlugin {
 
             if (args.length >= 1) {
                 switch (args[0].toLowerCase()) {
-                    case "connect":
-                        if (!socketClient.isOpen()) {
-                            this.socketClient.reconnect();
-                            sender.sendMessage(ChatColor.GREEN + "Connecting to Streamlabs...");
-                        } else {
-                            sender.sendMessage(ChatColor.YELLOW + "Already connected to Streamlabs!");
-                        }
-                        return true;
-
-                    case "disconnect":
-                        if (socketClient.isOpen() && socketClient != null) {
-                            socketClient.close();
-                            sender.sendMessage(ChatColor.RED + "Disconnected from Streamlabs!");
-                        } else {
-                            sender.sendMessage(ChatColor.YELLOW + "Not connected to Streamlabs!");
-                        }
-                        return true;
-
-                    case "status":
-                        sender.sendMessage(ChatColor.BLUE + "Streamlabs Status: " +
-                                (socketClient.isOpen() ? ChatColor.GREEN + "Connected" : ChatColor.RED + "Disconnected"));
-                        return true;
 
                     case "reload":
-                        reloadConfig();
-                        rewardsConfig = new RewardsConfig(getConfig());
-                        socketClient.reconnect();
-                        sender.sendMessage(ChatColor.GREEN + "Configuration reloaded!");
+
                         return true;
 
                     case "player":

@@ -14,7 +14,7 @@ public class TwitchBitsDonationEvent extends BasicDonationEvent {
     }
 
     public double calculateAmount(JsonObject object) {
-        return ((Long) object.get("amount").getAsLong()).doubleValue() / 100.0;
+        return object.get("amount").getAsLong();
     }
 
     public @NotNull String getCurrency(JsonObject object) {

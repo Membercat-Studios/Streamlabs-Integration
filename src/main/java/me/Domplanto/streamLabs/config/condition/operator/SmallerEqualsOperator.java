@@ -6,7 +6,7 @@ import me.Domplanto.streamLabs.config.condition.Operator;
 public class SmallerEqualsOperator implements Operator {
     @Override
     public String getName() {
-        return "<";
+        return "<=";
     }
 
     @Override
