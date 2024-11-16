@@ -37,17 +37,15 @@ public class StreamLabs extends JavaPlugin {
         String socketToken = config.getString("streamlabs.socket_token", "");
         DEBUG_MODE = config.getBoolean("debug_mode", false);
         this.rewardsConfig = new RewardsConfig(config);
+        if (socketToken.isEmpty()) {
+            getLogger().warning("Streamlabs socket token not configured!");
+            getLogger().warning("Please set your token in config.yml");
+        }
 
         this.socketClient = new StreamlabsSocketClient(socketToken, getLogger(), this::handleStreamlabsEvent)
                 .setConnectionOpenListener(this::onConnectionOpen)
                 .setConnectionCloseListener(this::onConnectionClosed)
                 .setInvalidTokenListener(this::onInvalidSocketToken);
-        if (socketToken.isEmpty()) {
-            getLogger().warning("Streamlabs socket token not configured!");
-            getLogger().warning("Please set your token in config.yml");
-            return;
-        }
-
         this.socketClient.connect();
     }
 

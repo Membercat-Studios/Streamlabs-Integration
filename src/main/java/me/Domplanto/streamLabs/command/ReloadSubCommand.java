@@ -25,8 +25,9 @@ public class ReloadSubCommand extends SubCommand {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         getPlugin().reloadConfig();
         getPlugin().setRewardsConfig(new RewardsConfig(getPlugin().getConfig()));
+        getPlugin().getSocketClient().updateToken(getPlugin().getConfig().getString("streamlabs.socket_token", ""));
         sender.sendMessage(ChatColor.GREEN + "Configuration reloaded!");
-        getPlugin().getSocketClient().reconnect();
+        getPlugin().getSocketClient().reconnectAsync();
         return true;
     }
 

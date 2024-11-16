@@ -117,6 +117,14 @@ public class StreamlabsSocketClient extends WebSocketClient {
         this.logger.log(Level.SEVERE, "Unexpected socket error", e);
     }
 
+    public void reconnectAsync() {
+        new Thread(this::reconnect, "Streamlabs socket reconnection thread").start();
+    }
+
+    public void updateToken(String socketToken) {
+        this.uri = createURI(socketToken);
+    }
+
     public StreamlabsSocketClient setConnectionOpenListener(@NotNull Consumer<ServerHandshake> connectionOpenListener) {
         this.connectionOpenListener = connectionOpenListener;
         return this;

@@ -25,7 +25,7 @@ public class ConnectSubCommand extends SubCommand {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         StreamlabsSocketClient socketClient = getPlugin().getSocketClient();
         if (!socketClient.isOpen()) {
-            socketClient.reconnect();
+            socketClient.reconnectAsync();
             sender.sendMessage(ChatColor.GREEN + "Connecting to Streamlabs...");
         } else {
             sender.sendMessage(ChatColor.YELLOW + "Already connected to Streamlabs!");
