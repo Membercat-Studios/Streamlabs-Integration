@@ -25,6 +25,7 @@ import java.util.Set;
 public class StreamLabs extends JavaPlugin {
     private static final Set<? extends StreamlabsEvent> STREAMLABS_EVENTS = StreamlabsEvent.findEventClasses();
     private final Set<? extends SubCommand> SUB_COMMANDS = SubCommand.findSubCommandClasses(this);
+    private static boolean DEBUG_MODE = false;
     private StreamlabsSocketClient socketClient;
     private RewardsConfig rewardsConfig;
 
@@ -34,17 +35,19 @@ public class StreamLabs extends JavaPlugin {
 
         FileConfiguration config = getConfig();
         String socketToken = config.getString("streamlabs.socket_token", "");
+        DEBUG_MODE = config.getBoolean("debug_mode", false);
         this.rewardsConfig = new RewardsConfig(config);
+
+        this.socketClient = new StreamlabsSocketClient(socketToken, getLogger(), this::handleStreamlabsEvent)
+                .setConnectionOpenListener(this::onConnectionOpen)
+                .setConnectionCloseListener(this::onConnectionClosed)
+                .setInvalidTokenListener(this::onInvalidSocketToken);
         if (socketToken.isEmpty()) {
             getLogger().warning("Streamlabs socket token not configured!");
             getLogger().warning("Please set your token in config.yml");
             return;
         }
 
-        this.socketClient = new StreamlabsSocketClient(socketToken, getLogger(), this::handleStreamlabsEvent)
-                .setConnectionOpenListener(this::onConnectionOpen)
-                .setConnectionCloseListener(this::onConnectionClosed)
-                .setInvalidTokenListener(this::onInvalidSocketToken);
         this.socketClient.connect();
     }
 
@@ -70,8 +73,10 @@ public class StreamLabs extends JavaPlugin {
     private void handleStreamlabsEvent(JsonElement data) throws UnexpectedJsonFormatException {
         JsonObject object = data.getAsJsonArray().get(1).getAsJsonObject();
         String type = object.get("type").getAsString();
-        String platform = object.has("for") ? object.get("for").getAsString() : "streamlabs";
+        if (StreamLabs.isDebugMode() && (!type.equals("alertPlaying") && !type.equals("streamlabels") && !type.equals("streamlabels.underlying")))
+            getLogger().info(String.format("Streamlabs message: %s", data));
 
+        String platform = object.has("for") ? object.get("for").getAsString() : "streamlabs";
         StreamlabsEvent event = STREAMLABS_EVENTS.stream()
                 .filter(e -> e.getApiName().equals(type) && e.getPlatform().compare(platform))
                 .findFirst().orElse(null);
@@ -127,6 +132,10 @@ public class StreamLabs extends JavaPlugin {
 
     public void setRewardsConfig(RewardsConfig rewardsConfig) {
         this.rewardsConfig = rewardsConfig;
+    }
+
+    public static boolean isDebugMode() {
+        return DEBUG_MODE;
     }
 
     @Override

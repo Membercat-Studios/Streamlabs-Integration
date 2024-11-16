@@ -18,6 +18,7 @@ public enum MessageType {
     }
 
     public void sendMessage(Player player, String message) {
-        this.action.accept(player, message);
+        if (player != null)
+            this.action.accept(player, message);
     }
 }
