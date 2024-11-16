@@ -61,9 +61,9 @@ streamlabs:
  - `twitch_host`: No documentation found
 
 ## Placeholders
-`{amount}`: 
-`{amount_double}`: 
-`{amount_formatted}`: 
-`{currency}`: 
-`{message}`: 
+- `{amount}`: 
+- `{amount_double}`: 
+- `{amount_formatted}`: 
+- `{currency}`: 
+- `{message}`: 
 
