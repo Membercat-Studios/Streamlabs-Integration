@@ -8,7 +8,6 @@ import me.Domplanto.streamLabs.config.condition.Condition;
 import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -43,9 +42,6 @@ public abstract class StreamlabsEvent {
 
         return messages.get(0).getAsJsonObject();
     }
-
-    @Nullable
-    public abstract String getMessage(JsonObject object);
 
     public @NotNull String getRelatedUser(JsonObject object) {
         return object.get("name").getAsString();

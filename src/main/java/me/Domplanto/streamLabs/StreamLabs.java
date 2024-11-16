@@ -79,11 +79,6 @@ public class StreamLabs extends JavaPlugin {
 
 
         JsonObject baseObject = event.getBaseObject(object);
-        String message = event.getMessage(baseObject);
-        if (message != null && !message.isEmpty()) {
-            Bukkit.broadcastMessage(message);
-        }
-
         List<RewardsConfig.Action> actions = rewardsConfig.getActionsForEvent(event.getId());
         for (RewardsConfig.Action action : actions) {
             if (!action.isEnabled()) continue;

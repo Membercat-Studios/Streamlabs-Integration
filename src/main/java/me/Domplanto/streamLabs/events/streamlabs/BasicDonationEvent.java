@@ -3,9 +3,7 @@ package me.Domplanto.streamLabs.events.streamlabs;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.StreamlabsPlatform;
-import org.bukkit.ChatColor;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class BasicDonationEvent extends StreamlabsEvent {
     @SuppressWarnings("unused")
@@ -33,10 +31,5 @@ public class BasicDonationEvent extends StreamlabsEvent {
 
     public @NotNull String getCurrency(JsonObject object) {
         return object.get("currency").getAsString();
-    }
-
-    @Override
-    public @Nullable String getMessage(JsonObject object) {
-        return String.format("%s%s donated %s%s!", ChatColor.GREEN, getRelatedUser(object), calculateAmount(object), getCurrency(object));
     }
 }

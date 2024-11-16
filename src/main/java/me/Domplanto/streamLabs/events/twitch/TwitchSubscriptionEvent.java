@@ -1,11 +1,9 @@
 package me.Domplanto.streamLabs.events.twitch;
 
 import com.google.gson.JsonObject;
-import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 import me.Domplanto.streamLabs.events.StreamlabsPlatform;
-import org.bukkit.ChatColor;
+import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("unused")
 public class TwitchSubscriptionEvent extends BasicDonationEvent {
@@ -17,6 +15,7 @@ public class TwitchSubscriptionEvent extends BasicDonationEvent {
         this.addPlaceholder("sub_plan", object -> object.get("sub_plan_name").getAsString());
     }
 
+    @Override
     public double calculateAmount(JsonObject object) {
         char tier = object.get("sub_plan").getAsString().charAt(0);
         return Integer.parseInt(String.valueOf(tier));
@@ -25,10 +24,5 @@ public class TwitchSubscriptionEvent extends BasicDonationEvent {
     @Override
     public @NotNull String getCurrency(JsonObject object) {
         return "Tier";
-    }
-
-    @Override
-    public @Nullable String getMessage(JsonObject object)  {
-        return String.format("%s%s subscribed with tier %s!", ChatColor.BLUE, getRelatedUser(object), (int) calculateAmount(object));
     }
 }
