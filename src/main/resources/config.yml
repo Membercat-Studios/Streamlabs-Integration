@@ -1,60 +1,25 @@
+# https://github.com/Domplanto/StreamLabsPlugin
+
 streamlabs:
   socket_token: "" # Put your Streamlabs socket token here
 
-affected_players:
+affected_players: # Players that will be affected by the actions {player}
   - "domplanto"
   - "codingcat"
 
 actions:
-  donation_reward:
-    enabled: true
-    action: streamlabs_donation
-    threshold: 5.0
-    commands:
-      - "give {player} diamond {amount}"
-      - "effect give {player} regeneration 30 1"
-      - "title @a title [\"\",{\"text\":\"New Donation!\",\"color\":\"green\"}]"
-
-  bits_reward:
-    enabled: true
-    action: twitch_bits
-    threshold: 1.0
-    commands:
-      - "give {player} emerald {amount}"
-      - "effect give {player} speed 30 1"
-
-  sub_reward:
-    enabled: true
-    action: twitch_subscription
-    threshold: 0.0
-    commands:
-      - "give {player} golden_apple 5"
-      - "effect give {player} strength 60 1"
-
-  follow_reward:
-    enabled: true
-    action: twitch_follow
-    commands:
-      - "title {player} title {\"text\":\"Thanks for Following!\",\"color\":\"aqua\"}"
-
-  raid_reward:
-    enabled: true
-    action: twitch_raid
-    commands:
-      - "summon firework_rocket ~ ~ ~ {LifeTime:30,FireworksItem:{id:firework_rocket,Count:1}}"
-      - "effect give @a glowing 30 1"
-
-  superchat_reward:
-    enabled: true
-    action: youtube_superchat
-    threshold: 1.0
-    commands:
-      - "give {player} diamond {amount}"
-      - "effect give {player} regeneration 30 1"
-
-  youtube_membership_reward:
-    enabled: true
-    action: youtube_membership
-    commands:
-      - "give {player} golden_apple 3"
-      - "effect give {player} strength 30 1"
+  example_reward:
+    enabled: true # Whether the action is enabled
+    action: streamlabs_donation # The action that will trigger it
+    conditions: # Conditions that must be met for the action to trigger
+      - "{amount}>50"
+      - "{amount}<100"
+      - "{currency}=USD"
+    messages: # Messages that will be sent when the action triggers. USE A § FOR COLOR CODES NOT A &!
+      - "[message]§l§6{user} §r§9donated {amount_formatted}!"
+      - "[title]§cNew Donation!"
+      - "[subtitle]§a{user} §9donated {amount_formatted}!"
+    commands: # Commands that will be executed when the action triggers. for "Text" use \"Text\"
+      - "give @a diamond {amount}"
+      - "effect give @a regeneration {amount} 1"
+      - "[{amount}/10]execute at {player} run summon zombie ~ ~ ~ {CustomName:'[{\"text\":\"{user}\"}]'}" # [{amount}/10] will be replaced with the amount divided by 10
