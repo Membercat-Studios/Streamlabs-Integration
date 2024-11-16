@@ -59,3 +59,11 @@ streamlabs:
  - `youtube_gift_memberships`: When someone giftes a membership on YouTube
 
  - `twitch_host`: No documentation found
+
+## Placeholders
+`{amount}`: 
+`{amount_double}`: 
+`{amount_formatted}`: 
+`{currency}`: 
+`{message}`: 
+
