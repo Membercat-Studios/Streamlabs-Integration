@@ -62,8 +62,8 @@ streamlabs:
 
 ## Placeholders
 
-- `{amount}`: The amount of money donated. So 5.00, 4.99 or 100 (Bits)
-- `{amount_double}`: The amount of money donated but double. So 5.00 * 2 = 10.00
+- `{amount}`: The amount of money donated without decimals. So 5, 4 or 100 (Bits)
+- `{amount_double}`: The amount of money donated with decimals. So 5.00, 4,99 or 100
 - `{amount_formatted}`: The amount of money donated but formatted whit the currency. So $5.00, €4.99 or 100 Bits
 - `{currency}`: The currency that someone donated in. So USD, EUR or Bits
 - `{message}`: The message that someone has added whan donating. So "Best stream ever! GG"
