@@ -7,6 +7,8 @@ affected_players: # Players that will be affected by the actions {player}
   - "domplanto"
   - "codingcat"
 
+show_status_messages: true # Whether the plugin will send status messages in chat (for example "Successfully connected to Streamlabs")
+
 actions:
   example_reward:
     enabled: true # Whether the action is enabled

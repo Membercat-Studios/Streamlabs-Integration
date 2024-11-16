@@ -50,15 +50,18 @@ public class StreamLabs extends JavaPlugin {
     }
 
     private void onConnectionOpen(ServerHandshake handshake) {
-        Bukkit.broadcastMessage(ChatColor.GREEN + "Successfully connected to Streamlabs!");
+        if (this.showStatusMessages())
+            Bukkit.broadcastMessage(ChatColor.GREEN + "Successfully connected to Streamlabs!");
     }
 
     private void onConnectionClosed(String message) {
-        Bukkit.broadcastMessage(ChatColor.RED + "Connection to Streamlabs lost!");
+        if (this.showStatusMessages())
+            Bukkit.broadcastMessage(ChatColor.RED + "Connection to Streamlabs lost!");
     }
 
     private void onInvalidSocketToken() {
-        Bukkit.broadcastMessage(ChatColor.YELLOW + "The socket token specified is invalid!");
+        if (this.showStatusMessages())
+            Bukkit.broadcastMessage(ChatColor.YELLOW + "The socket token specified is invalid!");
     }
 
     @Override
@@ -130,6 +133,10 @@ public class StreamLabs extends JavaPlugin {
 
     public void setRewardsConfig(RewardsConfig rewardsConfig) {
         this.rewardsConfig = rewardsConfig;
+    }
+
+    private boolean showStatusMessages() {
+        return getConfig().getBoolean("show_status_messages", true);
     }
 
     public static boolean isDebugMode() {
