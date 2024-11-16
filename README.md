@@ -2,77 +2,69 @@
 
 A simple plugin that allows your YouTube and Twitch chat to interact with your Minecraft game .
 
-## Features
-
-- Custom alerts integration
-
 ## Installation
 
-1. Download the latest release from the Releases page
-2. Open Streamlabs Desktop
-3. Navigate to Settings → Advanced
-4. Click on "Install Plugin"
-5. Select the downloaded .streamlabsplugin file
-6. Restart Streamlabs Desktop
+1. Download the latest release from the Releases page on Github
+2. Put the plugin it the plugins folder
+3. Restart the server
+4. Go to The Streamlabs dashboard. Than in the top right go to you account and go to Account Settings
+5. Than go to api settings than api tokens and copy the Socket API Token
+6. Go to /plugins/Streamlabs/config.yml and paste the Socket API Token in de config
+7. than do /streamlabs reload
 
-## Usage
+## Commands
 
-1. After installation, go to your Streamlabs Dashboard
-2. Find the plugin under the "Installed Plugins" section
-3. Configure your desired settings
-4. Add the plugin widget to your scene using the + button
+- to connect use /streamlabs connect
+- to disconnect use /streamlabs disconnect
+- to see the status use /streamlabs status
+- to reload the config use /streamlabs reload
+- to add affected players use /streamlabs player add (Username)
+- to remove affected players use /streamlabs player remove (Username)
 
 ## Configuration
-
-### Basic Settings
-- `Alert Duration`: How long alerts appear (in seconds)
-- `Animation Style`: Choose between Fade, Bounce, or Slide
-- `Sound Volume`: Adjust the volume of alert sounds (0-100)
-
-### Advanced Settings
-- `Custom CSS`: Add your own styles
-- `Webhook URL`: For custom integrations
-- `Debug Mode`: Enable for troubleshooting
-
-## Development
-
-### Prerequisites
-- Node.js 14+
-- npm or yarn
-- Streamlabs Desktop
-
-### Setup
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/streamlabs-plugin
-
-# Install dependencies
-npm install
-
-# Build the plugin
-npm run build
+To create a action you put in in the config.yml in this format
+```
+actions:
+  (name):
+    enabled: true
+    action: (Actions)
+    threshold: 5.0
+    commands:
+      - "give {player} diamond {amount}"
+      - "effect give {player} regeneration 30 1"
+```
+To add affected players edit this in the config.yml
+```
+affected_players:
+  - "Domplanto"
+  - "codingcat"
+  - "(Minecraft Username)"
+```
+To make the plugin connect to Streamlabs add your Socket API token here. How to get the API token look hire [Installation](#Installation)
+```
+streamlabs:
+  socket_token: "(Your Streamlabs Socket token here)"
 ```
 
-### Testing
-```bash
-npm run test
-```
+## Actions
 
-## Contributing
+ - `streamlabs_donation`: When someone donates on streamlabs
+ - `twitch_follow`: When someone follows on Twitch
+ - `twitch_bits`: When someone donates Bits on Twitch
+ - `twitch_subscription`: When someone subscribed on Twitch
+ - `twitch_raid`: When someone raides your stream on Twitch
+ - `youtube_subscription`: When someone subscribes on YouTube
+ - `youtube_superchat`: When someone sends a superchat on YouTube
+ - `youtube_membership`: When someone buys a membership on YouTube
+ - `youtube_gift_memberships`: When someone giftes a membership on YouTube
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+ - `twitch_host`: No documentation found
 
-## Support
+## Placeholders
 
-For support, please:
-- Check our [FAQ](link-to-faq)
-- Join our [Discord community](link-to-discord)
-- Open an issue on GitHub
+- `{amount}`: The amount of money donated. So 5.00, 4.99 or 100 (Bits)
+- `{amount_double}`: The amount of money donated but double. So 5.00 * 2 = 10.00
+- `{amount_formatted}`: The amount of money donated but formatted whit the currency. So $5.00, €4.99 or 100 Bits
+- `{currency}`: The currency that someone donated in. So USD, EUR or Bits
+- `{message}`: The message that someone has added whan donating. So "Best stream ever! GG"
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
