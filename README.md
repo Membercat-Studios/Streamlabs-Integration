@@ -73,3 +73,32 @@ streamlabs:
 - `=`: If {amount}=5 It will execute whan the amount is 5
 - `>`: If {amount}>5
 
+## Config
+```
+# https://github.com/Domplanto/StreamLabsPlugin
+
+streamlabs:
+  socket_token: "" # Put your Streamlabs socket token here
+
+affected_players: # Players that will be affected by the actions {player}
+  - "domplanto"
+  - "codingcat"
+
+actions:
+  example_reward:
+    enabled: true # Whether the action is enabled
+    action: streamlabs_donation # The action that will trigger it
+    conditions: # Conditions that must be met for the action to trigger
+      - "{amount}>50"
+      - "{amount}<100"
+      - "{currency}=USD"
+    messages: # Messages that will be sent when the action triggers. USE A § FOR COLOR CODES NOT A &!
+      - "[message]§l§6{user} §r§9donated {amount_formatted}!"
+      - "[title]§cNew Donation!"
+      - "[subtitle]§a{user} §9donated {amount_formatted}!"
+    commands: # Commands that will be executed when the action triggers. for "Text" use \"Text\"
+      - "give @a diamond {amount}"
+      - "effect give @a regeneration {amount} 1"
+      - "[{amount}/10]execute at {player} run summon zombie ~ ~ ~ {CustomName:'[{\"text\":\"{user}\"}]'}" # [{amount}/10] will be replaced with the amount divided by 10
+```
+
