@@ -1,88 +1,55 @@
-# Streamlabs Plugin
-
-A simple plugin that allows your YouTube and Twitch chat to interact with your Minecraft game .
+# Streamlabs Integration
+A simple minecraft plugin that allows your YouTube and Twitch chat to interact with your Minecraft game via donations.
 
 ## Installation
-
-1. Download the latest release from the Releases page on Github
+1. Download the latest release from the Releases page on GitHub
 2. Put the plugin it the plugins folder
 3. Restart the server
-4. Go to The Streamlabs dashboard. Than in the top right go to you account and go to Account Settings
-5. Than go to api settings than api tokens and copy the Socket API Token
-6. Go to /plugins/Streamlabs/config.yml and paste the Socket API Token in de config
-7. than do /streamlabs reload
+4. Go to The Streamlabs dashboard. Then, in the top right corner, click on the account icon and go to *Account Settings*
+5. Click on *API Settings* and copy your socket token
+6. Go to /plugins/Streamlabs/config.yml and paste the socket token in the config
+7. Enter `/streamlabs reload` and wait for the plugin to connect to the streamlabs API
 
 ## Commands
-
-- to connect use /streamlabs connect
-- to disconnect use /streamlabs disconnect
-- to see the status use /streamlabs status
-- to reload the config use /streamlabs reload
-- to add affected players use /streamlabs player add (Username)
-- to remove affected players use /streamlabs player remove (Username)
+- `/streamlabs reload`: Loads changes in the config and reconnects
+- `/streamlabs status`: Shows whether the plugin is currently connected to the Streamlabs API
+- `/streamlabs connect`: Used to reconnect to Streamlabs after getting disconnected
+- `/streamlabs disconnect`: Disconnects from the Streamlabs API
+- `/streamlabs player add {name}`: Adds a player to the `affected_players` config
+- `/streamlabs player remove {name}`: Removes a player from the `affected_players` config
 
 ## Configuration
-To create a action you put in in the config.yml in this format
-```
-actions:
-  (name):
-    enabled: true
-    action: (Actions)
-    threshold: 5.0
-    commands:
-      - "give {player} diamond {amount}"
-      - "effect give {player} regeneration 30 1"
-```
-To add affected players edit this in the config.yml
-```
-affected_players:
-  - "Domplanto"
-  - "codingcat"
-  - "(Minecraft Username)"
-```
-To make the plugin connect to Streamlabs add your Socket API token here. How to get the API token look hire [Installation](#Installation)
-```
+To get started, put your Streamlabs socket token in the `socket_token` field:
+```yaml
 streamlabs:
   socket_token: "(Your Streamlabs Socket token here)"
 ```
 
-## Actions
-
- - `streamlabs_donation`: When someone donates on streamlabs
- - `twitch_follow`: When someone follows on Twitch
- - `twitch_bits`: When someone donates Bits on Twitch
- - `twitch_subscription`: When someone subscribed on Twitch
- - `twitch_raid`: When someone raides your stream on Twitch
- - `youtube_subscription`: When someone subscribes on YouTube
- - `youtube_superchat`: When someone sends a superchat on YouTube
- - `youtube_membership`: When someone buys a membership on YouTube
- - `youtube_gift_memberships`: When someone giftes a membership on YouTube
-
- - `twitch_host`: No documentation found
-
-## Placeholders
-
-- `{amount}`: The amount of money donated without decimals. So 5, 4 or 100 (Bits)
-- `{amount_double}`: The amount of money donated with decimals. So 5.00, 4,99 or 100
-- `{amount_formatted}`: The amount of money donated but formatted whit the currency. So $5.00, €4.99 or 100 Bits
-- `{currency}`: The currency that someone donated in. So USD, EUR or Bits
-- `{message}`: The message that someone has added whan donating. So "Best stream ever! GG"
-
-## Conditions
-
-- `=`: If {amount}=5 It will execute whan the amount is 5
-- `>`: If {amount}>5
-
-## Config
+The plugin works based on **actions** that tell the plugin what to do in a specific scenario.
+You can add as many actions as you like in the `actions` field. An action has the following fields:
+```yaml
+actions:
+  example_action:
+    enabled: true # Whether the action is enabled
+    action: (Action type)
+    conditions:
+      - (List of conditions that have to be met in order for the action to execute)
+    messages:
+      - (List of messages that will be sent in chat or as a title)
+    commands:
+      - (List of minecraft commands to execute)
 ```
-# https://github.com/Domplanto/StreamLabsPlugin
 
+## Default configuration
+```
 streamlabs:
   socket_token: "" # Put your Streamlabs socket token here
 
 affected_players: # Players that will be affected by the actions {player}
   - "domplanto"
   - "codingcat"
+
+show_status_messages: true # Whether the plugin will send status messages in chat (for example "Successfully connected to Streamlabs")
 
 actions:
   example_reward:
@@ -92,13 +59,13 @@ actions:
       - "{amount}>50"
       - "{amount}<100"
       - "{currency}=USD"
-    messages: # Messages that will be sent when the action triggers. USE A § FOR COLOR CODES NOT A &!
+    messages: # Messages that will be sent when the action triggers. USE § FOR COLOR CODES, NOT &!
       - "[message]§l§6{user} §r§9donated {amount_formatted}!"
       - "[title]§cNew Donation!"
       - "[subtitle]§a{user} §9donated {amount_formatted}!"
     commands: # Commands that will be executed when the action triggers. for "Text" use \"Text\"
-      - "give @a diamond {amount}"
-      - "effect give @a regeneration {amount} 1"
+      - "give {player} diamond {amount}"
+      - "effect give {player} regeneration {amount} 1"
       - "[{amount}/10]execute at {player} run summon zombie ~ ~ ~ {CustomName:'[{\"text\":\"{user}\"}]'}" # [{amount}/10] will be replaced with the amount divided by 10
 ```
 
