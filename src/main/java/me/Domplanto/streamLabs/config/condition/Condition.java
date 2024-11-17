@@ -3,6 +3,8 @@ package me.Domplanto.streamLabs.config.condition;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
+import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
@@ -49,6 +51,23 @@ public class Condition {
                     String[] elements = finalString.split(op.getName());
                     return new Condition(op, invert, parseElement(elements[0], event), parseElement(elements[1], event));
                 }).toList();
+    }
+
+    @Nullable
+    public static Condition parseDonationCondition(List<String> donationConditionStrings, BasicDonationEvent event, JsonObject baseObject) {
+        for (String string : donationConditionStrings) {
+            Operator op = OPERATORS.stream()
+                    .filter(operator1 -> string.contains(operator1.getName()))
+                    .findFirst().orElse(null);
+            if (op == null) return null;
+
+            String[] elements = string.split(op.getName());
+            if (!elements[0].equals(event.getCurrency(baseObject))) continue;
+
+            return new Condition(op, false, o -> String.valueOf(event.calculateAmount(o)), parseElement(elements[1], event));
+        }
+
+        return null;
     }
 
     private static Function<JsonObject, String> parseElement(String elementString, StreamlabsEvent event) {

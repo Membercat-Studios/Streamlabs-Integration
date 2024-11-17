@@ -1,7 +1,9 @@
 package me.Domplanto.streamLabs.config;
 
+import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.condition.Condition;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
+import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 import me.Domplanto.streamLabs.message.Message;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -31,6 +33,7 @@ public class RewardsConfig {
                     actionSection.getBoolean("enabled", true),
                     actionSection.getStringList("messages"),
                     actionSection.getStringList("conditions"),
+                    actionSection.getStringList("donation_condition"),
                     actionSection.getStringList("commands")
             );
 
@@ -50,14 +53,17 @@ public class RewardsConfig {
         private final List<Message> messages;
         private final boolean enabled;
         private final List<String> conditionStrings;
+        @Nullable
+        private final List<String> donationConditionStrings;
         private final List<String> commands;
 
-        public Action(String name, String eventType, boolean enabled, @Nullable List<String> messageStrings, List<String> conditionStrings, List<String> commands) {
+        public Action(String name, String eventType, boolean enabled, @Nullable List<String> messageStrings, List<String> conditionStrings, @Nullable List<String> donationConditionStrings, List<String> commands) {
             this.name = name;
             this.eventType = eventType;
             this.enabled = enabled;
             this.messages = messageStrings != null ? Message.parseAll(messageStrings) : List.of();
             this.conditionStrings = conditionStrings;
+            this.donationConditionStrings = donationConditionStrings;
             this.commands = commands;
         }
 
@@ -79,6 +85,12 @@ public class RewardsConfig {
 
         public List<Condition> getConditions(StreamlabsEvent event) {
             return Condition.parseAll(this.conditionStrings, event);
+        }
+
+        public @Nullable Condition getDonationCondition(BasicDonationEvent event, JsonObject baseObject) {
+            if (this.donationConditionStrings == null) return null;
+
+            return Condition.parseDonationCondition(this.donationConditionStrings, event, baseObject);
         }
 
         public List<String> getCommands() {
