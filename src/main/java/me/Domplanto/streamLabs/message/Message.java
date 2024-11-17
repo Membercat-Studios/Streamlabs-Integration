@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 public class Message {
-    private String content;
+    private final String content;
     private final MessageType type;
 
     private Message(MessageType type, String content) {
@@ -21,8 +21,7 @@ public class Message {
     }
 
     public Message replacePlaceholders(StreamlabsEvent event, JsonObject baseObject) {
-        this.content = ActionPlaceholder.replacePlaceholders(this.content, event, baseObject);
-        return this;
+        return new Message(this.type, ActionPlaceholder.replacePlaceholders(this.content, event, baseObject));
     }
 
     public static List<Message> parseAll(List<String> messageStrings) {
