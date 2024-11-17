@@ -57,9 +57,12 @@ actions:
     enabled: true # Whether the action is enabled
     action: streamlabs_donation # The action that will trigger it
     conditions: # Conditions that must be met for the action to trigger
-      - '{amount}>50'
-      - '{amount}<100'
-      - '{currency}=USD'
+      - '{message}.>cats are cool'
+      - '{user}=codingcat24'
+    donation_condition: # One of those conditions will be chosen and checked, depending on the donation currency (this will not be checked if the event is not a donation)
+      - "EUR>10"
+      - "USD>10.54"
+      - "AUD>16.31"
     messages: # Messages that will be sent when the action triggers. USE § FOR COLOR CODES, NOT &!
       - '[message]§l§6{user} §r§9donated {amount_formatted}!'
       - '[title]§cNew Donation!'
@@ -68,7 +71,5 @@ actions:
       - 'give {player} diamond {amount}'
       - 'effect give {player} regeneration {amount} 1'
       - '[{amount}/10]execute at {player} run summon zombie ~ ~ ~ {CustomName:''[{"text":"{user}"}]''}' # [{amount}/10] will be replaced with the amount divided by 10
-
-debug_mode: false # DO NOT change this unless you know what you're doing, it will spam your console with detailed information about Streamlabs API events
 ```
 
