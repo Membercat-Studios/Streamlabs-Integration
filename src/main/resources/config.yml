@@ -25,5 +25,3 @@ actions:
       - 'give {player} diamond {amount}'
       - 'effect give {player} regeneration {amount} 1'
       - '[{amount}/10]execute at {player} run summon zombie ~ ~ ~ {CustomName:''[{"text":"{user}"}]''}' # [{amount}/10] will be replaced with the amount divided by 10
-
-debug_mode: false # DO NOT change this unless you know what you're doing, it will spam your console with detailed information about Streamlabs API events
