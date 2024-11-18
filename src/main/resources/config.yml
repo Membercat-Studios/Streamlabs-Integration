@@ -16,10 +16,13 @@ actions:
     conditions: # Conditions that must be met for the action to trigger
       - '{message}.>cats are cool'
       - '{user}=codingcat24'
-    donation_condition: # One of those conditions will be chosen and checked, depending on the donation currency (this will not be checked if the event is not a donation)
+    donation_conditions: # All conditions with the currency of the received donation will be checked (this will not be checked if the event is not a donation)
       - "EUR>10"
+      - "EUR<50"
       - "USD>10.54"
+      - "USD<50"
       - "AUD>16.31"
+      - "AUD<50"
     messages: # Messages that will be sent when the action triggers. USE § FOR COLOR CODES, NOT &!
       - '[message]§l§6{user} §r§9donated {amount_formatted}!'
       - '[title]§cNew Donation!'

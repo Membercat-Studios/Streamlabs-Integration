@@ -33,7 +33,7 @@ public class RewardsConfig {
                     actionSection.getBoolean("enabled", true),
                     actionSection.getStringList("messages"),
                     actionSection.getStringList("conditions"),
-                    actionSection.getStringList("donation_condition"),
+                    actionSection.getStringList("donation_conditions"),
                     actionSection.getStringList("commands")
             );
 
