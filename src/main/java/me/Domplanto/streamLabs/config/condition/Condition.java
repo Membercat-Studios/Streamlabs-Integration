@@ -4,8 +4,8 @@ import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -53,8 +53,8 @@ public class Condition {
                 }).toList();
     }
 
-    @Nullable
-    public static Condition parseDonationCondition(List<String> donationConditionStrings, BasicDonationEvent event, JsonObject baseObject) {
+    public static List<Condition> parseDonationConditions(List<String> donationConditionStrings, BasicDonationEvent event, JsonObject baseObject) {
+        ArrayList<Condition> conditions = new ArrayList<>();
         for (String string : donationConditionStrings) {
             Operator op = OPERATORS.stream()
                     .filter(operator1 -> string.contains(operator1.getName()))
@@ -62,12 +62,11 @@ public class Condition {
             if (op == null) return null;
 
             String[] elements = string.split(op.getName());
-            if (!elements[0].equals(event.getCurrency(baseObject))) continue;
-
-            return new Condition(op, false, o -> String.valueOf(event.calculateAmount(o)), parseElement(elements[1], event));
+            if (elements[0].equals(event.getCurrency(baseObject)))
+                conditions.add(new Condition(op, false, o -> String.valueOf(event.calculateAmount(o)), parseElement(elements[1], event)));
         }
 
-        return null;
+        return conditions;
     }
 
     private static Function<JsonObject, String> parseElement(String elementString, StreamlabsEvent event) {

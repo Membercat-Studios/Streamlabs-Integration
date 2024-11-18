@@ -87,10 +87,10 @@ public class RewardsConfig {
             return Condition.parseAll(this.conditionStrings, event);
         }
 
-        public @Nullable Condition getDonationCondition(BasicDonationEvent event, JsonObject baseObject) {
+        public List<Condition> getDonationConditions(BasicDonationEvent event, JsonObject baseObject) {
             if (this.donationConditionStrings == null) return null;
 
-            return Condition.parseDonationCondition(this.donationConditionStrings, event, baseObject);
+            return Condition.parseDonationConditions(this.donationConditionStrings, event, baseObject);
         }
 
         public List<String> getCommands() {
