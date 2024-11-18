@@ -10,8 +10,8 @@ import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -66,7 +66,7 @@ public abstract class StreamlabsEvent {
     }
 
     public boolean checkConditions(RewardsConfig.Action action, JsonObject object) {
-        List<Condition> conditionList = action.getConditions(this);
+        ArrayList<Condition> conditionList = new ArrayList<>(action.getConditions(this));
         if (this instanceof BasicDonationEvent donationEvent)
             conditionList.addAll(action.getDonationConditions(donationEvent, object));
 

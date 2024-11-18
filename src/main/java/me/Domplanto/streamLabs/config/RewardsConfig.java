@@ -88,7 +88,7 @@ public class RewardsConfig {
         }
 
         public List<Condition> getDonationConditions(BasicDonationEvent event, JsonObject baseObject) {
-            if (this.donationConditionStrings == null) return null;
+            if (this.donationConditionStrings == null) return new ArrayList<>();
 
             return Condition.parseDonationConditions(this.donationConditionStrings, event, baseObject);
         }

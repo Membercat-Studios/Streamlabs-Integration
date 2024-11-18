@@ -59,7 +59,7 @@ public class Condition {
             Operator op = OPERATORS.stream()
                     .filter(operator1 -> string.contains(operator1.getName()))
                     .findFirst().orElse(null);
-            if (op == null) return null;
+            if (op == null) continue;
 
             String[] elements = string.split(op.getName());
             if (elements[0].equals(event.getCurrency(baseObject)))
