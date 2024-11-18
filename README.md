@@ -36,7 +36,7 @@ actions:
     conditions:
       - (List of conditions that have to be met in order for the action to execute)
     donation_condition:
-      - (One condition is this list will be chosen and checked depending on the donation currency, this gets ignored if the event type is not a donation)
+      - (All conditions with the currency of the received donation will be checked, this will be ignored if the event is not a donation)
     messages:
       - (List of messages that will be sent in chat or as a title)
     commands:
