@@ -80,4 +80,4 @@ actions:
 ```
 
 
-[<img src="https://codingcat2468.github.io/assets/images/membercat_studios.png" height="60" width="200"/>](https://membercat.com)
+[<img src="https://codingcat2468.github.io/assets/images/membercat_studios.png" height="55" width="200"/>](https://membercat.com)
