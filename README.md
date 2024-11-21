@@ -1,7 +1,7 @@
-![Streamlabs Integration](https://github.com/Domplanto/StreamLabsPlugin/blob/main/minelabs_icon_text.png?raw=true)
+![Streamlabs Integration](https://github.com/Membercat-Studios/StreamLabsPlugin/blob/main/minelabs_icon_text.png?raw=true)
 # Streamlabs Integration
 A simple minecraft plugin that allows your YouTube and Twitch chat to interact with your Minecraft game via donations.
-Visit the [Wiki](https://github.com/Domplanto/StreamLabsPlugin/wiki) for instruction on how to use the configuration!
+Visit the [Wiki](https://github.com/Membercat-Studios/StreamLabsPlugin/wiki) for instruction on how to use the configuration!
 
 ## Installation
 1. Download the latest release from the Releases page on GitHub
