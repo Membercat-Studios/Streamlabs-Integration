@@ -13,6 +13,6 @@ public class ContainsOperator2 implements Operator {
     public boolean check(Object element1, Object element2) {
         if (!(element1 instanceof String s1) || !(element2 instanceof String s2)) return false;
 
-        return s2.contains(s1);
+        return s2.toLowerCase().contains(s1.toLowerCase());
     }
 }
