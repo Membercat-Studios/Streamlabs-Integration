@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.config.condition;
+package me.Domplanto.streamLabs.condition;
 
 import me.Domplanto.streamLabs.util.ReflectUtil;
 

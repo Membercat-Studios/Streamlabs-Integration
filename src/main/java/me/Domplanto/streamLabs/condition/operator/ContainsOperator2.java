@@ -1,6 +1,6 @@
-package me.Domplanto.streamLabs.config.condition.operator;
+package me.Domplanto.streamLabs.condition.operator;
 
-import me.Domplanto.streamLabs.config.condition.Operator;
+import me.Domplanto.streamLabs.condition.Operator;
 
 @SuppressWarnings("unused")
 public class ContainsOperator2 implements Operator {

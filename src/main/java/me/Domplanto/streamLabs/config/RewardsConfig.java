@@ -1,7 +1,7 @@
 package me.Domplanto.streamLabs.config;
 
 import com.google.gson.JsonObject;
-import me.Domplanto.streamLabs.config.condition.Condition;
+import me.Domplanto.streamLabs.condition.Condition;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 import me.Domplanto.streamLabs.message.Message;
