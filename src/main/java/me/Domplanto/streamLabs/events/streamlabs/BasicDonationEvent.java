@@ -26,10 +26,12 @@ public class BasicDonationEvent extends StreamlabsEvent {
     }
 
     public double calculateAmount(JsonObject object) {
+        if (!object.has("amount")) return -1;
         return object.get("amount").getAsDouble();
     }
 
     public @NotNull String getCurrency(JsonObject object) {
+        if (!object.has("currency")) return "Unknown";
         return object.get("currency").getAsString();
     }
 }

@@ -85,6 +85,10 @@ public class StreamLabs extends JavaPlugin {
         this.rewardsConfig = rewardsConfig;
     }
 
+    public RewardsConfig getRewardsConfig() {
+        return rewardsConfig;
+    }
+
     private boolean showStatusMessages() {
         return getConfig().getBoolean("show_status_messages", true);
     }

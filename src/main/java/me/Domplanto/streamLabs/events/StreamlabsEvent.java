@@ -31,7 +31,7 @@ public abstract class StreamlabsEvent {
         this.addPlaceholder("user", this::getRelatedUser);
     }
 
-    protected void addPlaceholder(String name, Function<JsonObject, String> valueFunction) {
+    public void addPlaceholder(String name, Function<JsonObject, String> valueFunction) {
         this.placeholders.removeIf(placeholder -> placeholder.name().equals(name));
         this.placeholders.add(new ActionPlaceholder(name, valueFunction));
     }
