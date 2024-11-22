@@ -1,13 +1,10 @@
 package me.Domplanto.streamLabs;
 
-import com.fathzer.soft.javaluator.DoubleEvaluator;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import me.Domplanto.streamLabs.action.ActionExecutor;
 import me.Domplanto.streamLabs.command.SubCommand;
-import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.RewardsConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
-import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -42,7 +39,7 @@ public class StreamLabs extends JavaPlugin {
             getLogger().warning("Please set your token in config.yml");
         }
 
-        this.socketClient = new StreamlabsSocketClient(socketToken, getLogger(), this::handleStreamlabsEvent)
+        this.socketClient = new StreamlabsSocketClient(socketToken, getLogger(), this::onStreamlabsEvent)
                 .setConnectionOpenListener(this::onConnectionOpen)
                 .setConnectionCloseListener(this::onConnectionClosed)
                 .setInvalidTokenListener(this::onInvalidSocketToken);
@@ -64,6 +61,11 @@ public class StreamLabs extends JavaPlugin {
             Bukkit.broadcastMessage(ChatColor.YELLOW + "The socket token specified is invalid!");
     }
 
+    private void onStreamlabsEvent(JsonElement rawData) {
+        ActionExecutor executor = new ActionExecutor(this.rewardsConfig, STREAMLABS_EVENTS, this);
+        executor.parseAndExecute(rawData);
+    }
+
     @Override
     public void onDisable() {
         if (socketClient != null && socketClient.isOpen()) {
@@ -71,64 +73,12 @@ public class StreamLabs extends JavaPlugin {
         }
     }
 
-    private void handleStreamlabsEvent(JsonElement data) throws UnexpectedJsonFormatException {
-        JsonObject object = data.getAsJsonArray().get(1).getAsJsonObject();
-        String type = object.get("type").getAsString();
-        if (StreamLabs.isDebugMode() && (!type.equals("alertPlaying") && !type.equals("streamlabels") && !type.equals("streamlabels.underlying")))
-            getLogger().info(String.format("Streamlabs message: %s", data));
-
-        String platform = object.has("for") ? object.get("for").getAsString() : "streamlabs";
-        StreamlabsEvent event = STREAMLABS_EVENTS.stream()
-                .filter(e -> e.getApiName().equals(type) && e.getPlatform().compare(platform))
-                .findFirst().orElse(null);
-        if (event == null) return;
-
-
-        JsonObject baseObject = event.getBaseObject(object);
-        List<RewardsConfig.Action> actions = rewardsConfig.getActionsForEvent(event.getId());
-        for (RewardsConfig.Action action : actions) {
-            if (!action.isEnabled()) continue;
-
-            if (event.checkConditions(action, baseObject)) {
-                executeAction(action, event, baseObject);
-            }
-        }
-    }
-
-    private void executeAction(RewardsConfig.Action action, StreamlabsEvent event, JsonObject baseObject) {
-        List<String> affectedPlayers = getConfig().getStringList("affected_players");
-        action.getMessages()
-                .stream().map(message -> message.replacePlaceholders(event, baseObject))
-                .forEach(message -> affectedPlayers.stream()
-                        .map(playerName -> getServer().getPlayerExact(playerName))
-                        .forEach(message::send));
-
-        for (String command : action.getCommands()) {
-            int executeAmount = 1;
-            if (command.startsWith("[") && command.contains("]")) {
-                String content = command.substring(1, command.indexOf(']'));
-                content = ActionPlaceholder.replacePlaceholders(content, event, baseObject);
-                command = command.substring(command.indexOf(']') + 1);
-                try {
-                    executeAmount = new DoubleEvaluator().evaluate(content).intValue();
-                } catch (Exception ignore) {
-                }
-            }
-
-            command = ActionPlaceholder.replacePlaceholders(command, event, baseObject);
-            List<String> players = command.contains("{player}") ? affectedPlayers : List.of("");
-            for (int i = 0; i < executeAmount; i++) {
-                for (String player : players) {
-                    String finalCommand = command.replace("{player}", player);
-                    Bukkit.getScheduler().runTask(this, () ->
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
-                }
-            }
-        }
-    }
-
     public StreamlabsSocketClient getSocketClient() {
         return socketClient;
+    }
+
+    public Set<? extends StreamlabsEvent> getCachedEventObjects() {
+        return STREAMLABS_EVENTS;
     }
 
     public void setRewardsConfig(RewardsConfig rewardsConfig) {
