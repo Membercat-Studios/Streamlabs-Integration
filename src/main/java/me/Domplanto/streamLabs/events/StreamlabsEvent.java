@@ -33,7 +33,7 @@ public abstract class StreamlabsEvent {
 
     public void addPlaceholder(String name, Function<JsonObject, String> valueFunction) {
         this.placeholders.removeIf(placeholder -> placeholder.name().equals(name));
-        this.placeholders.add(new ActionPlaceholder(name, valueFunction));
+        this.placeholders.add(new ActionPlaceholder(name, ActionPlaceholder.PlaceholderFunction.of(valueFunction)));
     }
 
     @NotNull
@@ -71,7 +71,7 @@ public abstract class StreamlabsEvent {
             conditionList.addAll(action.getDonationConditions(donationEvent, object));
 
         for (Condition condition : conditionList)
-            if (!condition.check(object)) return false;
+            if (!condition.check(this, object)) return false;
 
         return true;
     }
