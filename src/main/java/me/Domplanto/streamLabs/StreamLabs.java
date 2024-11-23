@@ -81,10 +81,6 @@ public class StreamLabs extends JavaPlugin {
         return STREAMLABS_EVENTS;
     }
 
-    public void setRewardsConfig(RewardsConfig rewardsConfig) {
-        this.rewardsConfig = rewardsConfig;
-    }
-
     public RewardsConfig getRewardsConfig() {
         return rewardsConfig;
     }
