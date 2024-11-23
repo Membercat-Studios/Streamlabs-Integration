@@ -55,7 +55,7 @@ public class ActionExecutor {
     private void executeAction(RewardsConfig.Action action, StreamlabsEvent event, JsonObject baseObject) {
         List<String> affectedPlayers = plugin.getConfig().getStringList("affected_players");
         action.getMessages()
-                .stream().map(message -> message.replacePlaceholders(event, baseObject))
+                .stream().map(message -> message.replacePlaceholders(event, rewardsConfig, baseObject))
                 .forEach(message -> affectedPlayers.stream()
                         .map(playerName -> plugin.getServer().getPlayerExact(playerName))
                         .forEach(message::send));
@@ -64,7 +64,7 @@ public class ActionExecutor {
             int executeAmount = 1;
             if (command.startsWith("[") && command.contains("]")) {
                 String content = command.substring(1, command.indexOf(']'));
-                content = ActionPlaceholder.replacePlaceholders(content, event, baseObject);
+                content = ActionPlaceholder.replacePlaceholders(content, event, rewardsConfig, baseObject);
                 command = command.substring(command.indexOf(']') + 1);
                 try {
                     executeAmount = new DoubleEvaluator().evaluate(content).intValue();
@@ -72,7 +72,7 @@ public class ActionExecutor {
                 }
             }
 
-            command = ActionPlaceholder.replacePlaceholders(command, event, baseObject);
+            command = ActionPlaceholder.replacePlaceholders(command, event, rewardsConfig, baseObject);
             List<String> players = command.contains("{player}") ? affectedPlayers : List.of("");
             for (int i = 0; i < executeAmount; i++) {
                 for (String player : players) {

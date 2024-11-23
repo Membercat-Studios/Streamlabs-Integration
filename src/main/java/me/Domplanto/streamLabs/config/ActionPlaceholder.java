@@ -5,6 +5,7 @@ import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -18,8 +19,10 @@ public class ActionPlaceholder {
         this.function = function;
     }
 
-    public static String replacePlaceholders(String originalString, StreamlabsEvent event, JsonObject baseObject) {
-        for (ActionPlaceholder placeholder : event.getPlaceholders()) {
+    public static String replacePlaceholders(String originalString, StreamlabsEvent event, RewardsConfig config, JsonObject baseObject) {
+        Collection<ActionPlaceholder> placeholders = event.getPlaceholders();
+        placeholders.addAll(config.getCustomPlaceholders());
+        for (ActionPlaceholder placeholder : placeholders) {
             originalString = originalString.replace(String.format("{%s}", placeholder.name()),
                     placeholder.function().execute(baseObject, event));
         }

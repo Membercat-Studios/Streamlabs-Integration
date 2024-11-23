@@ -10,9 +10,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RewardsConfig {
     private final Map<String, List<Action>> actionsByEvent;
+    private Map<String, CustomPlaceholder> customPlaceholders;
 
     public RewardsConfig(FileConfiguration config) {
         this.actionsByEvent = new HashMap<>();
@@ -41,10 +43,37 @@ public class RewardsConfig {
             actionsByEvent.computeIfAbsent(action.getEventType(), k -> new ArrayList<>())
                     .add(action);
         }
+
+        ConfigurationSection customPlaceholders = config.getConfigurationSection("custom_placeholders");
+        if (customPlaceholders == null) return;
+
+        for (String placeholderId : customPlaceholders.getKeys(false)) {
+            ConfigurationSection placeholderSection = customPlaceholders.getConfigurationSection(placeholderId);
+            if (placeholderSection == null) continue;
+
+            Set<CustomPlaceholder.StateBasedValue> values = placeholderSection.getKeys(false)
+                    .stream()
+                    .map(placeholderSection::getConfigurationSection)
+                    .filter(Objects::nonNull)
+                    .filter(section -> !section.getName().equals("default_value"))
+                    .map(section -> new CustomPlaceholder.StateBasedValue(
+                            section.getName(),
+                            getString(section, "value"),
+                            getStringList(section, "conditions"),
+                            getStringList(section, "donation_conditions")
+                    )).collect(Collectors.toSet());
+
+            this.customPlaceholders.put(placeholderId, new CustomPlaceholder(placeholderId,
+                    getString(placeholderSection, "default_value"), values));
+        }
     }
 
     public List<Action> getActionsForEvent(String eventType) {
         return actionsByEvent.getOrDefault(eventType, List.of());
+    }
+
+    public Collection<CustomPlaceholder> getCustomPlaceholders() {
+        return customPlaceholders.values();
     }
 
     public static class Action {
