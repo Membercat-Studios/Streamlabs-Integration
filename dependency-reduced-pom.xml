@@ -4,7 +4,7 @@
   <groupId>me.Domplanto</groupId>
   <artifactId>streamlabs</artifactId>
   <name>streamlabs</name>
-  <version>1.1.1</version>
+  <version>1.0.0</version>
   <build>
     <defaultGoal>clean package</defaultGoal>
     <resources>
@@ -38,7 +38,7 @@
         <artifactId>maven-jar-plugin</artifactId>
         <version>2.4</version>
         <configuration>
-          <outputDirectory>${basedir}/Exp/</outputDirectory>
+          <outputDirectory>${basedir}/run/plugins</outputDirectory>
           <finalName>StreamLabs-${project.version}</finalName>
         </configuration>
       </plugin>

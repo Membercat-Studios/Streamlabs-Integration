@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  mcserver:
+    image: itzg/minecraft-server:latest
+    container_name: mcserver
+    ports:
+      - 25565:25565
+    environment:
+      EULA: "TRUE"
+      TYPE: PAPER
+      MEMORY: 4G
+      VERSION: 1.21.1
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    volumes:
+      - ./run:/data
