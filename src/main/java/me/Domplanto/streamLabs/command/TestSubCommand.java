@@ -5,6 +5,7 @@ import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutor;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
+import me.Domplanto.streamLabs.events.youtube.YoutubeSuperchatEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -54,7 +55,11 @@ public class TestSubCommand extends SubCommand {
 
             event.addPlaceholder(data[0], o -> data[1]);
             try {
-                object.addProperty(data[0], Double.parseDouble(data[1]));
+                double value = Double.parseDouble(data[1]);
+                if (event instanceof YoutubeSuperchatEvent)
+                    value = value * 1000000;
+
+                object.addProperty(data[0], value);
             } catch (NumberFormatException e) {
                 object.addProperty(data[0], data[1]);
             }
