@@ -42,9 +42,7 @@ public class Condition {
                         string = string.substring(1);
 
                     final String finalString = string;
-                    Operator op = OPERATORS.stream()
-                            .filter(operator1 -> finalString.contains(operator1.getName()))
-                            .findFirst().orElse(null);
+                    Operator op = findOperator(finalString);
                     if (op == null) return null;
 
                     String[] elements = finalString.split(op.getName());
@@ -55,9 +53,7 @@ public class Condition {
     public static List<Condition> parseDonationConditions(List<String> donationConditionStrings, BasicDonationEvent event, JsonObject baseObject) {
         ArrayList<Condition> conditions = new ArrayList<>();
         for (String string : donationConditionStrings) {
-            Operator op = OPERATORS.stream()
-                    .filter(operator1 -> string.contains(operator1.getName()))
-                    .findFirst().orElse(null);
+            Operator op = findOperator(string);
             if (op == null) continue;
 
             String[] elements = string.split(op.getName());
@@ -81,5 +77,12 @@ public class Condition {
                 .min(Comparator.comparingInt(p -> p.name().length()))
                 .map(ActionPlaceholder::function)
                 .orElse(defaultFunc);
+    }
+
+    private static Operator findOperator(String condition) {
+        return OPERATORS.stream()
+                .sorted(Comparator.comparing(o -> o.getName().length(), (len1, len2) -> len2 - len1))
+                .filter(operator1 -> condition.contains(operator1.getName()))
+                .findFirst().orElse(null);
     }
 }
