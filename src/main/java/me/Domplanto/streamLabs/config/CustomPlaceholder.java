@@ -9,15 +9,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public final class CustomPlaceholder extends ActionPlaceholder {
-    public CustomPlaceholder(@NotNull String id, @Nullable String defaultValue, Set<StateBasedValue> values) {
+    public CustomPlaceholder(@NotNull String id, @Nullable String defaultValue, List<StateBasedValue> values) {
         super(id, PlaceholderFunction.of((object, event) -> getValue(values, defaultValue, event, object)));
     }
 
     @NotNull
-    private static String getValue(Set<StateBasedValue> values, String defaultValue, StreamlabsEvent event, JsonObject object) {
+    private static String getValue(List<StateBasedValue> values, String defaultValue, StreamlabsEvent event, JsonObject object) {
         for (StateBasedValue value : values) {
             if (value.checkConditions(event, object))
                 return value.value() != null ? value.value() : value.id();

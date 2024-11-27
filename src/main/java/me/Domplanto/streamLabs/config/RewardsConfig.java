@@ -10,7 +10,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class RewardsConfig {
     private Map<String, List<Action>> actionsByEvent;
@@ -52,7 +51,7 @@ public class RewardsConfig {
             ConfigurationSection placeholderSection = customPlaceholders.getConfigurationSection(placeholderId);
             if (placeholderSection == null) continue;
 
-            Set<CustomPlaceholder.StateBasedValue> values = placeholderSection.getKeys(false)
+            List<CustomPlaceholder.StateBasedValue> values = placeholderSection.getKeys(false)
                     .stream()
                     .map(placeholderSection::getConfigurationSection)
                     .filter(Objects::nonNull)
@@ -62,7 +61,7 @@ public class RewardsConfig {
                             getString(section, "value"),
                             getStringList(section, "conditions"),
                             getStringList(section, "donation_conditions")
-                    )).collect(Collectors.toSet());
+                    )).toList();
 
             this.customPlaceholders.put(placeholderId, new CustomPlaceholder(placeholderId,
                     getString(placeholderSection, "default_value"), values));
