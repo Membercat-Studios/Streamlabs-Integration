@@ -46,7 +46,11 @@ public class Condition {
                     if (op == null) return null;
 
                     String[] elements = finalString.split(op.getName());
-                    return new Condition(op, invert, parseElement(elements[0], event), parseElement(elements[1], event));
+                    if (elements.length == 0) return null;
+
+                    ActionPlaceholder.PlaceholderFunction e2 = elements.length >= 2 ? parseElement(elements[1], event)
+                            : ActionPlaceholder.PlaceholderFunction.of("");
+                    return new Condition(op, invert, parseElement(elements[0], event), e2);
                 }).toList();
     }
 
