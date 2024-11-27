@@ -53,15 +53,16 @@ public class TestSubCommand extends SubCommand {
             String[] data = arg.split("=");
             if (data[0].length() <= 1) continue;
 
-            event.addPlaceholder(data[0], o -> data[1]);
+            String value2 = data.length > 1 ? data[1] : "";
+            event.addPlaceholder(data[0], o -> value2);
             try {
-                double value = Double.parseDouble(data[1]);
+                double value = Double.parseDouble(value2);
                 if (event instanceof YoutubeSuperchatEvent)
                     value = value * 1000000;
 
                 object.addProperty(data[0], value);
             } catch (NumberFormatException e) {
-                object.addProperty(data[0], data[1]);
+                object.addProperty(data[0], value2);
             }
         }
 
