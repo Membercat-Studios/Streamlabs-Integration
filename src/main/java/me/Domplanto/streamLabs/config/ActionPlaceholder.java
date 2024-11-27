@@ -20,12 +20,28 @@ public class ActionPlaceholder {
     }
 
     public static String replacePlaceholders(String originalString, StreamlabsEvent event, RewardsConfig config, JsonObject baseObject) {
+        return replacePlaceholders(originalString, event, config, baseObject, 0);
+    }
+
+    public static String replacePlaceholders(String originalString, StreamlabsEvent event, RewardsConfig config, JsonObject baseObject, int plExecutionCount) {
         Collection<ActionPlaceholder> placeholders = event.getPlaceholders();
         placeholders.addAll(config.getCustomPlaceholders());
+
+        boolean containsPlaceholders = false;
         for (ActionPlaceholder placeholder : placeholders) {
-            originalString = originalString.replace(String.format("{%s}", placeholder.name()),
+            String ph = String.format("{%s}", placeholder.name());
+            if (!originalString.contains(ph)) continue;
+
+            containsPlaceholders = true;
+            originalString = originalString.replace(ph,
                     placeholder.function().execute(baseObject, event));
         }
+
+        plExecutionCount++;
+        if (plExecutionCount > 1000)
+            return "(Infinite placeholder loop detected)";
+        if (containsPlaceholders)
+            originalString = replacePlaceholders(originalString, event, config, baseObject, plExecutionCount);
 
         return originalString;
     }
