@@ -11,8 +11,8 @@ public class ContainsOperator2 implements Operator {
 
     @Override
     public boolean check(Object element1, Object element2) {
-        if (!(element1 instanceof String s1) || !(element2 instanceof String s2)) return false;
-
+        String s1 = element1.toString();
+        String s2 = element2.toString();
         return s2.toLowerCase().contains(s1.toLowerCase());
     }
 }
