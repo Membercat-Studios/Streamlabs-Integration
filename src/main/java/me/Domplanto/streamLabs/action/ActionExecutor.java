@@ -46,25 +46,25 @@ public class ActionExecutor {
         for (RewardsConfig.Action action : actions) {
             if (!action.isEnabled()) continue;
 
-            if (event.checkConditions(action, baseObject)) {
-                executeAction(action, event, baseObject);
-            }
+            ActionExecutionContext context = new ActionExecutionContext(event, this.rewardsConfig, action, baseObject);
+            if (event.checkConditions(context))
+                executeAction(context);
         }
     }
 
-    private void executeAction(RewardsConfig.Action action, StreamlabsEvent event, JsonObject baseObject) {
+    private void executeAction(ActionExecutionContext ctx) {
         List<String> affectedPlayers = plugin.getConfig().getStringList("affected_players");
-        action.getMessages()
-                .stream().map(message -> message.replacePlaceholders(event, rewardsConfig, baseObject))
+        ctx.action().getMessages()
+                .stream().map(message -> message.replacePlaceholders(ctx))
                 .forEach(message -> affectedPlayers.stream()
                         .map(playerName -> plugin.getServer().getPlayerExact(playerName))
                         .forEach(message::send));
 
-        for (String command : action.getCommands()) {
+        for (String command : ctx.action().getCommands()) {
             int executeAmount = 1;
             if (command.startsWith("[") && command.contains("]")) {
                 String content = command.substring(1, command.indexOf(']'));
-                content = ActionPlaceholder.replacePlaceholders(content, event, rewardsConfig, baseObject);
+                content = ActionPlaceholder.replacePlaceholders(content, ctx);
                 command = command.substring(command.indexOf(']') + 1);
                 try {
                     executeAmount = new DoubleEvaluator().evaluate(content).intValue();
@@ -72,7 +72,7 @@ public class ActionExecutor {
                 }
             }
 
-            command = ActionPlaceholder.replacePlaceholders(command, event, rewardsConfig, baseObject);
+            command = ActionPlaceholder.replacePlaceholders(command, ctx);
             List<String> players = command.contains("{player}") ? affectedPlayers : List.of("");
             for (int i = 0; i < executeAmount; i++) {
                 for (String player : players) {

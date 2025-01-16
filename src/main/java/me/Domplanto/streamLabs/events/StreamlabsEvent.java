@@ -2,10 +2,11 @@ package me.Domplanto.streamLabs.events;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import me.Domplanto.streamLabs.config.ActionPlaceholder;
-import me.Domplanto.streamLabs.config.RewardsConfig;
+import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.condition.Condition;
+import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
+import me.Domplanto.streamLabs.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
@@ -67,11 +68,13 @@ public abstract class StreamlabsEvent {
 
     public boolean checkConditions(RewardsConfig.Action action, JsonObject object) {
         ArrayList<Condition> conditionList = new ArrayList<>(action.getConditions(this));
+    public boolean checkConditions(ActionExecutionContext ctx) {
+        ArrayList<Condition> conditionList = new ArrayList<>(ctx.action().getConditions(this));
         if (this instanceof BasicDonationEvent donationEvent)
-            conditionList.addAll(action.getDonationConditions(donationEvent, object));
+            conditionList.addAll(ctx.action().getDonationConditions(donationEvent, ctx.baseObject()));
 
         for (Condition condition : conditionList)
-            if (!condition.check(this, object)) return false;
+            if (!condition.check(this, ctx.baseObject())) return false;
 
         return true;
     }

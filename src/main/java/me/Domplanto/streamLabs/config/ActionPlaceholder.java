@@ -1,11 +1,11 @@
 package me.Domplanto.streamLabs.config;
 
 import com.google.gson.JsonObject;
+import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -19,29 +19,26 @@ public class ActionPlaceholder {
         this.function = function;
     }
 
-    public static String replacePlaceholders(String originalString, StreamlabsEvent event, RewardsConfig config, JsonObject baseObject) {
-        return replacePlaceholders(originalString, event, config, baseObject, 0);
+    public static String replacePlaceholders(String originalString, ActionExecutionContext ctx) {
+        return replacePlaceholders(originalString, ctx, 0);
     }
 
-    public static String replacePlaceholders(String originalString, StreamlabsEvent event, RewardsConfig config, JsonObject baseObject, int plExecutionCount) {
-        Collection<ActionPlaceholder> placeholders = event.getPlaceholders();
-        placeholders.addAll(config.getCustomPlaceholders());
-
+    public static String replacePlaceholders(String originalString, ActionExecutionContext ctx, int plExecutionCount) {
         boolean containsPlaceholders = false;
-        for (ActionPlaceholder placeholder : placeholders) {
+        for (ActionPlaceholder placeholder : ctx.getPlaceholders()) {
             String ph = String.format("{%s}", placeholder.name());
             if (!originalString.contains(ph)) continue;
 
             containsPlaceholders = true;
             originalString = originalString.replace(ph,
-                    placeholder.function().execute(baseObject, event));
+                    placeholder.function().execute(ctx.baseObject(), ctx.event()));
         }
 
         plExecutionCount++;
         if (plExecutionCount > 1000)
             return "(Infinite placeholder loop detected)";
         if (containsPlaceholders)
-            originalString = replacePlaceholders(originalString, event, config, baseObject, plExecutionCount);
+            originalString = replacePlaceholders(originalString, ctx, plExecutionCount);
 
         return originalString;
     }

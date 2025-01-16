@@ -1,9 +1,7 @@
 package me.Domplanto.streamLabs.message;
 
-import com.google.gson.JsonObject;
+import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
-import me.Domplanto.streamLabs.config.RewardsConfig;
-import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -21,8 +19,8 @@ public class Message {
         this.type.sendMessage(player, this.content);
     }
 
-    public Message replacePlaceholders(StreamlabsEvent event, RewardsConfig config, JsonObject baseObject) {
-        return new Message(this.type, ActionPlaceholder.replacePlaceholders(this.content, event, config, baseObject));
+    public Message replacePlaceholders(ActionExecutionContext ctx) {
+        return new Message(this.type, ActionPlaceholder.replacePlaceholders(this.content, ctx));
     }
 
     public static List<Message> parseAll(List<String> messageStrings) {
