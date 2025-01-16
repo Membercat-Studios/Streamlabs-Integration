@@ -13,6 +13,10 @@ actions:
   example_reward:
     enabled: true # Whether the action is enabled
     action: streamlabs_donation # The action that will trigger it
+    rate_limiter: # Will prevent donations from getting spammed by rate limiting them to 8 seconds for each user
+      type: interval
+      value: '{user}'
+      interval: 10
     conditions: # Conditions that must be met for the action to trigger
       - '{message}.>cats are cool'
       - '{user}=codingcat24'
