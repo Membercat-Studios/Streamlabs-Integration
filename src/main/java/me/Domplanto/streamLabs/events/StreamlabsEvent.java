@@ -66,9 +66,10 @@ public abstract class StreamlabsEvent {
         return placeholders;
     }
 
-    public boolean checkConditions(RewardsConfig.Action action, JsonObject object) {
-        ArrayList<Condition> conditionList = new ArrayList<>(action.getConditions(this));
     public boolean checkConditions(ActionExecutionContext ctx) {
+        RateLimiter limiter = ctx.action().getRateLimiter();
+        if (limiter != null && !limiter.check(ctx)) return false;
+
         ArrayList<Condition> conditionList = new ArrayList<>(ctx.action().getConditions(this));
         if (this instanceof BasicDonationEvent donationEvent)
             conditionList.addAll(ctx.action().getDonationConditions(donationEvent, ctx.baseObject()));

@@ -33,7 +33,7 @@ public class StreamLabs extends JavaPlugin {
         FileConfiguration config = getConfig();
         String socketToken = config.getString("streamlabs.socket_token", "");
         DEBUG_MODE = config.getBoolean("debug_mode", false);
-        this.rewardsConfig = new RewardsConfig(config);
+        this.rewardsConfig = new RewardsConfig(config, getLogger());
         if (socketToken.isEmpty()) {
             getLogger().warning("Streamlabs socket token not configured!");
             getLogger().warning("Please set your token in config.yml");

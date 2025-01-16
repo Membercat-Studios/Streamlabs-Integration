@@ -5,17 +5,22 @@ import me.Domplanto.streamLabs.condition.Condition;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 import me.Domplanto.streamLabs.message.Message;
+import me.Domplanto.streamLabs.ratelimiter.RateLimiter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class RewardsConfig {
     private Map<String, List<Action>> actionsByEvent;
     private Map<String, CustomPlaceholder> customPlaceholders;
+    private final Logger logger;
 
-    public RewardsConfig(FileConfiguration config) {
+    public RewardsConfig(FileConfiguration config, Logger logger) {
+        this.logger = logger;
         this.load(config);
     }
 
@@ -29,17 +34,8 @@ public class RewardsConfig {
             ConfigurationSection actionSection = actions.getConfigurationSection(actionKey);
             if (actionSection == null) continue;
 
-            Action action = new Action(
-                    actionKey,
-                    actionSection.getString("action", "unknown"),
-                    actionSection.getBoolean("enabled", true),
-                    getStringList(actionSection, "messages"),
-                    getStringList(actionSection, "conditions"),
-                    getStringList(actionSection, "donation_conditions"),
-                    getStringList(actionSection, "commands")
-            );
-
             // Store the action by its event type for easy lookup
+            Action action = Action.deserialize(actionSection, this.logger);
             actionsByEvent.computeIfAbsent(action.getEventType(), k -> new ArrayList<>())
                     .add(action);
         }
@@ -74,7 +70,7 @@ public class RewardsConfig {
     }
 
     @Nullable
-    private static String getString(ConfigurationSection section, String key) {
+    public static String getString(ConfigurationSection section, String key) {
         return section.getKeys(true).contains(key) ? section.getString(key) : null;
     }
 
@@ -96,15 +92,31 @@ public class RewardsConfig {
         @Nullable
         private final List<String> donationConditionStrings;
         private final List<String> commands;
+        @Nullable
+        private final RateLimiter rateLimiter;
 
-        public Action(String name, String eventType, boolean enabled, @Nullable List<String> messageStrings, @Nullable List<String> conditionStrings, @Nullable List<String> donationConditionStrings, @Nullable List<String> commands) {
+        public Action(String name, String eventType, boolean enabled, @Nullable RateLimiter rateLimiter, @Nullable List<String> messageStrings, @Nullable List<String> conditionStrings, @Nullable List<String> donationConditionStrings, @Nullable List<String> commands) {
             this.name = name;
             this.eventType = eventType;
             this.enabled = enabled;
+            this.rateLimiter = rateLimiter;
             this.messages = messageStrings != null ? Message.parseAll(messageStrings) : List.of();
             this.conditionStrings = conditionStrings;
             this.donationConditionStrings = donationConditionStrings;
             this.commands = commands != null ? commands : List.of();
+        }
+
+        public static Action deserialize(ConfigurationSection section, Logger logger) {
+            return new Action(
+                    section.getName(),
+                    section.getString("action", "unknown"),
+                    section.getBoolean("enabled", true),
+                    RateLimiter.deserialize(section.getConfigurationSection("rate_limiter"), logger),
+                    getStringList(section, "messages"),
+                    getStringList(section, "conditions"),
+                    getStringList(section, "donation_conditions"),
+                    getStringList(section, "commands")
+            );
         }
 
         public String getName() {
@@ -117,6 +129,11 @@ public class RewardsConfig {
 
         public boolean isEnabled() {
             return enabled;
+        }
+
+        @Nullable
+        public RateLimiter getRateLimiter() {
+            return rateLimiter;
         }
 
         public List<Message> getMessages() {
