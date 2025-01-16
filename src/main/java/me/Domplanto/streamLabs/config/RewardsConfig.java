@@ -78,6 +78,14 @@ public class RewardsConfig {
         return actionsByEvent.getOrDefault(eventType, List.of());
     }
 
+    public Set<RateLimiter> fetchRateLimiters() {
+        return actionsByEvent.values().stream()
+                .flatMap(Collection::stream)
+                .map(Action::getRateLimiter)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
     public Collection<CustomPlaceholder> getCustomPlaceholders() {
         return customPlaceholders.values();
     }
