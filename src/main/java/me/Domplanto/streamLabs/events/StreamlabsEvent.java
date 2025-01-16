@@ -6,7 +6,7 @@ import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.RewardsConfig;
 import me.Domplanto.streamLabs.condition.Condition;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
-import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
+import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,10 +37,10 @@ public abstract class StreamlabsEvent {
     }
 
     @NotNull
-    public JsonObject getBaseObject(JsonObject rootObject) throws UnexpectedJsonFormatException {
+    public JsonObject getBaseObject(JsonObject rootObject) throws SocketSerializerException {
         JsonArray messages = rootObject.get("message").getAsJsonArray();
         if (messages.isEmpty())
-            throw new UnexpectedJsonFormatException();
+            throw new SocketSerializerException();
 
         return messages.get(0).getAsJsonObject();
     }

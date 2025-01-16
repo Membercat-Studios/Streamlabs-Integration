@@ -7,7 +7,7 @@ import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.RewardsConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
-import me.Domplanto.streamLabs.exception.UnexpectedJsonFormatException;
+import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,7 +25,7 @@ public class ActionExecutor {
         this.plugin = plugin;
     }
 
-    public void parseAndExecute(JsonElement data) throws UnexpectedJsonFormatException {
+    public void parseAndExecute(JsonElement data) throws SocketSerializerException {
         JsonObject object = data.getAsJsonArray().get(1).getAsJsonObject();
         String type = object.get("type").getAsString();
         if (StreamLabs.isDebugMode() && (!type.equals("alertPlaying") && !type.equals("streamlabels") && !type.equals("streamlabels.underlying")))
