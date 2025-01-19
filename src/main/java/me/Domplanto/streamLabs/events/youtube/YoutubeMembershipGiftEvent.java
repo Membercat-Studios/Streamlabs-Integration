@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 public class YoutubeMembershipGiftEvent extends BasicDonationEvent {
     public YoutubeMembershipGiftEvent() {
         super("youtube_gift_memberships", "membershipGift", StreamlabsPlatform.YOUTUBE);
-        this.addPlaceholder("tier", object -> String.valueOf(object.get("level").getAsInt()));
+        this.addPlaceholder("tier", object -> String.valueOf(object.get("getLevel").getAsInt()));
         this.addPlaceholder("tier_name", object -> object.get("levelName").getAsString());
     }
 

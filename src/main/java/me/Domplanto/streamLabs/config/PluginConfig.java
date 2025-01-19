@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class RewardsConfig {
+public class PluginConfig {
     private Map<String, List<Action>> actionsByEvent;
     private Map<String, CustomPlaceholder> customPlaceholders;
     private final Logger logger;

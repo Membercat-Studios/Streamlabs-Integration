@@ -78,7 +78,7 @@ public class ActionPlaceholder {
             return new PlaceholderFunction(null, Objects.requireNonNull(valueFunction));
         }
 
-        public String execute(JsonObject object, StreamlabsEvent event) {
+        public String execute(@NotNull JsonObject object, @Nullable StreamlabsEvent event) {
             if (eventDependentFunction == null && valueFunction == null)
                 throw new NullPointerException();
 

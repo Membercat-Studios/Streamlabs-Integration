@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
-import me.Domplanto.streamLabs.config.RewardsConfig;
+import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
 import org.bukkit.Bukkit;
@@ -15,12 +15,12 @@ import java.util.List;
 import java.util.Set;
 
 public class ActionExecutor {
-    private final RewardsConfig rewardsConfig;
+    private final PluginConfig pluginConfig;
     private final Set<? extends StreamlabsEvent> eventSet;
     private final JavaPlugin plugin;
 
-    public ActionExecutor(RewardsConfig rewardsConfig, Set<? extends StreamlabsEvent> eventSet, JavaPlugin plugin) {
-        this.rewardsConfig = rewardsConfig;
+    public ActionExecutor(PluginConfig pluginConfig, Set<? extends StreamlabsEvent> eventSet, JavaPlugin plugin) {
+        this.pluginConfig = pluginConfig;
         this.eventSet = eventSet;
         this.plugin = plugin;
     }
@@ -45,8 +45,10 @@ public class ActionExecutor {
         List<RewardsConfig.Action> actions = rewardsConfig.getActionsForEvent(event.getId());
         for (RewardsConfig.Action action : actions) {
             if (!action.isEnabled()) continue;
+        List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event.getId());
+        for (PluginConfig.Action action : actions) {
 
-            ActionExecutionContext context = new ActionExecutionContext(event, this.rewardsConfig, action, baseObject);
+            ActionExecutionContext context = new ActionExecutionContext(event, this.pluginConfig, action, baseObject);
             if (event.checkConditions(context))
                 executeAction(context);
         }
