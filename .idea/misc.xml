@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="EntryPointsManager">
+    <list size="2">
+      <item index="0" class="java.lang.String" itemvalue="me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer" />
+      <item index="1" class="java.lang.String" itemvalue="me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner" />
+    </list>
+    <writeAnnotations>
+      <writeAnnotation name="me.Domplanto.streamLabs.ratelimiter.YamlProperty" />
+      <writeAnnotation name="me.Domplanto.streamLabs.util.yaml.YamlProperty" />
+    </writeAnnotations>
+  </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="MavenProjectsManager">
     <option name="originalFiles">
@@ -8,5 +18,5 @@
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_23" default="true" project-jdk-name="openjdk-23" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="azul-21" project-jdk-type="JavaSDK" />
 </project>
