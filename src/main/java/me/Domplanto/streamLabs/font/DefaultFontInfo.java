@@ -59,6 +59,10 @@ public enum DefaultFontInfo {
     }
 
     public static String centerMessage(String message) {
+        return centerMessage(message, ' ');
+    }
+
+    public static String centerMessage(String message, char spaceChar) {
         if (message == null || message.isEmpty()) return message;
 
         int messagePxSize = 0;
@@ -77,11 +81,11 @@ public enum DefaultFontInfo {
         }
 
         int spacePixelAmount = CENTER_PX - (messagePxSize / 2);
-        int spaceLength = SPACE.getLength() + 1;
+        int spaceLength = getDefaultFontInfo(spaceChar).getLength() + 1;
         int compensated = 0;
         StringBuilder sb = new StringBuilder();
         while(compensated < spacePixelAmount){
-            sb.append(" ");
+            sb.append(spaceChar);
             compensated += spaceLength;
         }
 

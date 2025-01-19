@@ -29,7 +29,7 @@ public class RateLimitersCommand extends SubCommand {
             return true;
         }
 
-        Collection<RateLimiter> rateLimiters = getPlugin().getRewardsConfig().fetchRateLimiters();
+        Collection<RateLimiter> rateLimiters = getPlugin().pluginConfig().fetchRateLimiters();
         rateLimiters.forEach(RateLimiter::reset);
         sender.sendMessage(ChatColor.AQUA + "Rate limiters have been successfully reset!");
         return true;

@@ -66,7 +66,7 @@ public class TestSubCommand extends SubCommand {
             }
         }
 
-        ActionExecutor executor = new ActionExecutor(getPlugin().getRewardsConfig(), getPlugin().getCachedEventObjects(), getPlugin());
+        ActionExecutor executor = new ActionExecutor(getPlugin().pluginConfig(), getPlugin().getCachedEventObjects(), getPlugin());
         executor.checkAndExecute(event, object);
         return true;
     }

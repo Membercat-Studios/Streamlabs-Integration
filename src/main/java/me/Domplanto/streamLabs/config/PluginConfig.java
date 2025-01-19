@@ -173,6 +173,8 @@ public class PluginConfig {
         public boolean debugMode = false;
         @YamlProperty("show_status_messages")
         public boolean showStatusMessages = true;
+        @YamlProperty("auto_connect")
+        public boolean autoConnect = true;
 
         @YamlPropertyIssueAssigner(propertyName = "socket_token")
         private void assignToSocketToken(ConfigIssueHelper issueHelper, boolean actuallySet) {

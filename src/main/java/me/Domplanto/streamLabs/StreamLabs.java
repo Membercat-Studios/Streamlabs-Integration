@@ -7,6 +7,7 @@ import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
+import me.Domplanto.streamLabs.font.DefaultFontInfo;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -34,14 +35,7 @@ public class StreamLabs extends JavaPlugin {
         try {
             this.pluginConfig.load(getConfig());
         } catch (ConfigLoadedWithIssuesException e) {
-            List<String> issueStr = e.getIssues().stream()
-                    .map(ConfigIssue::getMessage)
-                    .toList();
-            getLogger().warning("Loaded config with %d issues".formatted(issueStr.size()));
-            String output = ChatColor.AQUA + "------------------ Configuration issue list ------------------\n" +
-                    String.join("\n", issueStr) + "\n" + ChatColor.AQUA + "--------------------------------------------------------------";
-
-            Bukkit.getConsoleSender().sendMessage(output);
+            this.printIssues(e.getIssues(), Bukkit.getConsoleSender());
         }
 
         DEBUG_MODE = pluginConfig.getOptions().debugMode;
@@ -49,7 +43,30 @@ public class StreamLabs extends JavaPlugin {
                 .setConnectionOpenListener(this::onConnectionOpen)
                 .setConnectionCloseListener(this::onConnectionClosed)
                 .setInvalidTokenListener(this::onInvalidSocketToken);
-        this.socketClient.connect();
+        // The StreamlabsSocketClient will not connect at all if a connection in onEnable is not attempted,
+        // this is why we need to add it here, this issue should definitely be investigated in the future!
+        new Thread(() -> {
+            try {
+                this.socketClient.connectBlocking();
+            } catch (InterruptedException ignore) {
+            }
+            if (!pluginConfig.getOptions().autoConnect && this.socketClient.isOpen()) {
+                this.socketClient.close();
+                getLogger().info("Not connecting to Streamlabs at startup because auto_connect is disabled in the config!");
+            }
+        }, "Socket startup Thread").start();
+    }
+
+    public void printIssues(List<ConfigIssue> issues, CommandSender sender) {
+        List<String> issueStr = issues.stream()
+                .map(ConfigIssue::getMessage)
+                .toList();
+        getLogger().warning("Loaded config with %d issues".formatted(issueStr.size()));
+        String bottom = "-".repeat(53);
+        String top = DefaultFontInfo.centerMessage(" Configuration Issue List ", '-');
+        top += "-".repeat((bottom.length() + 4) - top.length()) + "\n";
+        String output = ChatColor.AQUA + top + String.join("\n", issueStr) + "\n" + ChatColor.AQUA + bottom;
+        sender.sendMessage(output);
     }
 
     private void onConnectionOpen(ServerHandshake handshake) {
@@ -87,7 +104,7 @@ public class StreamLabs extends JavaPlugin {
         return STREAMLABS_EVENTS;
     }
 
-    public PluginConfig getRewardsConfig() {
+    public PluginConfig pluginConfig() {
         return pluginConfig;
     }
 
