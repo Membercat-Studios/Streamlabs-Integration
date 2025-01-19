@@ -2,6 +2,7 @@ package me.Domplanto.streamLabs.condition;
 
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 
@@ -10,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+@ConfigPathSegment(id = "condition")
 public class Condition {
     private static final Set<? extends Operator> OPERATORS = Operator.findOperatorClasses();
     private final ActionPlaceholder.PlaceholderFunction element1;

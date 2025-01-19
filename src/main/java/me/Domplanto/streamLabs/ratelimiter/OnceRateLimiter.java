@@ -8,8 +8,8 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public class OnceRateLimiter extends RateLimiter {
     private final Set<String> values;
-    public OnceRateLimiter(String value) {
-        super("once", value);
+    public OnceRateLimiter() {
+        super("once");
         this.values = new HashSet<>();
     }
 

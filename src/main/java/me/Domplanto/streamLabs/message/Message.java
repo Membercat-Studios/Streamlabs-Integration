@@ -2,10 +2,12 @@ package me.Domplanto.streamLabs.message;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import org.bukkit.entity.Player;
 
 import java.util.List;
 
+@ConfigPathSegment(id = "message")
 public class Message {
     private final String content;
     private final MessageType type;

@@ -3,14 +3,15 @@ package me.Domplanto.streamLabs;
 import com.google.gson.JsonElement;
 import me.Domplanto.streamLabs.action.ActionExecutor;
 import me.Domplanto.streamLabs.command.SubCommand;
-import me.Domplanto.streamLabs.config.RewardsConfig;
+import me.Domplanto.streamLabs.config.PluginConfig;
+import me.Domplanto.streamLabs.config.issue.ConfigIssue;
+import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.java_websocket.handshake.ServerHandshake;
 import org.jetbrains.annotations.NotNull;
@@ -24,22 +25,27 @@ public class StreamLabs extends JavaPlugin {
     private final Set<? extends SubCommand> SUB_COMMANDS = SubCommand.findSubCommandClasses(this);
     private static boolean DEBUG_MODE = false;
     private StreamlabsSocketClient socketClient;
-    private RewardsConfig rewardsConfig;
+    private PluginConfig pluginConfig;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        this.pluginConfig = new PluginConfig(getLogger());
+        try {
+            this.pluginConfig.load(getConfig());
+        } catch (ConfigLoadedWithIssuesException e) {
+            List<String> issueStr = e.getIssues().stream()
+                    .map(ConfigIssue::getMessage)
+                    .toList();
+            getLogger().warning("Loaded config with %d issues".formatted(issueStr.size()));
+            String output = ChatColor.AQUA + "------------------ Configuration issue list ------------------\n" +
+                    String.join("\n", issueStr) + "\n" + ChatColor.AQUA + "--------------------------------------------------------------";
 
-        FileConfiguration config = getConfig();
-        String socketToken = config.getString("streamlabs.socket_token", "");
-        DEBUG_MODE = config.getBoolean("debug_mode", false);
-        this.rewardsConfig = new RewardsConfig(config, getLogger());
-        if (socketToken.isEmpty()) {
-            getLogger().warning("Streamlabs socket token not configured!");
-            getLogger().warning("Please set your token in config.yml");
+            Bukkit.getConsoleSender().sendMessage(output);
         }
 
-        this.socketClient = new StreamlabsSocketClient(socketToken, getLogger(), this::onStreamlabsEvent)
+        DEBUG_MODE = pluginConfig.getOptions().debugMode;
+        this.socketClient = new StreamlabsSocketClient(pluginConfig.getOptions().socketToken, getLogger(), this::onStreamlabsEvent)
                 .setConnectionOpenListener(this::onConnectionOpen)
                 .setConnectionCloseListener(this::onConnectionClosed)
                 .setInvalidTokenListener(this::onInvalidSocketToken);
@@ -62,7 +68,7 @@ public class StreamLabs extends JavaPlugin {
     }
 
     private void onStreamlabsEvent(JsonElement rawData) {
-        ActionExecutor executor = new ActionExecutor(this.rewardsConfig, STREAMLABS_EVENTS, this);
+        ActionExecutor executor = new ActionExecutor(this.pluginConfig, STREAMLABS_EVENTS, this);
         executor.parseAndExecute(rawData);
     }
 
@@ -81,12 +87,12 @@ public class StreamLabs extends JavaPlugin {
         return STREAMLABS_EVENTS;
     }
 
-    public RewardsConfig getRewardsConfig() {
-        return rewardsConfig;
+    public PluginConfig getRewardsConfig() {
+        return pluginConfig;
     }
 
     private boolean showStatusMessages() {
-        return getConfig().getBoolean("show_status_messages", true);
+        return this.pluginConfig.getOptions().showStatusMessages;
     }
 
     public static boolean isDebugMode() {

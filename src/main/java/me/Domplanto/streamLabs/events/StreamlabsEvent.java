@@ -67,7 +67,7 @@ public abstract class StreamlabsEvent {
     }
 
     public boolean checkConditions(ActionExecutionContext ctx) {
-        RateLimiter limiter = ctx.action().getRateLimiter();
+        RateLimiter limiter = ctx.action().rateLimiter;
         if (limiter != null && !limiter.check(ctx)) return false;
 
         ArrayList<Condition> conditionList = new ArrayList<>(ctx.action().getConditions(this));

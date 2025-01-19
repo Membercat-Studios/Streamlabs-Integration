@@ -14,8 +14,8 @@ public class IntervalRateLimiter extends RateLimiter {
     private boolean resetWhilePending = true;
     private final HashMap<String, Long> timestampedValues;
 
-    public IntervalRateLimiter(String value) {
-        super("interval", value);
+    public IntervalRateLimiter() {
+        super("interval");
         this.timestampedValues = new HashMap<>();
     }
 

@@ -42,11 +42,9 @@ public class ActionExecutor {
     }
 
     public void checkAndExecute(StreamlabsEvent event, JsonObject baseObject) {
-        List<RewardsConfig.Action> actions = rewardsConfig.getActionsForEvent(event.getId());
-        for (RewardsConfig.Action action : actions) {
-            if (!action.isEnabled()) continue;
         List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event.getId());
         for (PluginConfig.Action action : actions) {
+            if (!action.enabled) continue;
 
             ActionExecutionContext context = new ActionExecutionContext(event, this.pluginConfig, action, baseObject);
             if (event.checkConditions(context))
@@ -56,13 +54,13 @@ public class ActionExecutor {
 
     private void executeAction(ActionExecutionContext ctx) {
         List<String> affectedPlayers = plugin.getConfig().getStringList("affected_players");
-        ctx.action().getMessages()
+        ctx.action().messages
                 .stream().map(message -> message.replacePlaceholders(ctx))
                 .forEach(message -> affectedPlayers.stream()
                         .map(playerName -> plugin.getServer().getPlayerExact(playerName))
                         .forEach(message::send));
 
-        for (String command : ctx.action().getCommands()) {
+        for (String command : ctx.action().commands) {
             int executeAmount = 1;
             if (command.startsWith("[") && command.contains("]")) {
                 String content = command.substring(1, command.indexOf(']'));
