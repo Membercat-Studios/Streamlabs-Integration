@@ -1,6 +1,7 @@
 package me.Domplanto.streamLabs.statistics;
 
 import me.Domplanto.streamLabs.condition.Condition;
+import me.Domplanto.streamLabs.condition.ConditionBase;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 
@@ -8,14 +9,14 @@ import java.util.*;
 
 public class EventHistorySelector {
     private final int relativeId;
-    private final Set<Condition> placeholderConditions;
+    private final Set<ConditionBase> placeholderConditions;
 
     private EventHistorySelector(int relativeId) {
         this.relativeId = relativeId;
         this.placeholderConditions = new HashSet<>();
     }
 
-    private void addConditions(Collection<Condition> conditions) {
+    private void addConditions(Collection<ConditionBase> conditions) {
         this.placeholderConditions.addAll(conditions);
     }
 
@@ -24,7 +25,7 @@ public class EventHistorySelector {
     }
 
     public boolean check(EventHistory.LoggedEvent event) {
-        for (Condition condition : this.placeholderConditions)
+        for (ConditionBase condition : this.placeholderConditions)
             if (!condition.check(event.createContext())) return false;
 
         return true;

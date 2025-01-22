@@ -5,10 +5,11 @@ import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
+import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemoryConfiguration;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @ConfigPathSegment(id = "condition")
 public class Condition implements ConditionBase {
@@ -36,49 +37,62 @@ public class Condition implements ConditionBase {
         }
     }
 
-    public static List<Condition> parseConditions(List<String> conditionStrings, ConfigIssueHelper issueHelper) {
-        return Condition.parseAll(conditionStrings, issueHelper, false);
+    public static List<ConditionBase> parseConditions(List<?> rawConditions, ConfigIssueHelper issueHelper) {
+        return Condition.parseAll(rawConditions, issueHelper, false);
     }
 
-    public static List<DonationCondition> parseDonationConditions(List<String> conditionStrings, ConfigIssueHelper issueHelper) {
-        return Condition.parseAll(conditionStrings, issueHelper, true).stream()
+    public static List<DonationCondition> parseDonationConditions(List<String> rawDonationConditions, ConfigIssueHelper issueHelper) {
+        return Condition.parseAll(rawDonationConditions, issueHelper, true).stream()
                 .filter(condition -> condition instanceof DonationCondition)
                 .map(condition -> (DonationCondition) condition)
                 .toList();
     }
 
-    private static List<Condition> parseAll(List<String> conditionStrings, ConfigIssueHelper issueHelper, boolean isDonation) {
-        return conditionStrings.stream()
-                .map(string -> {
-                    issueHelper.push(Condition.class, String.valueOf(conditionStrings.indexOf(string)));
-                    boolean invert = string.startsWith("!");
-                    if (invert)
-                        string = string.substring(1);
-
-                    final String finalString = string;
-                    Operator op = findOperator(finalString);
-                    if (op == null) {
-                        issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "No valid condition operator found, skipping condition");
-                        issueHelper.pop();
-                        return null;
+    private static List<ConditionBase> parseAll(List<?> rawConditions, ConfigIssueHelper issueHelper, boolean isDonation) {
+        return rawConditions.stream()
+                .map(obj -> {
+                    if (obj instanceof String string)
+                        return parseStr(rawConditions.indexOf(string), string, issueHelper, isDonation);
+                    if (obj instanceof HashMap<?, ?> objMap) {
+                        ConfigurationSection newSection = new MemoryConfiguration().createSection("group", objMap);
+                        return YamlPropertyObject.createInstance(ConditionGroup.class, newSection, issueHelper);
                     }
 
-                    String[] elements = finalString.split(op.getName());
-                    if (elements.length < 1) {
-                        issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "Condition contains no elements and will be skipped");
-                        issueHelper.pop();
-                        return null;
-                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
 
-                    ActionPlaceholder.PlaceholderFunction e1 = parseElement(elements[0], issueHelper);
-                    ActionPlaceholder.PlaceholderFunction e2 = elements.length >= 2 ? parseElement(elements[1], issueHelper)
-                            : ActionPlaceholder.PlaceholderFunction.of("");
-                    issueHelper.pop();
-                    if (isDonation)
-                        return new DonationCondition(op, invert, e1, e2);
-                    else
-                        return new Condition(op, invert, e1, e2);
-                }).toList();
+    private static Condition parseStr(int idx, String string, ConfigIssueHelper issueHelper, boolean isDonation) {
+        issueHelper.push(isDonation ? DonationCondition.class : Condition.class, String.valueOf(idx));
+        boolean invert = string.startsWith("!");
+        if (invert)
+            string = string.substring(1);
+
+        final String finalString = string;
+        Operator op = findOperator(finalString);
+        if (op == null) {
+            issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "No valid condition operator found, skipping condition");
+            issueHelper.pop();
+            return null;
+        }
+
+        String[] elements = finalString.split(op.getName());
+        if (elements.length < 1) {
+            issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "Condition contains no elements and will be skipped");
+            issueHelper.pop();
+            return null;
+        }
+
+        ActionPlaceholder.PlaceholderFunction e1 = parseElement(elements[0], issueHelper);
+        ActionPlaceholder.PlaceholderFunction e2 = elements.length >= 2 ? parseElement(elements[1], issueHelper)
+                : ActionPlaceholder.PlaceholderFunction.of("");
+        issueHelper.pop();
+        if (isDonation)
+            return new DonationCondition(op, invert, e1, e2);
+        else
+            return new Condition(op, invert, e1, e2);
     }
 
     private static ActionPlaceholder.PlaceholderFunction parseElement(String elementString, ConfigIssueHelper issueHelper) {

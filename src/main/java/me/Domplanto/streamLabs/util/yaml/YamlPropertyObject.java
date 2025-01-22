@@ -42,22 +42,29 @@ public interface YamlPropertyObject {
                     sectionVal = YamlPropertyObject.createInstance((Class<? extends YamlPropertyObject>) field.getType(), section.getConfigurationSection(id), issueHelper);
                 if (customDeserializer != null && (actuallySet || !customDeserializer.getAnnotation(YamlPropertyCustomDeserializer.class).onlyUseWhenActuallySet())) {
                     customDeserializer.setAccessible(true);
-                    sectionVal = customDeserializer.invoke(this, sectionVal, issueHelper);
+                    try {
+                        sectionVal = customDeserializer.invoke(this, sectionVal, issueHelper);
+                    } catch (Exception e) {
+                        issueHelper.appendAtPathAndLog(ConfigIssue.Level.WARNING, "Failed to deserialize property, detailed information can be found in the logs!", e);
+                    }
                 }
 
                 Object value = actuallySet ? sectionVal : field.get(this);
                 try {
                     field.set(this, value);
                 } catch (IllegalArgumentException e) {
-                    issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "Unexpected property type found, expected %s but got %s (now using default \"%s\")"
-                            .formatted(field.getType().getSimpleName(), value != null ? value.getClass().getSimpleName() : "null", field.get(this)));
+                    appendWrongType(issueHelper, field, value);
                     issueHelper.pop();
                     return;
                 }
 
                 for (Method assigner : issueAssigners) {
                     assigner.setAccessible(true);
-                    assigner.invoke(this, issueHelper, actuallySet);
+                    try {
+                        assigner.invoke(this, issueHelper, actuallySet);
+                    } catch (Exception e) {
+                        issueHelper.appendAtPathAndLog(ConfigIssue.Level.WARNING, "Failed to assign issues to property, detailed information can be found in the logs!", e);
+                    }
                 }
                 issueHelper.pop();
             }
@@ -65,6 +72,11 @@ public interface YamlPropertyObject {
             issueHelper.appendAtPathAndLog(ConfigIssue.Level.ERROR, "Error in an internal configuration system, please report the exception found in the logs to the developers!", e);
             issueHelper.popIfProperty();
         }
+    }
+
+    private void appendWrongType(ConfigIssueHelper issueHelper, Field field, Object value) throws ReflectiveOperationException {
+        issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "Unexpected property type found, expected %s but got %s (now using default \"%s\")"
+                .formatted(field.getType().getSimpleName(), value != null ? value.getClass().getSimpleName() : "null", field.get(this)));
     }
 
     private Set<Field> getYamlPropertyFields() {
@@ -93,7 +105,8 @@ public interface YamlPropertyObject {
     }
 
     @Nullable
-    static <T extends YamlPropertyObject> T createInstance(Class<T> type, ConfigurationSection section, ConfigIssueHelper issueHelper) {
+    static <T extends YamlPropertyObject> T createInstance(Class<T> type,
+                                                           ConfigurationSection section, ConfigIssueHelper issueHelper) {
         try {
             Method staticDeserializer = YamlPropertyObject.getOtherCustomDeserializer(type);
             T instance;
