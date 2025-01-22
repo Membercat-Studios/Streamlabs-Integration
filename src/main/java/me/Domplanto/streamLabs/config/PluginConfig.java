@@ -138,7 +138,7 @@ public class PluginConfig {
 
     public void setAffectedPlayers(StreamLabs plugin, Set<String> affectedPlayers) {
         this.affectedPlayers = affectedPlayers;
-        plugin.getConfig().set("affected_players", affectedPlayers);
+        plugin.getConfig().set("affected_players", new ArrayList<>(affectedPlayers));
         plugin.saveConfig();
         plugin.reloadConfig();
     }

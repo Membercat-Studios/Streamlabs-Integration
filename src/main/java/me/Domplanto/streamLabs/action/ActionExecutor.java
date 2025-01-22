@@ -55,9 +55,9 @@ public class ActionExecutor {
             ActionExecutionContext context = new ActionExecutionContext(event, this.pluginConfig, action, baseObject);
             if (event.checkConditions(context))
                 executeAction(context);
-
-            this.updateGoal(context);
         }
+
+        this.updateGoal(new ActionExecutionContext(event, this.pluginConfig, null, baseObject));
     }
 
     private void executeAction(ActionExecutionContext ctx) {

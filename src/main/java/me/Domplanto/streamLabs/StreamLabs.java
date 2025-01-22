@@ -26,6 +26,7 @@ public class StreamLabs extends JavaPlugin {
     private static final Set<? extends StreamlabsEvent> STREAMLABS_EVENTS = StreamlabsEvent.findEventClasses();
     private final Set<? extends SubCommand> SUB_COMMANDS = SubCommand.findSubCommandClasses(this);
     private static boolean DEBUG_MODE = false;
+    private static boolean PAPI_INSTALLED = false;
     private StreamlabsSocketClient socketClient;
     private PluginConfig pluginConfig;
     private ActionExecutor executor;
@@ -62,7 +63,8 @@ public class StreamLabs extends JavaPlugin {
     }
 
     private void setupPlaceholderExpansions() {
-        if (!Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) return;
+        PAPI_INSTALLED = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
+        if (!isPapiInstalled()) return;
 
         StreamlabsExpansion expansion = new StreamlabsExpansion(this);
         expansion.register();
@@ -129,6 +131,10 @@ public class StreamLabs extends JavaPlugin {
 
     public static boolean isDebugMode() {
         return DEBUG_MODE;
+    }
+
+    public static boolean isPapiInstalled() {
+        return PAPI_INSTALLED;
     }
 
     @Override
