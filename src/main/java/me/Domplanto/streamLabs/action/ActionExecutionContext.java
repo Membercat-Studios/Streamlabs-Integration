@@ -7,16 +7,18 @@ import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 public record ActionExecutionContext(
         StreamlabsEvent event,
         PluginConfig config,
-        PluginConfig.Action action,
+        PluginConfig.AbstractAction action,
         JsonObject baseObject
 ) {
     public Collection<ActionPlaceholder> getPlaceholders() {
-        Collection<ActionPlaceholder> placeholders = event().getPlaceholders();
-        placeholders.addAll(config().getCustomPlaceholders());
+        Collection<ActionPlaceholder> placeholders = new HashSet<>(config().getCustomPlaceholders());
+        if (event() != null)
+            placeholders.addAll(event().getPlaceholders());
         return placeholders;
     }
 
