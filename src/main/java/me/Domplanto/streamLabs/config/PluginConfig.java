@@ -1,11 +1,13 @@
 package me.Domplanto.streamLabs.config;
 
+import me.Domplanto.streamLabs.StreamLabs;
+import me.Domplanto.streamLabs.action.command.ActionCommand;
+import me.Domplanto.streamLabs.action.message.Message;
+import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
-import me.Domplanto.streamLabs.action.message.Message;
-import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
@@ -17,14 +19,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 public class PluginConfig {
     private Map<String, List<Action>> actionsByEvent;
+    private Set<String> affectedPlayers;
     private Map<String, CustomPlaceholder> customPlaceholders;
+    private Map<String, DonationGoal> goals;
     private PluginOptions options;
     private final ConfigIssueHelper issueHelper;
 
@@ -35,57 +41,51 @@ public class PluginConfig {
     public void load(FileConfiguration config) throws ConfigLoadedWithIssuesException {
         this.issueHelper.reset();
         this.actionsByEvent = new HashMap<>();
+        this.affectedPlayers = new HashSet<>();
         this.customPlaceholders = new HashMap<>();
+        this.goals = new HashMap<>();
         if (getSectionKeys(config, false).contains("__suppress"))
             issueHelper.suppressGlobally(config.getStringList("__suppress"));
 
         issueHelper.newSection("streamlabs");
         this.options = YamlPropertyObject.createInstance(PluginOptions.class, config.getConfigurationSection("streamlabs"), issueHelper);
 
-        issueHelper.newSection("actions");
-        ConfigurationSection actions = config.getConfigurationSection("actions");
-        for (String actionKey : getSectionKeys(actions)) {
-            assert actions != null;
-            issueHelper.push(Action.class, actionKey);
-            try {
-                ConfigurationSection actionSection = actions.getConfigurationSection(actionKey);
-                if (actionSection == null) {
-                    issueHelper.pop();
-                    continue;
-                }
+        issueHelper.newSection("affected_players");
+        if (getSectionKeys(config, false).contains("affected_players"))
+            this.affectedPlayers = new HashSet<>(config.getStringList("affected_players"));
 
-                // Store the action by its event type for easy lookup
-                Action action = YamlPropertyObject.createInstance(Action.class, actionSection, issueHelper);
-                actionsByEvent.computeIfAbsent(Objects.requireNonNull(action).eventType, k -> new ArrayList<>())
-                        .add(action);
-            } catch (Exception e) {
-                issueHelper.appendAtPathAndLog(EI0, e);
-            }
-            issueHelper.pop();
-        }
-
-        issueHelper.newSection("custom_placeholders");
-        ConfigurationSection customPlaceholders = config.getConfigurationSection("custom_placeholders");
-        for (String placeholderId : getSectionKeys(customPlaceholders)) {
-            assert customPlaceholders != null;
-            issueHelper.push(CustomPlaceholder.class, placeholderId);
-            try {
-                ConfigurationSection placeholderSection = customPlaceholders.getConfigurationSection(placeholderId);
-                if (placeholderSection == null) {
-                    issueHelper.pop();
-                    continue;
-                }
-
-                CustomPlaceholder placeholder = YamlPropertyObject.createInstance(CustomPlaceholder.class, placeholderSection, issueHelper);
-                this.customPlaceholders.put(placeholderId, placeholder);
-            } catch (Exception e) {
-                issueHelper.appendAtPathAndLog(EI0, e);
-            }
-            issueHelper.pop();
-        }
+        // Store the action by its event type for easy lookup
+        this.loadSection(config, "actions", Action.class, (id, action) ->
+                actionsByEvent.computeIfAbsent(Objects.requireNonNull(action).eventType, k -> new ArrayList<>()).add(action));
+        this.loadSection(config, "custom_placeholders", CustomPlaceholder.class, (id, placeholder) ->
+                this.customPlaceholders.put(id, placeholder));
+        this.loadSection(config, "goal_types", DonationGoal.class, (id, goal) ->
+                this.goals.put(id, goal));
 
         this.issueHelper.pop();
         this.issueHelper.complete();
+    }
+
+    private <T extends YamlPropertyObject> void loadSection(FileConfiguration config, String sectionId, Class<T> cls, BiConsumer<String, T> action) {
+        issueHelper.newSection(sectionId);
+        ConfigurationSection section = config.getConfigurationSection(sectionId);
+        for (String key : getSectionKeys(section)) {
+            assert section != null;
+            issueHelper.push(cls, key);
+            try {
+                ConfigurationSection subSection = section.getConfigurationSection(key);
+                if (subSection == null) {
+                    issueHelper.pop();
+                    continue;
+                }
+
+                T element = YamlPropertyObject.createInstance(cls, subSection, issueHelper);
+                action.accept(key, element);
+            } catch (Exception e) {
+                issueHelper.appendAtPathAndLog(EI0, e);
+            }
+            issueHelper.pop();
+        }
     }
 
     @Nullable
@@ -109,11 +109,19 @@ public class PluginConfig {
     }
 
     public Set<RateLimiter> fetchRateLimiters() {
-        return actionsByEvent.values().stream()
-                .flatMap(Collection::stream)
+        return Stream.concat(actionsByEvent.values().stream().flatMap(Collection::stream), goals.values().stream())
                 .map(action -> action.rateLimiter)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+    }
+
+    @Nullable
+    public DonationGoal getGoal(String id) {
+        return this.goals.get(id);
+    }
+
+    public Collection<DonationGoal> getGoals() {
+        return this.goals.values();
     }
 
     public Collection<CustomPlaceholder> getCustomPlaceholders() {
@@ -124,19 +132,25 @@ public class PluginConfig {
         return options;
     }
 
-    @ConfigPathSegment(id = "action")
-    public static class Action extends ConditionGroup {
+    public Set<String> getAffectedPlayers() {
+        return affectedPlayers;
+    }
+
+    public void setAffectedPlayers(StreamLabs plugin, Set<String> affectedPlayers) {
+        this.affectedPlayers = affectedPlayers;
+        plugin.getConfig().set("affected_players", affectedPlayers);
+        plugin.saveConfig();
+        plugin.reloadConfig();
+    }
+
+    public static abstract class AbstractAction extends ConditionGroup {
         @YamlProperty("!SECTION")
         @NotNull
         public String id;
-        @YamlProperty("action")
-        public String eventType = "unknown";
-        @YamlProperty("enabled")
-        public boolean enabled;
         @YamlProperty("messages")
         public List<Message> messages = List.of();
         @YamlProperty("commands")
-        public List<String> commands = List.of();
+        public List<ActionCommand> commands = List.of();
         @Nullable
         @YamlProperty("rate_limiter")
         public RateLimiter rateLimiter;
@@ -145,6 +159,19 @@ public class PluginConfig {
         private List<Message> deserializeMessages(@NotNull List<String> messageStrings, ConfigIssueHelper issueHelper) {
             return Message.parseAll(messageStrings, issueHelper);
         }
+
+        @YamlPropertyCustomDeserializer(propertyName = "commands")
+        private List<ActionCommand> deserializeCommands(@NotNull List<String> rawCommands, ConfigIssueHelper issueHelper) {
+            return ActionCommand.parseAll(rawCommands, issueHelper);
+        }
+    }
+
+    @ConfigPathSegment(id = "action")
+    public static class Action extends AbstractAction {
+        @YamlProperty("action")
+        public String eventType = "unknown";
+        @YamlProperty("enabled")
+        public boolean enabled;
     }
 
     public static class PluginOptions implements YamlPropertyObject {
