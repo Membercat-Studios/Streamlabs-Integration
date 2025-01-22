@@ -11,6 +11,8 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -47,6 +49,10 @@ public class TestSubCommand extends SubCommand {
         event.addPlaceholder("user", o -> user);
         for (int i = 1; i < args.length; i++) {
             String arg = args[i];
+            if (arg.equals("bypassratelimiters")) {
+                event.bypassRateLimiters();
+                continue;
+            }
             if (!arg.contains("=")) continue;
 
             String[] data = arg.split("=");
@@ -81,11 +87,15 @@ public class TestSubCommand extends SubCommand {
                 .stream().filter(e -> e.getId().equals(args[1]))
                 .findFirst().orElse(null);
         if (event == null) return List.of();
-        if (!args[args.length - 1].contains("="))
-            return event.getPlaceholders()
+        if (!args[args.length - 1].contains("=")) {
+            ArrayList<String> placeholders = new ArrayList<>(event.getPlaceholders()
                     .stream().map(ActionPlaceholder::name)
                     .filter(name -> !name.startsWith("_") || args[args.length - 1].startsWith("_"))
-                    .toList();
+                    .toList());
+            if (!Arrays.stream(args).toList().contains("bypassratelimiters"))
+                placeholders.add("bypassratelimiters");
+            return placeholders;
+        }
 
         return null;
     }

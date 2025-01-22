@@ -23,6 +23,7 @@ public abstract class StreamlabsEvent {
     private final String id;
     private final StreamlabsPlatform platform;
     private final Set<ActionPlaceholder> placeholders;
+    private boolean bypassRateLimiters = false;
 
     public StreamlabsEvent(@NotNull String id, @NotNull String apiName, StreamlabsPlatform platform) {
         this.id = id;
@@ -82,9 +83,13 @@ public abstract class StreamlabsEvent {
         return placeholders;
     }
 
+    public void bypassRateLimiters() {
+        this.bypassRateLimiters = true;
+    }
+
     public boolean checkConditions(ActionExecutionContext ctx) {
         RateLimiter limiter = ctx.action().rateLimiter;
-        if (limiter != null && !limiter.check(ctx)) return false;
+        if (!this.bypassRateLimiters && (limiter != null && !limiter.check(ctx))) return false;
 
         ArrayList<Condition> conditionList = new ArrayList<>(ctx.action().conditions);
         if (this instanceof BasicDonationEvent)

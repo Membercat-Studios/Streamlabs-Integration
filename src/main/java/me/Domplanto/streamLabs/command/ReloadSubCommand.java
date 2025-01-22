@@ -31,6 +31,7 @@ public class ReloadSubCommand extends SubCommand {
         }
         getPlugin().getSocketClient().updateToken(getPlugin().pluginConfig().getOptions().socketToken);
         sender.sendMessage(ChatColor.GREEN + "Configuration reloaded!");
+        if (strings.length > 1 && strings[1].equals("noreconnect")) return true;
         if (getPlugin().getSocketClient().isOpen() || (getPlugin().pluginConfig().getOptions().autoConnect && !getPlugin().getSocketClient().isOpen()))
             getPlugin().getSocketClient().reconnectAsync();
         return true;
@@ -38,6 +39,6 @@ public class ReloadSubCommand extends SubCommand {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-        return List.of();
+        return strings.length > 1 ? List.of("noreconnect") : List.of();
     }
 }

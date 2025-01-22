@@ -2,8 +2,10 @@ package me.Domplanto.streamLabs.condition;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 
+@ConfigPathSegment(id = "donation_condition")
 public class DonationCondition extends Condition {
     protected DonationCondition(Operator operator, boolean invert, ActionPlaceholder.PlaceholderFunction element1, ActionPlaceholder.PlaceholderFunction element2) {
         super(operator, invert, element1, element2);
