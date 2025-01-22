@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.ratelimiter;
+package me.Domplanto.streamLabs.action.ratelimiter;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;

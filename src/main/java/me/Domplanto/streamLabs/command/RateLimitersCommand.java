@@ -1,7 +1,7 @@
 package me.Domplanto.streamLabs.command;
 
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.ratelimiter.RateLimiter;
+import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

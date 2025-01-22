@@ -6,6 +6,8 @@ import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.message.Message;
 import me.Domplanto.streamLabs.ratelimiter.RateLimiter;
+import me.Domplanto.streamLabs.action.message.Message;
+import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner;

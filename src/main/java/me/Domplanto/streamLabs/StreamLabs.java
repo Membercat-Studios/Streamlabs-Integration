@@ -7,7 +7,7 @@ import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
-import me.Domplanto.streamLabs.font.DefaultFontInfo;
+import me.Domplanto.streamLabs.util.font.DefaultFontInfo;
 import me.Domplanto.streamLabs.papi.StreamlabsExpansion;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
 import org.bukkit.Bukkit;

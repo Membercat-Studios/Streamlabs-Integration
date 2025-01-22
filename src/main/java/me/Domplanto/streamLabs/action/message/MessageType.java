@@ -1,6 +1,6 @@
-package me.Domplanto.streamLabs.message;
+package me.Domplanto.streamLabs.action.message;
 
-import me.Domplanto.streamLabs.font.DefaultFontInfo;
+import me.Domplanto.streamLabs.util.font.DefaultFontInfo;
 import org.bukkit.entity.Player;
 
 import java.util.function.BiConsumer;

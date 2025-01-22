@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.font;
+package me.Domplanto.streamLabs.util.font;
 
 import java.util.Arrays;
 

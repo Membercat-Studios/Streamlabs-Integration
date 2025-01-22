@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.message;
+package me.Domplanto.streamLabs.action.message;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
