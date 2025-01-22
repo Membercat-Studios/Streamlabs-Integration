@@ -2,12 +2,11 @@
 
 streamlabs:
   socket_token: "" # Put your Streamlabs socket token here
+  show_status_messages: true # Whether the plugin will send status messages in chat (for example "Successfully connected to Streamlabs")
 
 affected_players: # Players that will be affected by the actions {player}
   - domplanto
   - codingcat
-
-show_status_messages: true # Whether the plugin will send status messages in chat (for example "Successfully connected to Streamlabs")
 
 actions:
   example_reward:
@@ -16,10 +15,14 @@ actions:
     rate_limiter: # Will prevent donations from getting spammed by rate limiting them to 8 seconds for each user
       type: interval
       value: '{user}'
-      interval: 10
+      interval: 8
+    mode: AND # Mode of the conditions below, can either be "AND" or "OR", will default to AND when left out
     conditions: # Conditions that must be met for the action to trigger
-      - '{message}.>cats are cool'
       - '{user}=codingcat24'
+      - mode: OR # Condition groups can be nested for more complex logic
+        conditions:
+          - '{message}.>cats are cool'
+          - '{message}.>subscribe'
     donation_conditions: # All conditions with the currency of the received donation will be checked (this will not be checked if the event is not a donation)
       - "EUR>10"
       - "EUR<50"
@@ -32,6 +35,24 @@ actions:
       - '[title]§cNew Donation!'
       - '[subtitle]§a{user} §9donated {amount_formatted}!'
     commands: # Commands that will be executed when the action triggers. for ' do ''.
-      - 'give {player} diamond {amount}'
+      - 'give {player} diamond {diamond_amount}' # {diamond_amount} is a custom placeholder defined below, it changes dependent on the amount of money donated
       - 'effect give {player} regeneration {amount} 1'
       - '[{amount}/10]execute at {player} run summon zombie ~ ~ ~ {CustomName:''[{"text":"{user}"}]''}' # [{amount}/10] will be replaced with the amount divided by 10
+
+custom_placeholders: # Custom placeholders allow you to define your own placeholders based on conditions, which is useful to add structure to your config and to avoid having to repeat certain conditions
+  diamond_amount:
+    default_value: 10 # Default value of the placeholder, used if none of the conditions are true
+    diamond_20:
+      value: "20" # The value of the placeholder used when the conditions below are true. Can be left out to use the name of this state instead.
+      donation_conditions:
+        - "EUR>15"
+        - "EUR<30"
+    diamond_40:
+      value: "40"
+      donation_conditions:
+        - "EUR>31"
+        - "EUR<50"
+    diamond_64:
+      value: "64"
+      donation_conditions:
+        - "EUR>51"
