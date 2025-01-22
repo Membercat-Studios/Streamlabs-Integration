@@ -1,6 +1,5 @@
 package me.Domplanto.streamLabs.util.yaml;
 
-import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
@@ -14,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static me.Domplanto.streamLabs.config.PluginConfig.getSectionKeys;
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 public interface YamlPropertyObject {
     @Nullable
@@ -45,7 +45,7 @@ public interface YamlPropertyObject {
                     try {
                         sectionVal = customDeserializer.invoke(this, sectionVal, issueHelper);
                     } catch (Exception e) {
-                        issueHelper.appendAtPathAndLog(ConfigIssue.Level.WARNING, "Failed to deserialize property, detailed information can be found in the logs!", e);
+                        issueHelper.appendAtPathAndLog(WI0, e);
                     }
                 }
 
@@ -53,7 +53,7 @@ public interface YamlPropertyObject {
                 try {
                     field.set(this, value);
                 } catch (IllegalArgumentException e) {
-                    appendWrongType(issueHelper, field, value);
+                    issueHelper.appendAtPath(WI2(field, value, this));
                     issueHelper.pop();
                     return;
                 }
@@ -63,20 +63,15 @@ public interface YamlPropertyObject {
                     try {
                         assigner.invoke(this, issueHelper, actuallySet);
                     } catch (Exception e) {
-                        issueHelper.appendAtPathAndLog(ConfigIssue.Level.WARNING, "Failed to assign issues to property, detailed information can be found in the logs!", e);
+                        issueHelper.appendAtPathAndLog(WI1, e);
                     }
                 }
                 issueHelper.pop();
             }
         } catch (ReflectiveOperationException e) {
-            issueHelper.appendAtPathAndLog(ConfigIssue.Level.ERROR, "Error in an internal configuration system, please report the exception found in the logs to the developers!", e);
+            issueHelper.appendAtPathAndLog(EI1, e);
             issueHelper.popIfProperty();
         }
-    }
-
-    private void appendWrongType(ConfigIssueHelper issueHelper, Field field, Object value) throws ReflectiveOperationException {
-        issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "Unexpected property type found, expected %s but got %s (now using default \"%s\")"
-                .formatted(field.getType().getSimpleName(), value != null ? value.getClass().getSimpleName() : "null", field.get(this)));
     }
 
     private Set<Field> getYamlPropertyFields() {

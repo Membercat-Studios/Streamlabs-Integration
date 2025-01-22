@@ -1,7 +1,6 @@
 package me.Domplanto.streamLabs.config;
 
 import me.Domplanto.streamLabs.condition.ConditionGroup;
-import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
@@ -19,6 +18,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 public class PluginConfig {
     private Map<String, List<Action>> actionsByEvent;
@@ -55,7 +56,7 @@ public class PluginConfig {
                 actionsByEvent.computeIfAbsent(Objects.requireNonNull(action).eventType, k -> new ArrayList<>())
                         .add(action);
             } catch (Exception e) {
-                issueHelper.appendAtPathAndLog(ConfigIssue.Level.ERROR, "Internal error during deserialization", e);
+                issueHelper.appendAtPathAndLog(EI0, e);
             }
             issueHelper.pop();
         }
@@ -75,7 +76,7 @@ public class PluginConfig {
                 CustomPlaceholder placeholder = YamlPropertyObject.createInstance(CustomPlaceholder.class, placeholderSection, issueHelper);
                 this.customPlaceholders.put(placeholderId, placeholder);
             } catch (Exception e) {
-                issueHelper.appendAtPathAndLog(ConfigIssue.Level.ERROR, "Internal error during deserialization", e);
+                issueHelper.appendAtPathAndLog(EI0, e);
             }
             issueHelper.pop();
         }
@@ -156,13 +157,13 @@ public class PluginConfig {
         @YamlPropertyIssueAssigner(propertyName = "socket_token")
         private void assignToSocketToken(ConfigIssueHelper issueHelper, boolean actuallySet) {
             if (!actuallySet || this.socketToken.isBlank())
-                issueHelper.appendAtPath(ConfigIssue.Level.ERROR, "Your socket token has not been configured yet, make sure to follow our guide on setting up this plugin!");
+                issueHelper.appendAtPath(ES0);
         }
 
         @YamlPropertyIssueAssigner(propertyName = "debug_mode")
         private void assignToDebugMode(ConfigIssueHelper issueHelper, boolean actuallySet) {
             if (this.debugMode)
-                issueHelper.appendAtPath(ConfigIssue.Level.HINT, "Debug mode should ONLY be used for development or to help with reporting issues, it will spam your console with Streamlabs API data!");
+                issueHelper.appendAtPath(HI0);
         }
     }
 }

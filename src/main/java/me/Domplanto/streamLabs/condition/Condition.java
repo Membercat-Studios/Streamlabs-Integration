@@ -2,7 +2,6 @@ package me.Domplanto.streamLabs.condition;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
-import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
@@ -10,6 +9,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.*;
+
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ConfigPathSegment(id = "condition")
 public class Condition implements ConditionBase {
@@ -73,14 +74,14 @@ public class Condition implements ConditionBase {
         final String finalString = string;
         Operator op = findOperator(finalString);
         if (op == null) {
-            issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "No valid condition operator found, skipping condition");
+            issueHelper.appendAtPath(WC1);
             issueHelper.pop();
             return null;
         }
 
         String[] elements = finalString.split(op.getName());
         if (elements.length < 1) {
-            issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "Condition contains no elements and will be skipped");
+            issueHelper.appendAtPath(WC2);
             issueHelper.pop();
             return null;
         }
@@ -97,7 +98,7 @@ public class Condition implements ConditionBase {
 
     private static ActionPlaceholder.PlaceholderFunction parseElement(String elementString, ConfigIssueHelper issueHelper) {
         if (elementString.contains("{") && !elementString.contains("}"))
-            issueHelper.appendAtPath(ConfigIssue.Level.HINT, "Condition element contains a non-terminated placeholder");
+            issueHelper.appendAtPath(HC0);
 
         return ActionPlaceholder.PlaceholderFunction.of((object, ctx) -> ActionPlaceholder.replacePlaceholders(elementString, ctx));
     }

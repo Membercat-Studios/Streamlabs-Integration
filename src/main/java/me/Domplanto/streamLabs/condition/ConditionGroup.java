@@ -1,7 +1,6 @@
 package me.Domplanto.streamLabs.condition;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
@@ -12,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+
+import static me.Domplanto.streamLabs.config.issue.Issues.WC0;
 
 @ConfigPathSegment(id = "condition_group")
 public class ConditionGroup implements ConditionBase, YamlPropertyObject {
@@ -37,7 +38,7 @@ public class ConditionGroup implements ConditionBase, YamlPropertyObject {
         try {
             return Mode.valueOf(modeString.toUpperCase());
         } catch (IllegalArgumentException e) {
-            issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "No condition group mode \"%s\" could be found, defaulting to %s".formatted(modeString, this.groupMode));
+            issueHelper.appendAtPath(WC0.apply(modeString, this.groupMode));
             return this.groupMode;
         }
     }

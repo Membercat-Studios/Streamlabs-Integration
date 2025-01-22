@@ -60,12 +60,12 @@ public class ConfigIssueHelper {
             this.pathStack.pop();
     }
 
-    public void appendAtPath(ConfigIssue.Level level, String description) {
-        this.issues.add(new PathSpecificConfigIssue(level, this.pathStack.clone(), description));
+    public void appendAtPath(ConfigIssue issue) {
+        this.issues.add(new PathSpecificConfigIssue(issue, this.pathStack.clone()));
     }
 
-    public void appendAtPathAndLog(ConfigIssue.Level level, String description, Throwable throwable) {
-        this.issues.add(new PathSpecificConfigIssue(level, this.pathStack.clone(), description));
-        this.logger.log(level.getLogLevel(), "Detailed exception for config issue \"%s\" at %s:".formatted(description, pathStack.toFormattedString()), throwable);
+    public void appendAtPathAndLog(ConfigIssue issue, Throwable throwable) {
+        this.issues.add(new PathSpecificConfigIssue(issue, this.pathStack.clone()));
+        this.logger.log(issue.getLevel().getLogLevel(), "Detailed exception for config issue \"%s\" at %s:".formatted(issue.getDescription(), pathStack.toFormattedString()), throwable);
     }
 }

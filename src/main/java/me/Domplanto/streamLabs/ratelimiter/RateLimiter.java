@@ -3,7 +3,6 @@ package me.Domplanto.streamLabs.ratelimiter;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.PluginConfig;
-import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.util.ReflectUtil;
@@ -16,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
+
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ConfigPathSegment(id = "rate_limiter")
 public abstract class RateLimiter implements YamlPropertyObject {
@@ -54,9 +55,9 @@ public abstract class RateLimiter implements YamlPropertyObject {
                     .filter(limiter -> limiter.getId().equals(type))
                     .findAny().orElse(null);
             if (instance == null)
-                issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "No rate limiter of type \"%s\" could be found, possible typo?".formatted(type));
+                issueHelper.appendAtPath(WR0.apply(type));
         } catch (Exception e) {
-            issueHelper.appendAtPathAndLog(ConfigIssue.Level.ERROR, "Internal error during deserialization", e);
+            issueHelper.appendAtPathAndLog(EI0, e);
         }
 
         issueHelper.pop();
@@ -66,7 +67,7 @@ public abstract class RateLimiter implements YamlPropertyObject {
     @YamlPropertyIssueAssigner(propertyName = "value")
     public void assignToValue(ConfigIssueHelper issueHelper, boolean actuallySet) {
         if (this.value.isBlank() && !actuallySet)
-            issueHelper.appendAtPath(ConfigIssue.Level.HINT, "The value of the rate limiter was implicitly set to empty, since it is not directly specified in the config. Make sure to explicitly set value to empty in the config to dismiss this hint and avoid accidentally configuring your rate limiter wrong!");
+            issueHelper.appendAtPath(HR0);
     }
 
     private static Set<? extends RateLimiter> findRateLimiterClasses() {
