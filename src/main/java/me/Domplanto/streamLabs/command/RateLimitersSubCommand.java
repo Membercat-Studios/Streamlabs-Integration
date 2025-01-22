@@ -12,8 +12,8 @@ import java.util.Collection;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public class RateLimitersCommand extends SubCommand {
-    public RateLimitersCommand(StreamLabs pluginInstance) {
+public class RateLimitersSubCommand extends SubCommand {
+    public RateLimitersSubCommand(StreamLabs pluginInstance) {
         super(pluginInstance);
     }
 
