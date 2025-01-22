@@ -29,12 +29,28 @@ public abstract class StreamlabsEvent {
         this.apiName = apiName;
         this.platform = platform;
         this.placeholders = new HashSet<>();
+        this.addInternalPlaceholders();
         this.addPlaceholder("user", this::getRelatedUser);
+    }
+
+    private void addInternalPlaceholders() {
+        this.addPlaceholder("_type", obj -> this.getId());
+        this.addPlaceholder("_api_type", obj -> this.getApiName());
+        this.addContextPlaceholder("_action", ctx -> ctx.action().id);
+        this.addPlaceholder("_platform", obj -> this.getPlatform().name().toLowerCase());
+        this.addPlaceholder("_api_platform", obj -> this.getPlatform().getId());
+        this.addContextPlaceholder("_pl_count", ctx -> String.valueOf(ctx.getPlaceholders().size()));
+        this.addPlaceholder("_pl_count_event", obj -> String.valueOf(this.getPlaceholders().size()));
     }
 
     public void addPlaceholder(String name, Function<JsonObject, String> valueFunction) {
         this.placeholders.removeIf(placeholder -> placeholder.name().equals(name));
         this.placeholders.add(new ActionPlaceholder(name, ActionPlaceholder.PlaceholderFunction.of(valueFunction)));
+    }
+
+    public void addContextPlaceholder(String name, Function<ActionExecutionContext, String> valueFunction) {
+        this.placeholders.removeIf(placeholder -> placeholder.name().equals(name));
+        this.placeholders.add(new ActionPlaceholder(name, ActionPlaceholder.PlaceholderFunction.of((obj, ctx) -> valueFunction.apply(ctx))));
     }
 
     @NotNull
