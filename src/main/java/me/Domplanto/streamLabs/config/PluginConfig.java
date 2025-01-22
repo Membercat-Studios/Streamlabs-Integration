@@ -142,7 +142,7 @@ public class PluginConfig {
 
         @YamlPropertyCustomDeserializer(propertyName = "messages")
         private List<Message> deserializeMessages(@NotNull List<String> messageStrings, ConfigIssueHelper issueHelper) {
-            return Message.parseAll(messageStrings);
+            return Message.parseAll(messageStrings, issueHelper);
         }
     }
 
