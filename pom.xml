@@ -97,9 +97,9 @@
             <version>2.10.1</version>
         </dependency>
         <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>0.10.2</version>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>4.8.179</version>
         </dependency>
         <dependency>
             <groupId>me.clip</groupId>
