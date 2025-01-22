@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -84,13 +85,15 @@ public interface YamlPropertyObject {
     }
 
     private Set<Field> getYamlPropertyFields() {
-        return Stream.concat(Arrays.stream(getClass().getDeclaredFields()), Arrays.stream(getClass().getSuperclass().getDeclaredFields()))
+        return tracePropertySuperclasses(getClass())
+                .flatMap(cls -> Arrays.stream(cls.getDeclaredFields()))
                 .filter(field -> field.isAnnotationPresent(YamlProperty.class))
                 .collect(Collectors.toSet());
     }
 
     private Set<Method> getIssueAssignerMethods(String propertyName) {
-        return Stream.concat(Arrays.stream(getClass().getDeclaredMethods()), Arrays.stream(getClass().getSuperclass().getDeclaredMethods()))
+        return tracePropertySuperclasses(getClass())
+                .flatMap(cls -> Arrays.stream(cls.getDeclaredMethods()))
                 .filter(method -> method.isAnnotationPresent(YamlPropertyIssueAssigner.class))
                 .filter(method -> method.getAnnotation(YamlPropertyIssueAssigner.class).propertyName().equals(propertyName))
                 .filter(method -> method.getParameterCount() == 2)
@@ -100,12 +103,26 @@ public interface YamlPropertyObject {
 
     @Nullable
     private Method getCustomDeserializer(String propertyName, Class<?> propertyCls) {
-        return Stream.concat(Arrays.stream(getClass().getDeclaredMethods()), Arrays.stream(getClass().getSuperclass().getDeclaredMethods()))
+        return tracePropertySuperclasses(getClass())
+                .flatMap(cls -> Arrays.stream(cls.getDeclaredMethods()))
                 .filter(method -> method.isAnnotationPresent(YamlPropertyCustomDeserializer.class))
                 .filter(method -> method.getAnnotation(YamlPropertyCustomDeserializer.class).propertyName().equals(propertyName))
                 .filter(method -> method.getParameterCount() == 2)
                 .filter(method -> method.getReturnType() == propertyCls && method.getParameterTypes()[1] == ConfigIssueHelper.class)
                 .findAny().orElse(null);
+    }
+
+    private Stream<Class<? extends YamlPropertyObject>> tracePropertySuperclasses(Class<?> cls) {
+        Set<Class<? extends YamlPropertyObject>> classes = tracePropertySuperclasses(cls, new HashSet<>());
+        classes.add(getClass());
+        return classes.stream();
+    }
+
+    private static Set<Class<? extends YamlPropertyObject>> tracePropertySuperclasses(Class<?> cls, Set<Class<? extends YamlPropertyObject>> collection) {
+        if (!YamlPropertyObject.class.isAssignableFrom(cls.getSuperclass())) return collection;
+        //noinspection unchecked
+        collection.add((Class<? extends YamlPropertyObject>) cls.getSuperclass());
+        return tracePropertySuperclasses(cls.getSuperclass(), collection);
     }
 
     @Nullable
