@@ -35,6 +35,8 @@ public class PluginConfig {
         this.issueHelper.reset();
         this.actionsByEvent = new HashMap<>();
         this.customPlaceholders = new HashMap<>();
+        if (getSectionKeys(config, false).contains("__suppress"))
+            issueHelper.suppressGlobally(config.getStringList("__suppress"));
 
         issueHelper.newSection("streamlabs");
         this.options = YamlPropertyObject.createInstance(PluginOptions.class, config.getConfigurationSection("streamlabs"), issueHelper);

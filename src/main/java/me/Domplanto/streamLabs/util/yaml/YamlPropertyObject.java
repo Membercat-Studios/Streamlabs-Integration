@@ -23,6 +23,7 @@ public interface YamlPropertyObject {
 
     default void acceptYamlProperties(ConfigurationSection section, ConfigIssueHelper issueHelper) {
         try {
+            suppressForSection(section, issueHelper);
             for (Field field : this.getYamlPropertyFields()) {
                 YamlProperty property = field.getAnnotation(YamlProperty.class);
                 String id = getPrefix() != null ? "%s.%s".formatted(getPrefix(), property.value()) : property.value();
@@ -37,9 +38,12 @@ public interface YamlPropertyObject {
                     sectionVal = section.getName();
                     actuallySet = true;
                 }
-                if (YamlPropertyObject.class.isAssignableFrom(field.getType()) && section.isConfigurationSection(id))
+                if (YamlPropertyObject.class.isAssignableFrom(field.getType()) && section.isConfigurationSection(id)) {
+                    ConfigurationSection subSection = section.getConfigurationSection(id);
+                    suppressForSection(subSection, issueHelper);
                     //noinspection unchecked
-                    sectionVal = YamlPropertyObject.createInstance((Class<? extends YamlPropertyObject>) field.getType(), section.getConfigurationSection(id), issueHelper);
+                    sectionVal = YamlPropertyObject.createInstance((Class<? extends YamlPropertyObject>) field.getType(), subSection, issueHelper);
+                }
                 if (customDeserializer != null && (actuallySet || !customDeserializer.getAnnotation(YamlPropertyCustomDeserializer.class).onlyUseWhenActuallySet())) {
                     customDeserializer.setAccessible(true);
                     try {
@@ -74,6 +78,11 @@ public interface YamlPropertyObject {
         }
     }
 
+    private static void suppressForSection(ConfigurationSection section, ConfigIssueHelper issueHelper) {
+        if (getSectionKeys(section, false).contains("__suppress"))
+            issueHelper.suppress(section.getStringList("__suppress"));
+    }
+
     private Set<Field> getYamlPropertyFields() {
         return Stream.concat(Arrays.stream(getClass().getDeclaredFields()), Arrays.stream(getClass().getSuperclass().getDeclaredFields()))
                 .filter(field -> field.isAnnotationPresent(YamlProperty.class))
@@ -103,6 +112,7 @@ public interface YamlPropertyObject {
     static <T extends YamlPropertyObject> T createInstance(Class<T> type,
                                                            ConfigurationSection section, ConfigIssueHelper issueHelper) {
         try {
+            suppressForSection(section, issueHelper);
             Method staticDeserializer = YamlPropertyObject.getOtherCustomDeserializer(type);
             T instance;
             if (staticDeserializer != null) {

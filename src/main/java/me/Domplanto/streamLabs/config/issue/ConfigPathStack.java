@@ -3,6 +3,8 @@ package me.Domplanto.streamLabs.config.issue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Set;
 import java.util.Stack;
 
 public class ConfigPathStack extends Stack<ConfigPathStack.Entry> {
@@ -25,7 +27,8 @@ public class ConfigPathStack extends Stack<ConfigPathStack.Entry> {
     public record Entry(
             @NotNull Class<?> cls,
             @Nullable ConfigPathSegment annotation,
-            @Nullable String ownName
+            @Nullable String ownName,
+            Set<String> suppressedIssues
     ) {
         public boolean isProperty() {
             return cls() == Property.class;
@@ -33,6 +36,10 @@ public class ConfigPathStack extends Stack<ConfigPathStack.Entry> {
 
         public boolean isSection() {
             return cls() == Section.class;
+        }
+
+        public void suppress(Collection<String> issueIds) {
+            this.suppressedIssues.addAll(issueIds);
         }
     }
 

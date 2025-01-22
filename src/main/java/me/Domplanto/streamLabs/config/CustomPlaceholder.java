@@ -38,7 +38,7 @@ public final class CustomPlaceholder extends ActionPlaceholder implements YamlPr
                 .stream()
                 .map(section::getConfigurationSection)
                 .filter(Objects::nonNull)
-                .filter(s -> !s.getName().equals("default_value"))
+                .filter(s -> !s.getName().equals("default_value") || !s.getName().equals("__suppress"))
                 .map(s -> {
                     issueHelper.push(StateBasedValue.class, s.getName());
                     StateBasedValue value = YamlPropertyObject.createInstance(StateBasedValue.class, s, issueHelper);

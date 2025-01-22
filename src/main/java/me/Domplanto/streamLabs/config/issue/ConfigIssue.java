@@ -29,10 +29,6 @@ public class ConfigIssue {
         return description;
     }
 
-    public boolean is(String id) {
-        return this.id.equals(id);
-    }
-
     public enum Level {
         ERROR(ChatColor.RED, java.util.logging.Level.SEVERE),
         WARNING(ChatColor.YELLOW, java.util.logging.Level.WARNING),
