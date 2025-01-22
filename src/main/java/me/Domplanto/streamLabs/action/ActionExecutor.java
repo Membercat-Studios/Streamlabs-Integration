@@ -57,35 +57,13 @@ public class ActionExecutor {
     }
 
     private void executeAction(ActionExecutionContext ctx) {
-        List<String> affectedPlayers = plugin.getConfig().getStringList("affected_players");
         ctx.action().messages
                 .stream().map(message -> message.replacePlaceholders(ctx))
-                .forEach(message -> affectedPlayers.stream()
+                .forEach(message -> ctx.config().getAffectedPlayers().stream()
                         .map(playerName -> plugin.getServer().getPlayerExact(playerName))
                         .forEach(message::send));
 
-        for (String command : ctx.action().commands) {
-            int executeAmount = 1;
-            if (command.startsWith("[") && command.contains("]")) {
-                String content = command.substring(1, command.indexOf(']'));
-                content = ActionPlaceholder.replacePlaceholders(content, ctx);
-                command = command.substring(command.indexOf(']') + 1);
-                try {
-                    executeAmount = new DoubleEvaluator().evaluate(content).intValue();
-                } catch (Exception ignore) {
-                }
-            }
-
-            command = ActionPlaceholder.replacePlaceholders(command, ctx);
-            List<String> players = command.contains("{player}") ? affectedPlayers : List.of("");
-            for (int i = 0; i < executeAmount; i++) {
-                for (String player : players) {
-                    String finalCommand = command.replace("{player}", player);
-                    Bukkit.getScheduler().runTask(this.plugin, () ->
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
-                }
-            }
-        }
+        ctx.action().commands.forEach(cmd -> cmd.run(Bukkit.getConsoleSender(), this.plugin, ctx));
     }
 
     public EventHistory getEventHistory() {

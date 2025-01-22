@@ -4,12 +4,12 @@ import me.Domplanto.streamLabs.StreamLabs;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("unused")
 public class PlayerSubCommand extends SubCommand {
@@ -29,8 +29,7 @@ public class PlayerSubCommand extends SubCommand {
             return true;
         }
 
-        FileConfiguration config = getPlugin().getConfig();
-        List<String> players = config.getStringList("affected_players");
+        Set<String> players = getPlugin().pluginConfig().getAffectedPlayers();
         if (args[1].equals("add")) {
             if (players.contains(args[2])) {
                 sender.sendMessage(ChatColor.RED + String.format("%s is already in the affected player list", args[2]));
@@ -51,8 +50,7 @@ public class PlayerSubCommand extends SubCommand {
             sender.sendMessage(ChatColor.RED + String.format("Unknown sub-command \"%s\"", args[1]));
         }
 
-        config.set("affected_players", players);
-        getPlugin().saveConfig();
+        getPlugin().pluginConfig().setAffectedPlayers(getPlugin(), players);
         return true;
     }
 
