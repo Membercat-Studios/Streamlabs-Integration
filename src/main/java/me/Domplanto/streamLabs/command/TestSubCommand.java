@@ -2,7 +2,6 @@ package me.Domplanto.streamLabs.command;
 
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.action.ActionExecutor;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.youtube.YoutubeSuperchatEvent;
@@ -44,7 +43,7 @@ public class TestSubCommand extends SubCommand {
 
         JsonObject object = new JsonObject();
         String user = "user%s".formatted(new Random().nextInt(10, 9999999));
-        event.getPlaceholders().clear();
+        event.getPlaceholders().removeIf(pl -> !pl.name().startsWith("_"));
         event.addPlaceholder("user", o -> user);
         for (int i = 1; i < args.length; i++) {
             String arg = args[i];
@@ -66,26 +65,26 @@ public class TestSubCommand extends SubCommand {
             }
         }
 
-        ActionExecutor executor = new ActionExecutor(getPlugin().pluginConfig(), getPlugin().getCachedEventObjects(), getPlugin());
-        executor.checkAndExecute(event, object);
+        getPlugin().getExecutor().checkAndExecute(event, object);
         return true;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (args.length == 2)
-            return getPlugin().getCachedEventObjects()
+            return StreamLabs.getCachedEventObjects()
                     .stream().map(StreamlabsEvent::getId)
                     .filter(id -> id.contains(args[1]))
                     .toList();
 
-        StreamlabsEvent event = getPlugin().getCachedEventObjects()
+        StreamlabsEvent event = StreamLabs.getCachedEventObjects()
                 .stream().filter(e -> e.getId().equals(args[1]))
                 .findFirst().orElse(null);
         if (event == null) return List.of();
         if (!args[args.length - 1].contains("="))
             return event.getPlaceholders()
                     .stream().map(ActionPlaceholder::name)
+                    .filter(name -> !name.startsWith("_") || args[args.length - 1].startsWith("_"))
                     .toList();
 
         return null;

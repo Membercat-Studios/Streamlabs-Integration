@@ -8,6 +8,7 @@ import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.font.DefaultFontInfo;
+import me.Domplanto.streamLabs.papi.StreamlabsExpansion;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -27,6 +28,7 @@ public class StreamLabs extends JavaPlugin {
     private static boolean DEBUG_MODE = false;
     private StreamlabsSocketClient socketClient;
     private PluginConfig pluginConfig;
+    private ActionExecutor executor;
 
     @Override
     public void onEnable() {
@@ -39,12 +41,14 @@ public class StreamLabs extends JavaPlugin {
         }
 
         DEBUG_MODE = pluginConfig.getOptions().debugMode;
+        this.executor = new ActionExecutor(this.pluginConfig, STREAMLABS_EVENTS, this);
+        this.setupPlaceholderExpansions();
         this.socketClient = new StreamlabsSocketClient(pluginConfig.getOptions().socketToken, getLogger(), this::onStreamlabsEvent)
                 .setConnectionOpenListener(this::onConnectionOpen)
                 .setConnectionCloseListener(this::onConnectionClosed)
                 .setInvalidTokenListener(this::onInvalidSocketToken);
         // The StreamlabsSocketClient will not connect at all if a connection in onEnable is not attempted,
-        // this is why we need to add it here, this issue should definitely be investigated in the future!
+        // this is why we need to add it here, this issue should definitely be investigated further in the future!
         new Thread(() -> {
             try {
                 this.socketClient.connectBlocking();
@@ -55,6 +59,14 @@ public class StreamLabs extends JavaPlugin {
                 getLogger().info("Not connecting to Streamlabs at startup because auto_connect is disabled in the config!");
             }
         }, "Socket startup Thread").start();
+    }
+
+    private void setupPlaceholderExpansions() {
+        if (!Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) return;
+
+        StreamlabsExpansion expansion = new StreamlabsExpansion(this);
+        expansion.register();
+        getLogger().info("Successfully hooked into PlaceholderAPI!");
     }
 
     public void printIssues(List<ConfigIssue> issues, CommandSender sender) {
@@ -85,8 +97,7 @@ public class StreamLabs extends JavaPlugin {
     }
 
     private void onStreamlabsEvent(JsonElement rawData) {
-        ActionExecutor executor = new ActionExecutor(this.pluginConfig, STREAMLABS_EVENTS, this);
-        executor.parseAndExecute(rawData);
+        this.executor.parseAndExecute(rawData);
     }
 
     @Override
@@ -100,12 +111,16 @@ public class StreamLabs extends JavaPlugin {
         return socketClient;
     }
 
-    public Set<? extends StreamlabsEvent> getCachedEventObjects() {
+    public static Set<? extends StreamlabsEvent> getCachedEventObjects() {
         return STREAMLABS_EVENTS;
     }
 
     public PluginConfig pluginConfig() {
         return pluginConfig;
+    }
+
+    public ActionExecutor getExecutor() {
+        return executor;
     }
 
     private boolean showStatusMessages() {

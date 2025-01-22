@@ -16,4 +16,8 @@ public enum StreamlabsPlatform {
     public boolean compare(@Nullable String platformString) {
         return platformString != null && platformString.equals(this.id);
     }
+
+    public @Nullable String getId() {
+        return id;
+    }
 }

@@ -123,6 +123,9 @@ public class PluginConfig {
 
     @ConfigPathSegment(id = "action")
     public static class Action implements YamlPropertyObject {
+        @YamlProperty("!SECTION")
+        @NotNull
+        public String id;
         @YamlProperty("action")
         public String eventType = "unknown";
         @YamlProperty("enabled")

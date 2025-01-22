@@ -8,6 +8,7 @@ import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
+import me.Domplanto.streamLabs.statistics.EventHistory;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -17,12 +18,14 @@ import java.util.Set;
 public class ActionExecutor {
     private final PluginConfig pluginConfig;
     private final Set<? extends StreamlabsEvent> eventSet;
+    private final EventHistory eventHistory;
     private final JavaPlugin plugin;
 
     public ActionExecutor(PluginConfig pluginConfig, Set<? extends StreamlabsEvent> eventSet, JavaPlugin plugin) {
         this.pluginConfig = pluginConfig;
         this.eventSet = eventSet;
         this.plugin = plugin;
+        this.eventHistory = new EventHistory();
     }
 
     public void parseAndExecute(JsonElement data) throws SocketSerializerException {
@@ -42,6 +45,7 @@ public class ActionExecutor {
     }
 
     public void checkAndExecute(StreamlabsEvent event, JsonObject baseObject) {
+        this.eventHistory.store(event, this.pluginConfig, baseObject);
         List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event.getId());
         for (PluginConfig.Action action : actions) {
             if (!action.enabled) continue;
@@ -82,5 +86,9 @@ public class ActionExecutor {
                 }
             }
         }
+    }
+
+    public EventHistory getEventHistory() {
+        return eventHistory;
     }
 }
