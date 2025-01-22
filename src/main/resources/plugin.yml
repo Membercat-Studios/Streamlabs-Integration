@@ -2,13 +2,19 @@ name: StreamLabs
 version: '${project.version}'
 main: me.Domplanto.streamLabs.StreamLabs
 api-version: '1.21'
-author: Domplanto
-description: A plugin that integrates Streamlabs events with Minecraft commands
+# noinspection YAMLSchemaValidation
+author:
+  - Membercat Studios
+  - Domplanto
+  - codingcat
+description: A Minecraft plugin that allows Youtube/Twitch donations to trigger events in your Minecraft world using the Streamlabs API!
+softdepend:
+  - PlaceholderAPI
 
 commands:
   streamlabs:
     description: Main command for Streamlabs integration
-    usage: /<command> <connect|disconnect|status|reload>
+    usage: /<command> <connect|disconnect|player|ratelimiters|test|status|reload>
     permission: streamlabs.admin
 
 permissions:
