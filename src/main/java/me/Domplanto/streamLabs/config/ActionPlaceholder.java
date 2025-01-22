@@ -2,6 +2,7 @@ package me.Domplanto.streamLabs.config;
 
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +33,7 @@ public class ActionPlaceholder {
             originalString = originalString.replace(ph, placeholder.function().execute(ctx.baseObject(), ctx));
         }
 
+        originalString = PlaceholderAPI.setPlaceholders(null, originalString);
         plExecutionCount++;
         if (plExecutionCount > 1000)
             return "(Infinite placeholder loop detected)";
