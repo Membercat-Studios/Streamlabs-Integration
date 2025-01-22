@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @ConfigPathSegment(id = "condition")
-public class Condition {
+public class Condition implements ConditionBase {
     private static final Set<? extends Operator> OPERATORS = Operator.findOperatorClasses();
     private final ActionPlaceholder.PlaceholderFunction element1;
     private final ActionPlaceholder.PlaceholderFunction element2;
@@ -25,6 +25,7 @@ public class Condition {
         this.invert = invert;
     }
 
+    @Override
     public boolean check(ActionExecutionContext ctx) {
         String e1 = element1.execute(ctx.baseObject(), ctx);
         String e2 = element2.execute(ctx.baseObject(), ctx);

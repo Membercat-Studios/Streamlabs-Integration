@@ -1,7 +1,6 @@
 package me.Domplanto.streamLabs.config;
 
-import me.Domplanto.streamLabs.condition.Condition;
-import me.Domplanto.streamLabs.condition.DonationCondition;
+import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
@@ -122,7 +121,7 @@ public class PluginConfig {
     }
 
     @ConfigPathSegment(id = "action")
-    public static class Action implements YamlPropertyObject {
+    public static class Action extends ConditionGroup {
         @YamlProperty("!SECTION")
         @NotNull
         public String id;
@@ -130,10 +129,6 @@ public class PluginConfig {
         public String eventType = "unknown";
         @YamlProperty("enabled")
         public boolean enabled;
-        @YamlProperty("conditions")
-        public List<Condition> conditions = new ArrayList<>();
-        @YamlProperty("donation_conditions")
-        public List<DonationCondition> donationConditions = new ArrayList<>();
         @YamlProperty("messages")
         public List<Message> messages = List.of();
         @YamlProperty("commands")
@@ -141,16 +136,6 @@ public class PluginConfig {
         @Nullable
         @YamlProperty("rate_limiter")
         public RateLimiter rateLimiter;
-
-        @YamlPropertyCustomDeserializer(propertyName = "conditions")
-        private List<Condition> deserializeConditions(@NotNull List<String> conditionStrings, ConfigIssueHelper issueHelper) {
-            return Condition.parseConditions(conditionStrings, issueHelper);
-        }
-
-        @YamlPropertyCustomDeserializer(propertyName = "donation_conditions")
-        private List<DonationCondition> deserializeDonationConditions(@NotNull List<String> donationConditionStrings, ConfigIssueHelper issueHelper) {
-            return Condition.parseDonationConditions(donationConditionStrings, issueHelper);
-        }
 
         @YamlPropertyCustomDeserializer(propertyName = "messages")
         private List<Message> deserializeMessages(@NotNull List<String> messageStrings, ConfigIssueHelper issueHelper) {

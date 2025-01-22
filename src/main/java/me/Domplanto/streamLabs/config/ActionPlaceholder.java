@@ -80,8 +80,9 @@ public class ActionPlaceholder {
             if (contextDependentFunction == null && valueFunction == null)
                 throw new NullPointerException();
 
-            return contextDependentFunction != null ? contextDependentFunction.apply(object, context)
+            String result = contextDependentFunction != null ? contextDependentFunction.apply(object, context)
                     : valueFunction.apply(object);
+            return result != null ? result : "(Error while resolving placeholder)";
         }
     }
 }

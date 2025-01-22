@@ -3,15 +3,12 @@ package me.Domplanto.streamLabs.events;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.condition.Condition;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
-import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 import me.Domplanto.streamLabs.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
@@ -91,14 +88,7 @@ public abstract class StreamlabsEvent {
         RateLimiter limiter = ctx.action().rateLimiter;
         if (!this.bypassRateLimiters && (limiter != null && !limiter.check(ctx))) return false;
 
-        ArrayList<Condition> conditionList = new ArrayList<>(ctx.action().conditions);
-        if (this instanceof BasicDonationEvent)
-            conditionList.addAll(ctx.action().donationConditions);
-
-        for (Condition condition : conditionList)
-            if (!condition.check(ctx)) return false;
-
-        return true;
+        return ctx.action().check(ctx);
     }
 
     public static Set<? extends StreamlabsEvent> findEventClasses() {

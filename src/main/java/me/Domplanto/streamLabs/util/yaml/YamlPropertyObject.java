@@ -33,8 +33,10 @@ public interface YamlPropertyObject {
                 field.setAccessible(true);
                 Method customDeserializer = this.getCustomDeserializer(property.value(), field.getType());
                 Object sectionVal = actuallySet ? section.get(id) : null;
-                if (property.value().equalsIgnoreCase("!section"))
+                if (property.value().equalsIgnoreCase("!section") && field.getType() == String.class) {
                     sectionVal = section.getName();
+                    actuallySet = true;
+                }
                 if (YamlPropertyObject.class.isAssignableFrom(field.getType()) && section.isConfigurationSection(id))
                     //noinspection unchecked
                     sectionVal = YamlPropertyObject.createInstance((Class<? extends YamlPropertyObject>) field.getType(), section.getConfigurationSection(id), issueHelper);
