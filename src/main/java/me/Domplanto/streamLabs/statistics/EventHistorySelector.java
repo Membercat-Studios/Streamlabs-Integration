@@ -19,8 +19,11 @@ public class EventHistorySelector {
         this.placeholderConditions.addAll(conditions);
     }
 
-    public boolean check(int eventIdx, EventHistory.LoggedEvent event) {
-        if (eventIdx != this.relativeId) return false;
+    public boolean checkRelativeId(int id) {
+        return this.relativeId == id;
+    }
+
+    public boolean check(EventHistory.LoggedEvent event) {
         for (Condition condition : this.placeholderConditions)
             if (!condition.check(event.createContext())) return false;
 

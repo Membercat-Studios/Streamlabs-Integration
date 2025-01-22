@@ -8,6 +8,7 @@ import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Stack;
 
 public class EventHistory {
@@ -23,9 +24,13 @@ public class EventHistory {
 
     @Nullable
     public LoggedEvent getEvent(EventHistorySelector selector) {
-        for (int i = 0; i < this.executionHistory.reversed().size(); i++) {
-            LoggedEvent event = executionHistory.reversed().get(i);
-            if (selector.check(i, event)) return event;
+        List<LoggedEvent> matchingEvents = executionHistory.reversed()
+                .stream().filter(selector::check)
+                .toList();
+
+        for (int i = 0; i < matchingEvents.size(); i++) {
+            if (selector.checkRelativeId(i))
+                return matchingEvents.get(i);
         }
 
         return null;
