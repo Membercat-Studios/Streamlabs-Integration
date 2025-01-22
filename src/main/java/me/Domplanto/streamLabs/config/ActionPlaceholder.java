@@ -2,7 +2,6 @@ package me.Domplanto.streamLabs.config;
 
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,8 +29,7 @@ public class ActionPlaceholder {
             if (!originalString.contains(ph)) continue;
 
             containsPlaceholders = true;
-            originalString = originalString.replace(ph,
-                    placeholder.function().execute(ctx.baseObject(), ctx.event()));
+            originalString = originalString.replace(ph, placeholder.function().execute(ctx.baseObject(), ctx));
         }
 
         plExecutionCount++;
@@ -55,14 +53,14 @@ public class ActionPlaceholder {
         @Nullable
         private final Function<JsonObject, String> valueFunction;
         @Nullable
-        private final BiFunction<JsonObject, StreamlabsEvent, String> eventDependentFunction;
+        private final BiFunction<JsonObject, ActionExecutionContext, String> contextDependentFunction;
 
-        private PlaceholderFunction(@Nullable Function<JsonObject, String> valueFunction, @Nullable BiFunction<JsonObject, StreamlabsEvent, String> eventDependentValueFunction) {
-            if (valueFunction == null && eventDependentValueFunction == null)
+        private PlaceholderFunction(@Nullable Function<JsonObject, String> valueFunction, @Nullable BiFunction<JsonObject, ActionExecutionContext, String> contextDependentValueFunction) {
+            if (valueFunction == null && contextDependentValueFunction == null)
                 throw new NullPointerException();
 
             this.valueFunction = valueFunction;
-            this.eventDependentFunction = eventDependentValueFunction;
+            this.contextDependentFunction = contextDependentValueFunction;
         }
 
         public static PlaceholderFunction of(@NotNull String staticValue) {
@@ -74,15 +72,15 @@ public class ActionPlaceholder {
             return new PlaceholderFunction(Objects.requireNonNull(valueFunction), null);
         }
 
-        public static PlaceholderFunction of(BiFunction<JsonObject, StreamlabsEvent, String> valueFunction) {
+        public static PlaceholderFunction of(BiFunction<JsonObject, ActionExecutionContext, String> valueFunction) {
             return new PlaceholderFunction(null, Objects.requireNonNull(valueFunction));
         }
 
-        public String execute(@NotNull JsonObject object, @Nullable StreamlabsEvent event) {
-            if (eventDependentFunction == null && valueFunction == null)
+        public String execute(@NotNull JsonObject object, @Nullable ActionExecutionContext context) {
+            if (contextDependentFunction == null && valueFunction == null)
                 throw new NullPointerException();
 
-            return eventDependentFunction != null ? eventDependentFunction.apply(object, event)
+            return contextDependentFunction != null ? contextDependentFunction.apply(object, context)
                     : valueFunction.apply(object);
         }
     }

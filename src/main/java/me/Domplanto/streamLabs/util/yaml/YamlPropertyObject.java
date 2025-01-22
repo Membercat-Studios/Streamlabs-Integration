@@ -33,12 +33,14 @@ public interface YamlPropertyObject {
                 field.setAccessible(true);
                 Method customDeserializer = this.getCustomDeserializer(property.value(), field.getType());
                 Object sectionVal = actuallySet ? section.get(id) : null;
+                if (property.value().equalsIgnoreCase("!section"))
+                    sectionVal = section.getName();
                 if (YamlPropertyObject.class.isAssignableFrom(field.getType()) && section.isConfigurationSection(id))
                     //noinspection unchecked
                     sectionVal = YamlPropertyObject.createInstance((Class<? extends YamlPropertyObject>) field.getType(), section.getConfigurationSection(id), issueHelper);
                 if (customDeserializer != null && (actuallySet || !customDeserializer.getAnnotation(YamlPropertyCustomDeserializer.class).onlyUseWhenActuallySet())) {
                     customDeserializer.setAccessible(true);
-                    sectionVal = customDeserializer.invoke(this, sectionVal);
+                    sectionVal = customDeserializer.invoke(this, sectionVal, issueHelper);
                 }
 
                 Object value = actuallySet ? sectionVal : field.get(this);
@@ -83,8 +85,8 @@ public interface YamlPropertyObject {
         return Stream.concat(Arrays.stream(getClass().getDeclaredMethods()), Arrays.stream(getClass().getSuperclass().getDeclaredMethods()))
                 .filter(method -> method.isAnnotationPresent(YamlPropertyCustomDeserializer.class))
                 .filter(method -> method.getAnnotation(YamlPropertyCustomDeserializer.class).propertyName().equals(propertyName))
-                .filter(method -> method.getParameterCount() == 1)
-                .filter(method -> method.getReturnType() == propertyCls)
+                .filter(method -> method.getParameterCount() == 2)
+                .filter(method -> method.getReturnType() == propertyCls && method.getParameterTypes()[1] == ConfigIssueHelper.class)
                 .findAny().orElse(null);
     }
 

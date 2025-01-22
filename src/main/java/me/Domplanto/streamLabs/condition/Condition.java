@@ -1,12 +1,11 @@
 package me.Domplanto.streamLabs.condition;
 
-import com.google.gson.JsonObject;
+import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.issue.ConfigIssue;
+import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
-import me.Domplanto.streamLabs.events.StreamlabsEvent;
-import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -19,16 +18,16 @@ public class Condition {
     private final Operator operator;
     private final boolean invert;
 
-    private Condition(Operator operator, boolean invert, ActionPlaceholder.PlaceholderFunction element1, ActionPlaceholder.PlaceholderFunction element2) {
+    protected Condition(Operator operator, boolean invert, ActionPlaceholder.PlaceholderFunction element1, ActionPlaceholder.PlaceholderFunction element2) {
         this.element1 = element1;
         this.element2 = element2;
         this.operator = operator;
         this.invert = invert;
     }
 
-    public boolean check(StreamlabsEvent event, JsonObject object) {
-        String e1 = element1.execute(object, event);
-        String e2 = element2.execute(object, event);
+    public boolean check(ActionExecutionContext ctx) {
+        String e1 = element1.execute(ctx.baseObject(), ctx);
+        String e2 = element2.execute(ctx.baseObject(), ctx);
         try {
             return invert != this.operator.check(Double.parseDouble(e1), Double.parseDouble(e2));
         } catch (NumberFormatException e) {
@@ -36,53 +35,56 @@ public class Condition {
         }
     }
 
-    public static List<Condition> parseAll(List<String> conditionStrings, StreamlabsEvent event) {
+    public static List<Condition> parseConditions(List<String> conditionStrings, ConfigIssueHelper issueHelper) {
+        return Condition.parseAll(conditionStrings, issueHelper, false);
+    }
+
+    public static List<DonationCondition> parseDonationConditions(List<String> conditionStrings, ConfigIssueHelper issueHelper) {
+        return Condition.parseAll(conditionStrings, issueHelper, true).stream()
+                .filter(condition -> condition instanceof DonationCondition)
+                .map(condition -> (DonationCondition) condition)
+                .toList();
+    }
+
+    private static List<Condition> parseAll(List<String> conditionStrings, ConfigIssueHelper issueHelper, boolean isDonation) {
         return conditionStrings.stream()
                 .map(string -> {
+                    issueHelper.push(Condition.class, String.valueOf(conditionStrings.indexOf(string)));
                     boolean invert = string.startsWith("!");
                     if (invert)
                         string = string.substring(1);
 
                     final String finalString = string;
                     Operator op = findOperator(finalString);
-                    if (op == null) return null;
+                    if (op == null) {
+                        issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "No valid condition operator found, skipping condition");
+                        issueHelper.pop();
+                        return null;
+                    }
 
                     String[] elements = finalString.split(op.getName());
-                    if (elements.length == 0) return null;
+                    if (elements.length < 1) {
+                        issueHelper.appendAtPath(ConfigIssue.Level.WARNING, "Condition contains no elements and will be skipped");
+                        issueHelper.pop();
+                        return null;
+                    }
 
-                    ActionPlaceholder.PlaceholderFunction e2 = elements.length >= 2 ? parseElement(elements[1], event)
+                    ActionPlaceholder.PlaceholderFunction e1 = parseElement(elements[0], issueHelper);
+                    ActionPlaceholder.PlaceholderFunction e2 = elements.length >= 2 ? parseElement(elements[1], issueHelper)
                             : ActionPlaceholder.PlaceholderFunction.of("");
-                    return new Condition(op, invert, parseElement(elements[0], event), e2);
+                    issueHelper.pop();
+                    if (isDonation)
+                        return new DonationCondition(op, invert, e1, e2);
+                    else
+                        return new Condition(op, invert, e1, e2);
                 }).toList();
     }
 
-    public static List<Condition> parseDonationConditions(List<String> donationConditionStrings, BasicDonationEvent event, JsonObject baseObject) {
-        ArrayList<Condition> conditions = new ArrayList<>();
-        for (String string : donationConditionStrings) {
-            Operator op = findOperator(string);
-            if (op == null) continue;
+    private static ActionPlaceholder.PlaceholderFunction parseElement(String elementString, ConfigIssueHelper issueHelper) {
+        if (elementString.contains("{") && !elementString.contains("}"))
+            issueHelper.appendAtPath(ConfigIssue.Level.HINT, "Condition element contains a non-terminated placeholder");
 
-            String[] elements = string.split(op.getName());
-            if (elements[0].equals(event.getCurrency(baseObject)))
-                conditions.add(new Condition(op, false, ActionPlaceholder.PlaceholderFunction.of(o -> String.valueOf(event.calculateAmount(o))),
-                        parseElement(elements[1], event)));
-        }
-
-        return conditions;
-    }
-
-    private static ActionPlaceholder.PlaceholderFunction parseElement(String elementString, StreamlabsEvent event) {
-        ActionPlaceholder.PlaceholderFunction defaultFunc = ActionPlaceholder.PlaceholderFunction.of(elementString);
-        if (!elementString.startsWith("{") || !elementString.endsWith("}") || elementString.length() < 3)
-            return defaultFunc;
-
-        String placeholderName = elementString.substring(1, elementString.length() - 1);
-        return event.getPlaceholders()
-                .stream()
-                .filter(placeholder -> placeholder.name().equals(placeholderName))
-                .min(Comparator.comparingInt(p -> p.name().length()))
-                .map(ActionPlaceholder::function)
-                .orElse(defaultFunc);
+        return ActionPlaceholder.PlaceholderFunction.of((object, ctx) -> ActionPlaceholder.replacePlaceholders(elementString, ctx));
     }
 
     private static Operator findOperator(String condition) {
@@ -90,5 +92,21 @@ public class Condition {
                 .sorted(Comparator.comparing(o -> o.getName().length(), (len1, len2) -> len2 - len1))
                 .filter(operator1 -> condition.contains(operator1.getName()))
                 .findFirst().orElse(null);
+    }
+
+    protected ActionPlaceholder.PlaceholderFunction getElement1() {
+        return element1;
+    }
+
+    protected ActionPlaceholder.PlaceholderFunction getElement2() {
+        return element2;
+    }
+
+    protected Operator getOperator() {
+        return operator;
+    }
+
+    protected boolean isInverted() {
+        return invert;
     }
 }

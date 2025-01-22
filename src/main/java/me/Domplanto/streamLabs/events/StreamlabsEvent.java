@@ -70,12 +70,12 @@ public abstract class StreamlabsEvent {
         RateLimiter limiter = ctx.action().rateLimiter;
         if (limiter != null && !limiter.check(ctx)) return false;
 
-        ArrayList<Condition> conditionList = new ArrayList<>(ctx.action().getConditions(this));
-        if (this instanceof BasicDonationEvent donationEvent)
-            conditionList.addAll(ctx.action().getDonationConditions(donationEvent, ctx.baseObject()));
+        ArrayList<Condition> conditionList = new ArrayList<>(ctx.action().conditions);
+        if (this instanceof BasicDonationEvent)
+            conditionList.addAll(ctx.action().donationConditions);
 
         for (Condition condition : conditionList)
-            if (!condition.check(this, ctx.baseObject())) return false;
+            if (!condition.check(ctx)) return false;
 
         return true;
     }

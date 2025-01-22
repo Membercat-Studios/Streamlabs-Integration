@@ -1,13 +1,11 @@
 package me.Domplanto.streamLabs.config;
 
-import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.condition.Condition;
+import me.Domplanto.streamLabs.condition.DonationCondition;
 import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
-import me.Domplanto.streamLabs.events.StreamlabsEvent;
-import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 import me.Domplanto.streamLabs.message.Message;
 import me.Domplanto.streamLabs.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
@@ -75,7 +73,7 @@ public class PluginConfig {
                     continue;
                 }
 
-                CustomPlaceholder placeholder = CustomPlaceholder.deserialize(placeholderSection, issueHelper);
+                CustomPlaceholder placeholder = YamlPropertyObject.createInstance(CustomPlaceholder.class, placeholderSection, issueHelper);
                 this.customPlaceholders.put(placeholderId, placeholder);
             } catch (Exception e) {
                 issueHelper.appendAtPathAndLog(ConfigIssue.Level.ERROR, "Internal error during deserialization", e);
@@ -85,11 +83,6 @@ public class PluginConfig {
 
         this.issueHelper.pop();
         this.issueHelper.complete();
-    }
-
-    @Nullable
-    public static List<String> getStringList(ConfigurationSection section, String key) {
-        return section.getKeys(true).contains(key) ? section.getStringList(key) : null;
     }
 
     @Nullable
@@ -134,12 +127,10 @@ public class PluginConfig {
         public String eventType = "unknown";
         @YamlProperty("enabled")
         public boolean enabled;
-        @Nullable
         @YamlProperty("conditions")
-        private List<String> conditionStrings;
-        @Nullable
+        public List<Condition> conditions = new ArrayList<>();
         @YamlProperty("donation_conditions")
-        private List<String> donationConditionStrings;
+        public List<DonationCondition> donationConditions = new ArrayList<>();
         @YamlProperty("messages")
         public List<Message> messages = List.of();
         @YamlProperty("commands")
@@ -148,21 +139,19 @@ public class PluginConfig {
         @YamlProperty("rate_limiter")
         public RateLimiter rateLimiter;
 
+        @YamlPropertyCustomDeserializer(propertyName = "conditions")
+        private List<Condition> deserializeConditions(@NotNull List<String> conditionStrings, ConfigIssueHelper issueHelper) {
+            return Condition.parseConditions(conditionStrings, issueHelper);
+        }
+
+        @YamlPropertyCustomDeserializer(propertyName = "donation_conditions")
+        private List<DonationCondition> deserializeDonationConditions(@NotNull List<String> donationConditionStrings, ConfigIssueHelper issueHelper) {
+            return Condition.parseDonationConditions(donationConditionStrings, issueHelper);
+        }
+
         @YamlPropertyCustomDeserializer(propertyName = "messages")
-        private List<Message> deserializeMessages(@NotNull List<String> messageStrings) {
+        private List<Message> deserializeMessages(@NotNull List<String> messageStrings, ConfigIssueHelper issueHelper) {
             return Message.parseAll(messageStrings);
-        }
-
-        public List<Condition> getConditions(StreamlabsEvent event) {
-            if (this.conditionStrings == null) return new ArrayList<>();
-
-            return Condition.parseAll(this.conditionStrings, event);
-        }
-
-        public List<Condition> getDonationConditions(BasicDonationEvent event, JsonObject baseObject) {
-            if (this.donationConditionStrings == null) return new ArrayList<>();
-
-            return Condition.parseDonationConditions(this.donationConditionStrings, event, baseObject);
         }
     }
 
