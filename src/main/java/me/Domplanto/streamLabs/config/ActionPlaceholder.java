@@ -7,6 +7,8 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -81,12 +83,19 @@ public class ActionPlaceholder {
         }
 
         public String execute(@NotNull JsonObject object, @Nullable ActionExecutionContext context) {
-            if (contextDependentFunction == null && valueFunction == null)
-                throw new NullPointerException();
+            try {
+                if (contextDependentFunction == null && valueFunction == null)
+                    throw new NullPointerException();
 
-            String result = contextDependentFunction != null ? contextDependentFunction.apply(object, context)
-                    : valueFunction.apply(object);
-            return result != null ? result : "(Error while resolving placeholder)";
+                String result = contextDependentFunction != null ? contextDependentFunction.apply(object, context)
+                        : valueFunction.apply(object);
+                return result != null ? result : "(Error while resolving placeholder)";
+            } catch (Exception e) {
+                StringWriter writer = new StringWriter();
+                e.printStackTrace(new PrintWriter(writer));
+                StreamLabs.LOGGER.warning("Failed to resolve placeholder:%s\n%s".formatted(e.toString(), writer.toString()));
+                return "(Unexpected error while resolving placeholder, check the logs for more info)";
+            }
         }
     }
 }

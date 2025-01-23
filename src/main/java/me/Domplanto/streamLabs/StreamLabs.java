@@ -21,10 +21,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class StreamLabs extends JavaPlugin {
     private static final Set<? extends StreamlabsEvent> STREAMLABS_EVENTS = StreamlabsEvent.findEventClasses();
     private final Set<? extends SubCommand> SUB_COMMANDS = SubCommand.findSubCommandClasses(this);
+    public static Logger LOGGER;
     private static boolean DEBUG_MODE = false;
     private static boolean PAPI_INSTALLED = false;
     private StreamlabsSocketClient socketClient;
@@ -34,6 +36,7 @@ public class StreamLabs extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        LOGGER = getLogger();
         this.pluginConfig = new PluginConfig(getLogger());
         try {
             this.pluginConfig.load(getConfig());
