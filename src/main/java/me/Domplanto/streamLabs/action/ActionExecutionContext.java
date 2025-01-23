@@ -11,6 +11,7 @@ import java.util.HashSet;
 
 public record ActionExecutionContext(
         StreamlabsEvent event,
+        ActionExecutor executor,
         PluginConfig config,
         PluginConfig.AbstractAction action,
         JsonObject baseObject

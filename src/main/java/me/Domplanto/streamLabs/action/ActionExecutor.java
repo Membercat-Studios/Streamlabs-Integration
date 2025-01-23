@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ActionExecutor {
     private final PluginConfig pluginConfig;
@@ -43,27 +44,29 @@ public class ActionExecutor {
             plugin.getLogger().info(String.format("Streamlabs message: %s", data));
 
         String platform = object.has("for") ? object.get("for").getAsString() : "streamlabs";
-        StreamlabsEvent event = eventSet.stream()
+        Set<? extends StreamlabsEvent> events = eventSet.stream()
                 .filter(e -> e.getApiName().equals(type) && e.getPlatform().compare(platform))
-                .findFirst().orElse(null);
-        if (event == null) return;
+                .collect(Collectors.toSet());
 
-        JsonObject baseObject = event.getBaseObject(object);
-        this.checkAndExecute(event, baseObject);
+        for (StreamlabsEvent event : events) {
+            JsonObject baseObject = event.getBaseObject(object);
+            this.checkAndExecute(event, baseObject);
+        }
     }
 
     public void checkAndExecute(StreamlabsEvent event, JsonObject baseObject) {
+        event.onExecute(this, baseObject);
         this.eventHistory.store(event, this.pluginConfig, baseObject);
         List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event.getId());
         for (PluginConfig.Action action : actions) {
             if (!action.enabled) continue;
 
-            ActionExecutionContext context = new ActionExecutionContext(event, this.pluginConfig, action, baseObject);
+            ActionExecutionContext context = new ActionExecutionContext(event, this, this.pluginConfig, action, baseObject);
             if (event.checkConditions(context))
                 executeAction(context);
         }
 
-        this.updateGoal(new ActionExecutionContext(event, this.pluginConfig, null, baseObject));
+        this.updateGoal(new ActionExecutionContext(event, this, this.pluginConfig, null, baseObject));
     }
 
     private void executeAction(ActionExecutionContext ctx) {
@@ -85,7 +88,7 @@ public class ActionExecutor {
         }
 
         if (!this.activeGoal.add(ctx)) return;
-        this.executeAction(new ActionExecutionContext(null, this.pluginConfig, goal, null));
+        this.executeAction(new ActionExecutionContext(null, this, this.pluginConfig, goal, null));
         this.stopGoal();
     }
 

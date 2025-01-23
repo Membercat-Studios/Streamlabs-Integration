@@ -47,7 +47,7 @@ public class EventHistory {
         }
 
         public ActionExecutionContext createContext() {
-            return new ActionExecutionContext(event, config, null, baseObject);
+            return new ActionExecutionContext(event, null, config, null, baseObject);
         }
     }
 }
