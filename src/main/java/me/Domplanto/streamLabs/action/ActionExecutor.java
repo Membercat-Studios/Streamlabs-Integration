@@ -31,6 +31,12 @@ public class ActionExecutor {
     }
 
     public void parseAndExecute(JsonElement data) throws SocketSerializerException {
+        if (data.getAsJsonArray().size() < 2 || !data.getAsJsonArray().get(1).isJsonObject()) {
+            if (StreamLabs.isDebugMode())
+                plugin.getLogger().info("Skipping streamlabs message with invalid formatting");
+            return;
+        }
+
         JsonObject object = data.getAsJsonArray().get(1).getAsJsonObject();
         String type = object.get("type").getAsString();
         if (StreamLabs.isDebugMode() && (!type.equals("alertPlaying") && !type.equals("streamlabels") && !type.equals("streamlabels.underlying")))
