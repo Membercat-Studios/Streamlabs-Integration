@@ -4,6 +4,7 @@ import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
+import me.Domplanto.streamLabs.util.yaml.BracketResolver;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -33,18 +34,16 @@ public class Message {
                 .map(messageString -> {
                     issueHelper.push(Message.class, String.valueOf(messageStrings.indexOf(messageString)));
                     MessageType type = MessageType.MESSAGE;
-                    if (messageString.startsWith("[") && messageString.contains("]")) {
-                        String content = messageString.substring(1, messageString.indexOf(']'));
-                        try {
-                            type = MessageType.valueOf(content.toUpperCase());
-                        } catch (IllegalArgumentException e) {
-                            issueHelper.appendAtPath(WM0.apply(content.toUpperCase(), type.name()));
-                        }
-                        messageString = messageString.substring(messageString.indexOf(']') + 1);
+                    BracketResolver resolver = new BracketResolver(messageString).resolve(issueHelper);
+                    String typeStr = resolver.getBracketContents().map(String::toUpperCase).orElse("");
+                    try {
+                        type = MessageType.valueOf(typeStr);
+                    } catch (IllegalArgumentException e) {
+                        issueHelper.appendAtPath(WM0.apply(typeStr, type.name()));
                     }
 
                     issueHelper.pop();
-                    return new Message(type, messageString);
+                    return new Message(type, resolver.getContent());
                 })
                 .toList();
     }

@@ -4,6 +4,7 @@ import com.fathzer.soft.javaluator.DoubleEvaluator;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
+import me.Domplanto.streamLabs.util.yaml.BracketResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -12,8 +13,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
-
-import static me.Domplanto.streamLabs.config.issue.Issues.HCM0;
 
 public class ActionCommand {
     @NotNull
@@ -57,14 +56,7 @@ public class ActionCommand {
     }
 
     private static ActionCommand deserialize(String input, ConfigIssueHelper issueHelper) {
-        if (input.startsWith("[") && !input.contains("]"))
-            issueHelper.appendAtPath(HCM0);
-        if (input.startsWith("[") && input.contains("]")) {
-            String executionAmountExpression = input.substring(1, input.indexOf(']'));
-            String command = input.substring(input.indexOf(']') + 1);
-            return new ActionCommand(command, executionAmountExpression);
-        }
-
-        return new ActionCommand(input, null);
+        BracketResolver resolver = new BracketResolver(input).resolve(issueHelper);
+        return new ActionCommand(resolver.getContent(), resolver.getBracketContents().orElse(null));
     }
 }

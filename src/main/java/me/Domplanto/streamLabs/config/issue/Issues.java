@@ -21,7 +21,7 @@ public class Issues {
     public static ConfigIssue WC2 = new ConfigIssue("WC2", ConfigIssue.Level.WARNING, "Condition contains no elements and will be skipped");
 
     public static ConfigIssue HR0 = new ConfigIssue("HR0", ConfigIssue.Level.HINT, "The value of the rate limiter was implicitly set to empty, since it is not directly specified in the config. Make sure to explicitly set value to empty in the config to dismiss this hint and avoid accidentally configuring your rate limiter wrong!");
-    public static ConfigIssue HCM0 = new ConfigIssue("HCM0", ConfigIssue.Level.HINT, "Command contains a non-terminated execution amount bracket");
+    public static ConfigIssue HB0 = new ConfigIssue("HB0", ConfigIssue.Level.HINT, "Element contains a non-terminated bracket at the start");
     public static ConfigIssue HC0 = new ConfigIssue("HC0", ConfigIssue.Level.HINT, "Condition element contains a non-terminated placeholder");
     public static ConfigIssue HI0 = new ConfigIssue("HI0", ConfigIssue.Level.HINT, "Debug mode should ONLY be used for development or to help with reporting issues, it will spam your console with Streamlabs API data!");
 
