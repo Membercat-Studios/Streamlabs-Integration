@@ -8,6 +8,7 @@
     <writeAnnotations>
       <writeAnnotation name="me.Domplanto.streamLabs.ratelimiter.YamlProperty" />
       <writeAnnotation name="me.Domplanto.streamLabs.util.yaml.YamlProperty" />
+      <writeAnnotation name="me.Domplanto.streamLabs.util.yaml.YamlPropertySection" />
     </writeAnnotations>
   </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
