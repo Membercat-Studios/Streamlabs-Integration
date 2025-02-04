@@ -35,7 +35,7 @@ public class Message {
                     issueHelper.push(Message.class, String.valueOf(messageStrings.indexOf(messageString)));
                     MessageType type = MessageType.MESSAGE;
                     BracketResolver resolver = new BracketResolver(messageString).resolve(issueHelper);
-                    String typeStr = resolver.getBracketContents().map(String::toUpperCase).orElse("");
+                    String typeStr = resolver.getBracketContents().map(String::toUpperCase).orElse("MESSAGE");
                     try {
                         type = MessageType.valueOf(typeStr);
                     } catch (IllegalArgumentException e) {

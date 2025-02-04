@@ -6,110 +6,49 @@ import me.Domplanto.streamLabs.action.message.Message;
 import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
-import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
-import me.Domplanto.streamLabs.util.yaml.YamlProperty;
-import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
-import me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner;
-import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
-import org.bukkit.configuration.ConfigurationSection;
+import me.Domplanto.streamLabs.util.yaml.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static me.Domplanto.streamLabs.config.issue.Issues.*;
+import static me.Domplanto.streamLabs.config.issue.Issues.ES0;
+import static me.Domplanto.streamLabs.config.issue.Issues.HI0;
 
-public class PluginConfig {
-    private Map<String, List<Action>> actionsByEvent;
-    private Set<String> affectedPlayers;
-    private Map<String, CustomPlaceholder> customPlaceholders;
-    private Map<String, DonationGoal> goals;
+public class PluginConfig extends ConfigRoot {
+    @YamlProperty(value = "streamlabs")
     private PluginOptions options;
-    private final ConfigIssueHelper issueHelper;
+    @YamlProperty("affected_players")
+    private List<String> affectedPlayers;
+    @YamlPropertySection(value = "actions", elementClass = Action.class)
+    private Map<String, Action> actions;
+    @YamlPropertySection(value = "custom_placeholders", elementClass = CustomPlaceholder.class)
+    private Map<String, CustomPlaceholder> customPlaceholders;
+    @YamlPropertySection(value = "goal_types", elementClass = DonationGoal.class)
+    private Map<String, DonationGoal> goals;
 
     public PluginConfig(Logger logger) {
-        this.issueHelper = new ConfigIssueHelper(logger);
+        super(logger);
     }
 
-    public void load(FileConfiguration config) throws ConfigLoadedWithIssuesException {
-        this.issueHelper.reset();
-        this.actionsByEvent = new HashMap<>();
-        this.affectedPlayers = new HashSet<>();
-        this.customPlaceholders = new HashMap<>();
-        this.goals = new HashMap<>();
-        if (getSectionKeys(config, false).contains("__suppress"))
-            issueHelper.suppressGlobally(config.getStringList("__suppress"));
-
-        issueHelper.newSection("streamlabs");
-        this.options = YamlPropertyObject.createInstance(PluginOptions.class, config.getConfigurationSection("streamlabs"), issueHelper);
-
-        issueHelper.newSection("affected_players");
-        if (getSectionKeys(config, false).contains("affected_players"))
-            this.affectedPlayers = new HashSet<>(config.getStringList("affected_players"));
-
-        // Store the action by its event type for easy lookup
-        this.loadSection(config, "actions", Action.class, (id, action) ->
-                actionsByEvent.computeIfAbsent(Objects.requireNonNull(action).eventType, k -> new ArrayList<>()).add(action));
-        this.loadSection(config, "custom_placeholders", CustomPlaceholder.class, (id, placeholder) ->
-                this.customPlaceholders.put(id, placeholder));
-        this.loadSection(config, "goal_types", DonationGoal.class, (id, goal) ->
-                this.goals.put(id, goal));
-
-        this.issueHelper.pop();
-        this.issueHelper.complete();
-    }
-
-    private <T extends YamlPropertyObject> void loadSection(FileConfiguration config, String sectionId, Class<T> cls, BiConsumer<String, T> action) {
-        issueHelper.newSection(sectionId);
-        ConfigurationSection section = config.getConfigurationSection(sectionId);
-        for (String key : getSectionKeys(section)) {
-            assert section != null;
-            issueHelper.push(cls, key);
-            try {
-                ConfigurationSection subSection = section.getConfigurationSection(key);
-                if (subSection == null) {
-                    issueHelper.pop();
-                    continue;
-                }
-
-                T element = YamlPropertyObject.createInstance(cls, subSection, issueHelper);
-                action.accept(key, element);
-            } catch (Exception e) {
-                issueHelper.appendAtPathAndLog(EI0, e);
-            }
-            issueHelper.pop();
-        }
-    }
-
-    @Nullable
-    public static String getString(ConfigurationSection section, String key) {
-        return section.getKeys(true).contains(key) ? section.getString(key) : null;
-    }
-
-    @NotNull
-    public static Set<String> getSectionKeys(@Nullable ConfigurationSection section) {
-        return getSectionKeys(section, false);
-    }
-
-    @NotNull
-    public static Set<String> getSectionKeys(@Nullable ConfigurationSection section, boolean recursive) {
-        if (section == null) return new HashSet<>();
-        return section.getKeys(recursive);
+    @Override
+    public void customLoad(@NotNull FileConfiguration config) {
     }
 
     public List<Action> getActionsForEvent(String eventType) {
-        return actionsByEvent.getOrDefault(eventType, List.of());
+        return actions.values().stream()
+                .filter(action -> action.eventType.equals(eventType))
+                .toList();
     }
 
     public Set<RateLimiter> fetchRateLimiters() {
-        return Stream.concat(actionsByEvent.values().stream().flatMap(Collection::stream), goals.values().stream())
+        return Stream.concat(actions.values().stream(), goals.values().stream())
                 .map(action -> action.rateLimiter)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -125,20 +64,20 @@ public class PluginConfig {
     }
 
     public Collection<CustomPlaceholder> getCustomPlaceholders() {
-        return customPlaceholders.values();
+        return this.customPlaceholders.values();
     }
 
     public PluginOptions getOptions() {
-        return options;
+        return this.options;
     }
 
     public Set<String> getAffectedPlayers() {
-        return affectedPlayers;
+        return new HashSet<>(affectedPlayers);
     }
 
     public void setAffectedPlayers(StreamLabs plugin, Set<String> affectedPlayers) {
-        this.affectedPlayers = affectedPlayers;
-        plugin.getConfig().set("affected_players", new ArrayList<>(affectedPlayers));
+        this.affectedPlayers = new ArrayList<>(affectedPlayers);
+        plugin.getConfig().set("affected_players", this.affectedPlayers);
         plugin.saveConfig();
         plugin.reloadConfig();
     }

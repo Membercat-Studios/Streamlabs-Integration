@@ -2,7 +2,6 @@ package me.Domplanto.streamLabs.action.ratelimiter;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
-import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.util.ReflectUtil;
@@ -47,7 +46,7 @@ public abstract class RateLimiter implements YamlPropertyObject {
     public static RateLimiter deserialize(ConfigurationSection section, ConfigIssueHelper issueHelper) {
         if (section == null) return null;
 
-        String type = PluginConfig.getString(section, "type");
+        String type = YamlPropertyObject.getString(section, "type");
         issueHelper.pushProperty("type");
         RateLimiter instance = null;
         try {

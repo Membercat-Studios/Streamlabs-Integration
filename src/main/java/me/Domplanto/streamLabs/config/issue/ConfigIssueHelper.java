@@ -3,15 +3,15 @@ package me.Domplanto.streamLabs.config.issue;
 import java.util.*;
 import java.util.logging.Logger;
 
+import static me.Domplanto.streamLabs.config.issue.Issues.EI1;
+
 public class ConfigIssueHelper {
     private final List<ConfigIssue> issues;
     private final ConfigPathStack pathStack;
     private final Logger logger;
-    private final Set<String> globalSuppressions;
 
     public ConfigIssueHelper(Logger logger) {
         this.issues = new ArrayList<>();
-        this.globalSuppressions = new HashSet<>();
         this.pathStack = new ConfigPathStack();
         this.logger = logger;
     }
@@ -19,12 +19,13 @@ public class ConfigIssueHelper {
     public void reset() {
         this.issues.clear();
         this.pathStack.clear();
-        this.globalSuppressions.clear();
     }
 
     public void complete() throws ConfigLoadedWithIssuesException {
-        if (!pathStack.empty())
-            throw new IllegalStateException("Path stack not empty");
+        if (!pathStack.empty()) {
+            this.reset();
+            this.appendAtPathAndLog(EI1, new IllegalStateException("Path stack not empty"));
+        }
 
         if (!this.issues.isEmpty())
             throw new ConfigLoadedWithIssuesException(this.issues);
@@ -32,11 +33,6 @@ public class ConfigIssueHelper {
 
     public void pushSection(String name) {
         this.push(ConfigPathStack.Section.class, name);
-    }
-
-    public void newSection(String name) {
-        this.popIfSection();
-        this.pushSection(name);
     }
 
     public void pushProperty(String name) {
@@ -68,10 +64,6 @@ public class ConfigIssueHelper {
         this.pathStack.peek().suppress(issueIds);
     }
 
-    public void suppressGlobally(Collection<String> issueIds) {
-        this.globalSuppressions.addAll(issueIds);
-    }
-
     public void appendAtPath(ConfigIssue issue) {
         if (checkIssueSuppressed(issue)) return;
         this.issues.add(new PathSpecificConfigIssue(issue, this.pathStack.clone()));
@@ -84,6 +76,6 @@ public class ConfigIssueHelper {
     }
 
     private boolean checkIssueSuppressed(ConfigIssue issue) {
-        return this.globalSuppressions.contains(issue.getId()) || (!this.pathStack.isEmpty() && this.pathStack.peek().suppressedIssues().contains(issue.getId()));
+        return !this.pathStack.isEmpty() && this.pathStack.peek().suppressedIssues().contains(issue.getId());
     }
 }

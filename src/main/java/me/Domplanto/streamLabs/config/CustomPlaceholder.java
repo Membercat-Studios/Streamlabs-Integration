@@ -14,8 +14,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Objects;
 
-import static me.Domplanto.streamLabs.config.PluginConfig.getString;
-
 @ConfigPathSegment(id = "custom_placeholder")
 public final class CustomPlaceholder extends ActionPlaceholder implements YamlPropertyObject {
     public CustomPlaceholder(@NotNull String id, @Nullable String defaultValue, List<StateBasedValue> values) {
@@ -47,7 +45,7 @@ public final class CustomPlaceholder extends ActionPlaceholder implements YamlPr
                 })
                 .toList();
 
-        return new CustomPlaceholder(section.getName(), getString(section, "default_value"), values);
+        return new CustomPlaceholder(section.getName(), YamlPropertyObject.getString(section, "default_value"), values);
     }
 
     @ConfigPathSegment(id = "state_based_value")
