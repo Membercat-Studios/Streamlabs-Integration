@@ -5,6 +5,8 @@ import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.util.yaml.BracketResolver;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -22,7 +24,8 @@ public class Message {
     }
 
     public void send(Player player) {
-        this.type.sendMessage(player, this.content);
+        Component message = MiniMessage.miniMessage().deserialize(this.content);
+        this.type.sendMessage(player, message);
     }
 
     public Message replacePlaceholders(ActionExecutionContext ctx) {

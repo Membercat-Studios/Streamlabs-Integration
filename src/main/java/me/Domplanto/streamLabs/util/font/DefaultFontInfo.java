@@ -1,5 +1,8 @@
 package me.Domplanto.streamLabs.util.font;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+
 import java.util.Arrays;
 
 public enum DefaultFontInfo {
@@ -58,8 +61,8 @@ public enum DefaultFontInfo {
                 .findFirst().orElse(DEFAULT);
     }
 
-    public static String centerMessage(String message) {
-        return centerMessage(message, ' ');
+    public static String centerMessage(Component message) {
+        return centerMessage(LegacyComponentSerializer.legacySection().serialize(message), ' ');
     }
 
     public static String centerMessage(String message, char spaceChar) {
