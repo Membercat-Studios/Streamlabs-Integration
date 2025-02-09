@@ -55,4 +55,15 @@ public class DonationGoal extends PluginConfig.AbstractAction {
     public boolean isActive() {
         return active;
     }
+
+    @Override
+    public String toString() {
+        return "DonationGoal{" +
+                "id='" + id + '\'' +
+                ", addAmount='" + addAmount + '\'' +
+                ", active=" + active +
+                ", max=" + max +
+                ", value=" + value +
+                '}';
+    }
 }

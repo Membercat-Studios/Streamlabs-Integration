@@ -71,7 +71,8 @@ public class TestSubCommand extends SubCommand {
             }
         }
 
-        getPlugin().getExecutor().checkAndExecute(event, object);
+        if (!getPlugin().getExecutor().checkAndExecute(event, object))
+            sender.sendMessage(ChatColor.RED + "Failed to execute some actions, check the logs for more details!");
         return true;
     }
 

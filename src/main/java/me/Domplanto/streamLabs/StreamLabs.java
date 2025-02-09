@@ -45,7 +45,7 @@ public class StreamLabs extends JavaPlugin {
         }
 
         DEBUG_MODE = pluginConfig.getOptions().debugMode;
-        this.executor = new ActionExecutor(this.pluginConfig, STREAMLABS_EVENTS, this);
+        this.executor = new ActionExecutor(this.pluginConfig, this);
         this.setupPlaceholderExpansions();
         this.socketClient = new StreamlabsSocketClient(pluginConfig.getOptions().socketToken, getLogger(), this::onStreamlabsEvent)
                 .setConnectionOpenListener(this::onConnectionOpen)
@@ -141,7 +141,7 @@ public class StreamLabs extends JavaPlugin {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, String @NotNull [] args) {
         if (command.getName().equalsIgnoreCase("streamlabs")) {
             if (!sender.hasPermission("streamlabs.admin")) {
                 sender.sendMessage(ChatColor.RED + "You don't have permission to use this command!");
