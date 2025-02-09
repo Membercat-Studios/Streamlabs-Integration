@@ -8,9 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.function.Consumer;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,21 +16,14 @@ public class StreamlabsSocketClient extends WebSocketClient {
     private static final String KEEP_ALIVE_MESSAGE = "2";
     private static final long KEEP_ALIVE_INTERVAL = 15000;
     private final Logger logger;
+    private final Set<SocketEventListener> eventListeners;
     @Nullable
     private Timer keepAliveTimer;
-    @NotNull
-    private final Consumer<JsonElement> dataReceivedListener;
-    @Nullable
-    private Consumer<ServerHandshake> connectionOpenListener;
-    @Nullable
-    private Consumer<String> connectionCloseListener;
-    @Nullable
-    private Runnable invalidTokenListener;
 
-    public StreamlabsSocketClient(@NotNull String socketToken, Logger logger, @NotNull Consumer<JsonElement> onDataReceived) {
+    public StreamlabsSocketClient(@NotNull String socketToken, Logger logger) {
         super(createURI(socketToken));
         this.logger = logger;
-        this.dataReceivedListener = onDataReceived;
+        this.eventListeners = new HashSet<>();
     }
 
     private static URI createURI(String socketToken) {
@@ -43,9 +34,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
         return switch (statusCode) {
             case 41, 44 -> {
                 this.logger.warning("Disconnecting due to invalid access token");
-                if (invalidTokenListener != null)
-                    invalidTokenListener.run();
-                this.close();
+                DisconnectReason.INVALID_TOKEN.close(this);
                 yield false;
             }
             case 42 -> true;
@@ -75,8 +64,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
     public void onOpen(ServerHandshake serverHandshake) {
         this.startKeepAliveTimer();
         this.logger.info("Successfully connected to Streamlabs!");
-        if (connectionOpenListener != null)
-            connectionOpenListener.accept(serverHandshake);
+        this.eventListeners.forEach(listener -> listener.onConnectionOpen(serverHandshake));
     }
 
     @Override
@@ -87,7 +75,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
             if (processStatusCode(statusCode)) {
                 String json = message.substring(statusCodeEndIdx);
                 JsonElement jsonElement = new Gson().fromJson(json, JsonElement.class);
-                dataReceivedListener.accept(jsonElement);
+                this.eventListeners.forEach(listener -> listener.onEvent(jsonElement));
             }
         } catch (Exception e) {
             this.logger.log(Level.WARNING, "Failed to process Streamlabs message", e);
@@ -95,21 +83,23 @@ public class StreamlabsSocketClient extends WebSocketClient {
     }
 
     private int calculateStatusCodeEndIdx(String message) {
-        if (!message.contains("{") && !message.contains("["))
+        int bracket1 = message.indexOf('{');
+        int bracket2 = message.indexOf('[');
+        if (bracket1 == -1 && bracket2 == -1)
             return message.contains("\"") ? message.indexOf('"') : message.length();
-        if (message.contains("{") && message.contains("["))
-            return Math.min(message.indexOf('{'), message.indexOf('['));
+        if (bracket1 != -1 && bracket2 != -1)
+            return Math.min(bracket1, bracket2);
 
-        return Math.max(message.indexOf('{'), message.indexOf('['));
+        return Math.max(bracket1, bracket2);
     }
 
     @Override
-    public void onClose(int code, String reason, boolean remote) {
+    public void onClose(int code, String message, boolean remote) {
         if (this.keepAliveTimer != null)
             this.keepAliveTimer.cancel();
-        this.logger.warning(String.format("Lost connection to Streamlabs: %s", reason));
-        if (connectionCloseListener != null)
-            connectionCloseListener.accept(reason);
+        DisconnectReason reason = DisconnectReason.fromStatusCode(code);
+        this.logger.warning(String.format("Lost connection to Streamlabs: %s %s", reason, message));
+        this.eventListeners.forEach(listener -> listener.onConnectionClosed(reason, !message.isBlank() ? message : null));
     }
 
     @Override
@@ -125,18 +115,35 @@ public class StreamlabsSocketClient extends WebSocketClient {
         this.uri = createURI(socketToken);
     }
 
-    public StreamlabsSocketClient setConnectionOpenListener(@NotNull Consumer<ServerHandshake> connectionOpenListener) {
-        this.connectionOpenListener = connectionOpenListener;
+    public StreamlabsSocketClient registerListeners(@NotNull SocketEventListener... connectionOpenListener) {
+        this.eventListeners.addAll(List.of(connectionOpenListener));
         return this;
     }
 
-    public StreamlabsSocketClient setConnectionCloseListener(@NotNull Consumer<String> connectionCloseListener) {
-        this.connectionCloseListener = connectionCloseListener;
-        return this;
-    }
+    public enum DisconnectReason {
+        PLUGIN_CLOSED_CONNECTION(200, "Connection was intentionally closed by the plugin."),
+        INVALID_TOKEN(1000, "The streamlabs server refused the access token."),
+        LOST_CONNECTION(-1, "");
+        private final int statusCode;
+        private final String closeMessage;
 
-    public StreamlabsSocketClient setInvalidTokenListener(@Nullable Runnable invalidTokenListener) {
-        this.invalidTokenListener = invalidTokenListener;
-        return this;
+        DisconnectReason(int statusCode, String closeMessage) {
+            this.statusCode = statusCode;
+            this.closeMessage = closeMessage;
+        }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        public void close(WebSocketClient client) {
+            client.close(getStatusCode(), this.closeMessage);
+        }
+
+        public static @NotNull DisconnectReason fromStatusCode(int code) {
+            return Arrays.stream(values())
+                    .filter(reason -> reason.getStatusCode() == code)
+                    .findAny().orElse(LOST_CONNECTION);
+        }
     }
 }
