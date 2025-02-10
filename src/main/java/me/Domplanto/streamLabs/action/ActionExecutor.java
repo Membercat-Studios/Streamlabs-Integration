@@ -8,6 +8,8 @@ import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
 import me.Domplanto.streamLabs.statistics.EventHistory;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
+import me.Domplanto.streamLabs.util.components.ColorScheme;
+import me.Domplanto.streamLabs.util.components.Translations;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
@@ -50,32 +52,35 @@ public class ActionExecutor {
 
             for (StreamlabsEvent event : events) {
                 JsonObject baseObject = event.getBaseObject(object);
-                this.checkAndExecute(event, baseObject);
+                if (!this.checkAndExecute(event, baseObject))
+                    Translations.sendPrefixedToPlayers("streamlabs.error.action_failure", ColorScheme.ERROR, plugin.getServer());
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to parse JSON content of a streamlabs message:", e);
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean checkAndExecute(StreamlabsEvent event, JsonObject baseObject) {
-        try {
-            event.onExecute(this, baseObject);
-            this.eventHistory.store(event, this.pluginConfig, baseObject);
-            List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event.getId());
-            for (PluginConfig.Action action : actions) {
+        event.onExecute(this, baseObject);
+        this.eventHistory.store(event, this.pluginConfig, baseObject);
+        List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event.getId());
+        boolean successful = true;
+        for (PluginConfig.Action action : actions) {
+            try {
                 if (!action.enabled) continue;
 
                 ActionExecutionContext context = new ActionExecutionContext(event, this, this.pluginConfig, action, baseObject);
                 if (event.checkConditions(context))
                     executeAction(context);
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing action %s for %s:".formatted(action.id, event.getId()), e);
+                successful = false;
             }
-
-            this.updateGoal(new ActionExecutionContext(event, this, this.pluginConfig, null, baseObject));
-            return true;
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing actions for %s:".formatted(event.getId()), e);
-            return false;
         }
+
+        this.updateGoal(new ActionExecutionContext(event, this, this.pluginConfig, null, baseObject));
+        return successful;
     }
 
     private void executeAction(ActionExecutionContext ctx) {
