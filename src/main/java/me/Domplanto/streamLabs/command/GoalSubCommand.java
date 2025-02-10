@@ -33,6 +33,11 @@ public class GoalSubCommand extends SubCommand {
 
         switch (args[1]) {
             case "start" -> {
+                if (args.length < 3) {
+                    Translations.sendPrefixedResponse("streamlabs.commands.goal.error_no_type", ColorScheme.INVALID, sender);
+                    return true;
+                }
+
                 DonationGoal goal = getPlugin().pluginConfig().getGoal(args[2]);
                 if (goal == null) {
                     Translations.sendPrefixedResponse("streamlabs.commands.goal.error_not_found", ColorScheme.INVALID, sender, text(args[2]));
