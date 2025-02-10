@@ -1,20 +1,28 @@
 package me.Domplanto.streamLabs.config.issue;
 
-import org.bukkit.ChatColor;
+import me.Domplanto.streamLabs.util.components.ColorScheme;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.format.TextColor;
+
+import static net.kyori.adventure.text.Component.translatable;
 
 public class ConfigIssue {
     private final String id;
     private final Level level;
-    private final String description;
+    private Component description;
 
-    public ConfigIssue(String id, Level level, String description) {
+    public ConfigIssue(String id, Level level) {
         this.id = id;
         this.level = level;
-        this.description = description;
+        this.description = translatable("streamlabs.issue.%s".formatted(id));
     }
 
-    public String getMessage() {
-        return getLevel().getColor() + "[%s/%s]: %s".formatted(getLevel(), getId(), getDescription());
+    public ConfigIssue(String id, Level level, ComponentLike... args) {
+        this(id, level);
+        this.description = translatable()
+                .key("streamlabs.issue.%s".formatted(id))
+                .arguments(args).build();
     }
 
     public Level getLevel() {
@@ -25,23 +33,23 @@ public class ConfigIssue {
         return id;
     }
 
-    public String getDescription() {
+    public Component getDescription() {
         return description;
     }
 
     public enum Level {
-        ERROR(ChatColor.RED, java.util.logging.Level.SEVERE),
-        WARNING(ChatColor.YELLOW, java.util.logging.Level.WARNING),
-        HINT(ChatColor.GRAY, java.util.logging.Level.INFO);
-        private final ChatColor color;
+        ERROR(ColorScheme.ERROR, java.util.logging.Level.SEVERE),
+        WARNING(ColorScheme.INVALID, java.util.logging.Level.WARNING),
+        HINT(ColorScheme.COMMENT, java.util.logging.Level.INFO);
+        private final TextColor color;
         private final java.util.logging.Level logLevel;
 
-        Level(ChatColor color, java.util.logging.Level logLevel) {
+        Level(TextColor color, java.util.logging.Level logLevel) {
             this.color = color;
             this.logLevel = logLevel;
         }
 
-        public ChatColor getColor() {
+        public TextColor getColor() {
             return color;
         }
 
