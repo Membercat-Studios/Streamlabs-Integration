@@ -1,5 +1,7 @@
 package me.Domplanto.streamLabs.config.issue;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -66,16 +68,20 @@ public class ConfigIssueHelper {
 
     public void appendAtPath(ConfigIssue issue) {
         if (checkIssueSuppressed(issue)) return;
-        this.issues.add(new PathSpecificConfigIssue(issue, this.pathStack.clone()));
+        this.issues.add(new PathSpecificConfigIssue(issue, this.stackCopy()));
     }
 
     public void appendAtPathAndLog(ConfigIssue issue, Throwable throwable) {
         if (checkIssueSuppressed(issue)) return;
-        this.issues.add(new PathSpecificConfigIssue(issue, this.pathStack.clone()));
+        this.issues.add(new PathSpecificConfigIssue(issue, this.stackCopy()));
         this.logger.log(issue.getLevel().getLogLevel(), "Detailed exception for config issue \"%s\" at %s:".formatted(issue.getDescription(), pathStack.toFormattedString()), throwable);
     }
 
     private boolean checkIssueSuppressed(ConfigIssue issue) {
         return !this.pathStack.isEmpty() && this.pathStack.peek().suppressedIssues().contains(issue.getId());
+    }
+
+    public @NotNull ConfigPathStack stackCopy() {
+        return this.pathStack.clone();
     }
 }
