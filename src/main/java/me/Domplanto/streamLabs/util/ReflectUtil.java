@@ -29,4 +29,13 @@ public class ReflectUtil {
                     .collect(Collectors.toSet());
         }
     }
+
+    public static boolean checkForPaper() {
+        try {
+            Class.forName("io.papermc.paper.plugin.loader.PluginLoader");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 }

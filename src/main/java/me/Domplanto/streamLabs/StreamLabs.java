@@ -10,17 +10,17 @@ import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.papi.StreamlabsExpansion;
 import me.Domplanto.streamLabs.socket.SocketEventListener;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
+import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.components.Translations;
-import me.Domplanto.streamLabs.util.font.DefaultFontInfo;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationRegistry;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.java_websocket.handshake.ServerHandshake;
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +50,9 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
 
     @Override
     public void onEnable() {
+        if (!this.runPaperCheck())
+            return;
+
         saveDefaultConfig();
         LOGGER = getLogger();
         this.initializeResourceBundles();
@@ -96,6 +99,14 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         }
 
         GlobalTranslator.translator().addSource(registry);
+    }
+
+    private boolean runPaperCheck() {
+        if (ReflectUtil.checkForPaper()) return true;
+
+        getLogger().log(Level.SEVERE, "Streamlabs Integration was loaded on a non-paper server, shutting down! This plugin uses part of the paper API, which is not available in the current server software, meaning it won't work without paper and just cause a lot of errors. To prevent this, the plugin is automatically disabling itself.");
+        getServer().getPluginManager().disablePlugin(this);
+        return false;
     }
 
     public void printIssues(ConfigIssueHelper.IssueList issues, CommandSender sender) {
