@@ -1,5 +1,6 @@
 package me.Domplanto.streamLabs.config.issue;
 
+import org.bukkit.ChatColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -8,12 +9,12 @@ import java.util.logging.Logger;
 import static me.Domplanto.streamLabs.config.issue.Issues.EI1;
 
 public class ConfigIssueHelper {
-    private final List<ConfigIssue> issues;
+    private final IssueList issues;
     private final ConfigPathStack pathStack;
     private final Logger logger;
 
     public ConfigIssueHelper(Logger logger) {
-        this.issues = new ArrayList<>();
+        this.issues = new IssueList();
         this.pathStack = new ConfigPathStack();
         this.logger = logger;
     }
@@ -68,12 +69,12 @@ public class ConfigIssueHelper {
 
     public void appendAtPath(ConfigIssue issue) {
         if (checkIssueSuppressed(issue)) return;
-        this.issues.add(new PathSpecificConfigIssue(issue, this.stackCopy()));
+        this.issues.add(issue, this.stackCopy());
     }
 
     public void appendAtPathAndLog(ConfigIssue issue, Throwable throwable) {
         if (checkIssueSuppressed(issue)) return;
-        this.issues.add(new PathSpecificConfigIssue(issue, this.stackCopy()));
+        this.issues.add(issue, this.stackCopy());
         this.logger.log(issue.getLevel().getLogLevel(), "Detailed exception for config issue \"%s\" at %s:".formatted(issue.getDescription(), pathStack.toFormattedString()), throwable);
     }
 
@@ -83,5 +84,20 @@ public class ConfigIssueHelper {
 
     public @NotNull ConfigPathStack stackCopy() {
         return this.pathStack.clone();
+    }
+
+    public static class IssueList extends ArrayList<IssueList.RecordedIssue> {
+        public record RecordedIssue(
+                ConfigIssue issue,
+                ConfigPathStack location
+        ) {
+            public String getMessage() {
+                return issue.getLevel().getColor() + "[%s/%s %sat %s]: %s".formatted(issue.getLevel(), issue.getId(), ChatColor.DARK_GRAY, location.toFormattedString() + issue.getLevel().getColor(), issue.getDescription());
+            }
+        }
+
+        public void add(ConfigIssue issue, ConfigPathStack location) {
+            this.add(new RecordedIssue(issue, location));
+        }
     }
 }

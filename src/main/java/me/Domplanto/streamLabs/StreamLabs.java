@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import me.Domplanto.streamLabs.action.ActionExecutor;
 import me.Domplanto.streamLabs.command.SubCommand;
 import me.Domplanto.streamLabs.config.PluginConfig;
-import me.Domplanto.streamLabs.config.issue.ConfigIssue;
+import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.papi.StreamlabsExpansion;
@@ -98,9 +98,9 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         GlobalTranslator.translator().addSource(registry);
     }
 
-    public void printIssues(List<ConfigIssue> issues, CommandSender sender) {
+    public void printIssues(ConfigIssueHelper.IssueList issues, CommandSender sender) {
         List<String> issueStr = issues.stream()
-                .map(ConfigIssue::getMessage)
+                .map(ConfigIssueHelper.IssueList.RecordedIssue::getMessage)
                 .toList();
         getLogger().warning("Loaded config with %d issues".formatted(issueStr.size()));
         String bottom = "-".repeat(53);
