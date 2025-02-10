@@ -1,5 +1,10 @@
 package me.Domplanto.streamLabs.config.issue;
 
+import me.Domplanto.streamLabs.util.components.ColorScheme;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -7,16 +12,26 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.Stack;
 
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
 public class ConfigPathStack extends Stack<ConfigPathStack.Entry> {
     public String toFormattedString() {
-        StringBuilder builder = new StringBuilder();
+        return PlainTextComponentSerializer.plainText().serialize(toComponent());
+    }
+
+    public Component toComponent() {
+        TextComponent.Builder builder = text();
         for (ConfigPathStack.Entry segment : this) {
-            builder.append("/");
+            builder.append(text("/"));
             String staticName = segment.annotation() != null ? segment.annotation().id() : segment.cls().getTypeName();
-            builder.append(segment.ownName() != null ? segment.ownName() : staticName);
+            builder.append(text()
+                    .content(segment.ownName() != null ? segment.ownName() : staticName)
+                    .color(this.lastElement().equals(segment) ? ColorScheme.DONE : null)
+                    .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.config_type", ColorScheme.STREAMLABS, text(staticName, ColorScheme.SUCCESS)))));
         }
 
-        return builder.toString();
+        return builder.build();
     }
 
     @Override

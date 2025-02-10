@@ -1,12 +1,23 @@
 package me.Domplanto.streamLabs.config.issue;
 
-import org.bukkit.ChatColor;
+import me.Domplanto.streamLabs.command.ReloadSubCommand;
+import me.Domplanto.streamLabs.util.components.ColorScheme;
+import me.Domplanto.streamLabs.util.components.Translations;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.EI1;
+import static net.kyori.adventure.text.Component.*;
 
 public class ConfigIssueHelper {
     private final IssueList issues;
@@ -91,13 +102,52 @@ public class ConfigIssueHelper {
                 ConfigIssue issue,
                 ConfigPathStack location
         ) {
-            public String getMessage() {
-                return issue.getLevel().getColor() + "[%s/%s %sat %s]: %s".formatted(issue.getLevel(), issue.getId(), ChatColor.DARK_GRAY, location.toFormattedString() + issue.getLevel().getColor(), issue.getDescription());
+            public Component getMessage(boolean includePath) {
+                TextColor color = issue.getLevel().getColor();
+                Component description = issue.getDescription().color(color == ColorScheme.COMMENT ? ColorScheme.WHITE : color);
+                List<Component> args = new ArrayList<>(List.of(issue.getLevel().translatable(), text(issue.getId(), color),
+                        includePath ? location.toComponent().color(ColorScheme.COMMENT) : description));
+                if (includePath)
+                    args.add(description);
+                return translatable()
+                        .key(includePath ? "streamlabs.issue.format" : "streamlabs.issue.format.no_path")
+                        .color(ColorScheme.WHITE).arguments(args)
+                        .build();
             }
         }
 
         public void add(ConfigIssue issue, ConfigPathStack location) {
             this.add(new RecordedIssue(issue, location));
+        }
+
+        public Component getListMessage(long limit) {
+            TextComponent.Builder builder = text()
+                    .append(Translations.SEPARATOR_LINE).append(newline())
+                    .append(translatable().key("streamlabs.issue.list.title").color(ColorScheme.DISABLE))
+                    .append(text("\n\n"));
+            Set<String> longIds = new HashSet<>();
+            this.forEach(issue -> {
+                if (this.indexOf(issue) >= (limit - 1) && limit != -1) return;
+                if (longIds.contains(issue.issue().getId())) return;
+                long count = stream().map(RecordedIssue::issue).filter(Predicate.isEqual(issue.issue())).count();
+                if (count > 2) {
+                    builder.append(text().content("x%d ".formatted(count)).color(ColorScheme.DISABLE));
+                    longIds.add(issue.issue().getId());
+                }
+
+                builder.append(issue.getMessage(count <= 2));
+                if (!this.getLast().equals(issue))
+                    builder.append(text("\n\n"));
+            });
+            long distCount = stream().map(RecordedIssue::issue).distinct().count();
+            if (distCount > limit && limit != -1)
+                builder.append(translatable("streamlabs.issue.list.view_more", ColorScheme.COMMENT, text(distCount - limit))).append(space())
+                        .append(translatable("streamlabs.issue.list.show_in_console", Style.style(ColorScheme.DONE, TextDecoration.UNDERLINED))
+                                .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.show_in_console")))
+                                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, ReloadSubCommand.SHOW_IN_CONSOLE)))
+                        .append(newline());
+
+            return builder.append(Translations.SEPARATOR_LINE).build();
         }
     }
 }

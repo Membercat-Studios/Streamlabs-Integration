@@ -3,7 +3,11 @@ package me.Domplanto.streamLabs.config.issue;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
+import java.util.Set;
 
 import static net.kyori.adventure.text.Component.translatable;
 
@@ -47,6 +51,12 @@ public class ConfigIssue {
         Level(TextColor color, java.util.logging.Level logLevel) {
             this.color = color;
             this.logLevel = logLevel;
+        }
+
+        public Component translatable() {
+            return Component.translatable()
+                    .key("streamlabs.issue.level.%s".formatted(this.name().toLowerCase()))
+                    .style(Style.style(this.color, this != HINT ? Set.of(TextDecoration.BOLD) : Set.of())).build();
         }
 
         public TextColor getColor() {

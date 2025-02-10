@@ -99,15 +99,7 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
     }
 
     public void printIssues(ConfigIssueHelper.IssueList issues, CommandSender sender) {
-        List<String> issueStr = issues.stream()
-                .map(ConfigIssueHelper.IssueList.RecordedIssue::getMessage)
-                .toList();
-        getLogger().warning("Loaded config with %d issues".formatted(issueStr.size()));
-        String bottom = "-".repeat(53);
-        String top = DefaultFontInfo.centerMessage(" Configuration Issue List ", '-');
-        top += "-".repeat((bottom.length() + 4) - top.length()) + "\n";
-        String output = ChatColor.AQUA + top + String.join("\n", issueStr) + "\n" + ChatColor.AQUA + bottom;
-        sender.sendMessage(output);
+        sender.sendMessage(issues.getListMessage(sender instanceof ConsoleCommandSender ? -1 : 7));
     }
 
     @Override

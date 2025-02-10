@@ -15,6 +15,13 @@ import static net.kyori.adventure.text.Component.translatable;
 
 public class Translations {
     private static final String STATUS_MESSAGE_PERMISSION = "streamlabs.status";
+    private static final String MINIMESSAGE_URL = "https://docs.advntr.dev/minimessage";
+    public static final Component MINIMESSAGE_LINK = text()
+            .content(MINIMESSAGE_URL)
+            .style(Style.style(ColorScheme.DONE, TextDecoration.UNDERLINED))
+            .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, MINIMESSAGE_URL))
+            .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.more_info")))
+            .build();
     private static final String REPO_URL = "https://github.com/Membercat-Studios/Streamlabs-Integration";
     private static final String STREAMLABS_URL = "%s/wiki".formatted(REPO_URL);
     private static final String ISSUES_URL = "%s/issues".formatted(REPO_URL);
@@ -29,6 +36,10 @@ public class Translations {
             .append(text(" "))
             .append(translatable().key("streamlabs.command.error.unexpected2").color(ColorScheme.ERROR))
             .build();
+    public static Component SEPARATOR_LINE = translatable()
+            .key("streamlabs.chat.separator")
+            .decorate(TextDecoration.STRIKETHROUGH)
+            .color(ColorScheme.STREAMLABS).build();
 
     public static Component withPrefix(Component component) {
         return withPrefix(component, false);

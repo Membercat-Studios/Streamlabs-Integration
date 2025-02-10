@@ -1,6 +1,7 @@
 package me.Domplanto.streamLabs.config.issue;
 
 import me.Domplanto.streamLabs.condition.ConditionGroup;
+import me.Domplanto.streamLabs.util.components.Translations;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
 
 import java.lang.reflect.Field;
@@ -18,7 +19,7 @@ public class Issues {
     public static ConfigIssue WI1 = new ConfigIssue("WI1", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WR0 = type -> new ConfigIssue("WR0", ConfigIssue.Level.WARNING, text(type));
     public static BiFunction<String, String, ConfigIssue> WM0 = (type, def) -> new ConfigIssue("WM0", ConfigIssue.Level.WARNING, text(type), text(def));
-    public static ConfigIssue WM1 = new ConfigIssue("WM1", ConfigIssue.Level.WARNING);
+    public static ConfigIssue WM1 = new ConfigIssue("WM1", ConfigIssue.Level.WARNING, Translations.MINIMESSAGE_LINK);
     public static BiFunction<String, ConditionGroup.Mode, ConfigIssue> WC0 = (modeString, groupMode) -> new ConfigIssue("WC0", ConfigIssue.Level.WARNING, text(modeString), text(groupMode.name()));
     public static ConfigIssue WC1 = new ConfigIssue("WC1", ConfigIssue.Level.WARNING);
     public static ConfigIssue WC2 = new ConfigIssue("WC2", ConfigIssue.Level.WARNING);

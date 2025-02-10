@@ -5,6 +5,7 @@ import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.components.Translations;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,8 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public class ReloadSubCommand extends SubCommand {
+    public static String SHOW_IN_CONSOLE = "/streamlabs reload _console";
+
     public ReloadSubCommand(StreamLabs pluginInstance) {
         super(pluginInstance);
     }
@@ -26,13 +29,15 @@ public class ReloadSubCommand extends SubCommand {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         Translations.sendPrefixedResponse("streamlabs.commands.config.reload", ColorScheme.DONE, sender);
+        boolean printToConsole = strings.length > 1 && strings[1].equals("_console");
         getPlugin().reloadConfig();
         try {
             getPlugin().pluginConfig().load(getPlugin().getConfig());
         } catch (ConfigLoadedWithIssuesException e) {
-            getPlugin().printIssues(e.getIssues(), sender);
+            getPlugin().printIssues(e.getIssues(), printToConsole ? Bukkit.getConsoleSender() : sender);
         }
         getPlugin().getSocketClient().updateToken(getPlugin().pluginConfig().getOptions().socketToken);
+        if (printToConsole) return true;
         if (strings.length > 1 && strings[1].equals("noreconnect")) return true;
         if (getPlugin().getSocketClient().isOpen() || (getPlugin().pluginConfig().getOptions().autoConnect && !getPlugin().getSocketClient().isOpen())) {
             StreamlabsSocketClient.DisconnectReason.PLUGIN_RECONNECTING.close(getPlugin().getSocketClient());
