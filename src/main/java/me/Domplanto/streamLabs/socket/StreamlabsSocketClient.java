@@ -2,6 +2,10 @@ package me.Domplanto.streamLabs.socket;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import me.Domplanto.streamLabs.util.components.ColorScheme;
+import me.Domplanto.streamLabs.util.components.Translations;
+import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Server;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.jetbrains.annotations.NotNull;
@@ -98,7 +102,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
         if (this.keepAliveTimer != null)
             this.keepAliveTimer.cancel();
         DisconnectReason reason = DisconnectReason.fromStatusCode(code);
-        this.logger.warning(String.format("Lost connection to Streamlabs: %s %s", reason, message));
+        this.logger.warning(String.format("Lost connection to Streamlabs: %s (%s)", message, reason));
         this.eventListeners.forEach(listener -> listener.onConnectionClosed(reason, !message.isBlank() ? message : null));
     }
 
@@ -121,19 +125,27 @@ public class StreamlabsSocketClient extends WebSocketClient {
     }
 
     public enum DisconnectReason {
-        PLUGIN_CLOSED_CONNECTION(200, "Connection was intentionally closed by the plugin."),
-        INVALID_TOKEN(1000, "The streamlabs server refused the access token."),
-        LOST_CONNECTION(-1, "");
+        PLUGIN_CLOSED_CONNECTION(4000, "Connection was intentionally closed by the plugin.", "streamlabs.status.socket_closed", ColorScheme.DISABLE),
+        INVALID_TOKEN(4001, "The streamlabs server refused the access token.", "streamlabs.status.invalid_token", ColorScheme.INVALID),
+        LOST_CONNECTION(4002, "", "streamlabs.status.lost_connection", ColorScheme.ERROR);
         private final int statusCode;
         private final String closeMessage;
+        private final String translationKey;
+        private final TextColor color;
 
-        DisconnectReason(int statusCode, String closeMessage) {
+        DisconnectReason(int statusCode, String closeMessage, String translationKey, TextColor color) {
             this.statusCode = statusCode;
             this.closeMessage = closeMessage;
+            this.translationKey = translationKey;
+            this.color = color;
         }
 
         public int getStatusCode() {
             return statusCode;
+        }
+
+        public void sendToPlayers(Server server) {
+            Translations.sendPrefixedToPlayers(this.translationKey, this.color, server);
         }
 
         public void close(WebSocketClient client) {

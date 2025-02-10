@@ -7,9 +7,16 @@ import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.config.issue.ConfigIssue;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
-import me.Domplanto.streamLabs.util.font.DefaultFontInfo;
 import me.Domplanto.streamLabs.papi.StreamlabsExpansion;
+import me.Domplanto.streamLabs.socket.SocketEventListener;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
+import me.Domplanto.streamLabs.util.components.ColorScheme;
+import me.Domplanto.streamLabs.util.components.Translations;
+import me.Domplanto.streamLabs.util.font.DefaultFontInfo;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.translation.GlobalTranslator;
+import net.kyori.adventure.translation.TranslationRegistry;
+import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -20,10 +27,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public class StreamLabs extends JavaPlugin {
+public class StreamLabs extends JavaPlugin implements SocketEventListener {
+    private static final String NAMESPACE = "streamlabs";
+    private static final Locale[] SUPPORTED_LOCALES = {Locale.US, Locale.GERMANY};
+    private static final String DEFAULT_BUNDLE_ID = "default";
     private static final Set<? extends StreamlabsEvent> STREAMLABS_EVENTS = StreamlabsEvent.findEventClasses();
     private final Set<? extends SubCommand> SUB_COMMANDS = SubCommand.findSubCommandClasses(this);
     public static Logger LOGGER;
@@ -37,6 +49,7 @@ public class StreamLabs extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
         LOGGER = getLogger();
+        this.initializeResourceBundles();
         this.pluginConfig = new PluginConfig(getLogger());
         try {
             this.pluginConfig.load(getConfig());
@@ -47,10 +60,8 @@ public class StreamLabs extends JavaPlugin {
         DEBUG_MODE = pluginConfig.getOptions().debugMode;
         this.executor = new ActionExecutor(this.pluginConfig, this);
         this.setupPlaceholderExpansions();
-        this.socketClient = new StreamlabsSocketClient(pluginConfig.getOptions().socketToken, getLogger(), this::onStreamlabsEvent)
-                .setConnectionOpenListener(this::onConnectionOpen)
-                .setConnectionCloseListener(this::onConnectionClosed)
-                .setInvalidTokenListener(this::onInvalidSocketToken);
+        this.socketClient = new StreamlabsSocketClient(pluginConfig.getOptions().socketToken, getLogger())
+                .registerListeners(this);
         // The StreamlabsSocketClient will not connect at all if a connection in onEnable is not attempted,
         // this is why we need to add it here, this issue should definitely be investigated further in the future!
         new Thread(() -> {
@@ -59,7 +70,7 @@ public class StreamLabs extends JavaPlugin {
             } catch (InterruptedException ignore) {
             }
             if (!pluginConfig.getOptions().autoConnect && this.socketClient.isOpen()) {
-                this.socketClient.close();
+                StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(socketClient);
                 getLogger().info("Not connecting to Streamlabs at startup because auto_connect is disabled in the config!");
             }
         }, "Socket startup Thread").start();
@@ -74,6 +85,16 @@ public class StreamLabs extends JavaPlugin {
         getLogger().info("Successfully hooked into PlaceholderAPI!");
     }
 
+    private void initializeResourceBundles() {
+        TranslationRegistry registry = TranslationRegistry.create(Key.key(NAMESPACE, DEFAULT_BUNDLE_ID));
+        for (Locale locale : SUPPORTED_LOCALES) {
+            ResourceBundle bundle = ResourceBundle.getBundle("%s.%s".formatted(NAMESPACE, DEFAULT_BUNDLE_ID), locale, UTF8ResourceBundleControl.get());
+            registry.registerAll(locale, bundle, true);
+        }
+
+        GlobalTranslator.translator().addSource(registry);
+    }
+
     public void printIssues(List<ConfigIssue> issues, CommandSender sender) {
         List<String> issueStr = issues.stream()
                 .map(ConfigIssue::getMessage)
@@ -86,29 +107,27 @@ public class StreamLabs extends JavaPlugin {
         sender.sendMessage(output);
     }
 
-    private void onConnectionOpen(ServerHandshake handshake) {
-        if (this.showStatusMessages())
-            Bukkit.broadcastMessage(ChatColor.GREEN + "Successfully connected to Streamlabs!");
-    }
-
-    private void onConnectionClosed(String message) {
-        if (this.showStatusMessages())
-            Bukkit.broadcastMessage(ChatColor.RED + "Connection to Streamlabs lost!");
-    }
-
-    private void onInvalidSocketToken() {
-        if (this.showStatusMessages())
-            Bukkit.broadcastMessage(ChatColor.YELLOW + "The socket token specified is invalid!");
-    }
-
-    private void onStreamlabsEvent(JsonElement rawData) {
+    @Override
+    public void onEvent(@NotNull JsonElement rawData) {
         this.executor.parseAndExecute(rawData);
+    }
+
+    @Override
+    public void onConnectionOpen(@NotNull ServerHandshake handshake) {
+        if (this.showStatusMessages())
+            Translations.sendPrefixedToPlayers("streamlabs.status.socket_open", ColorScheme.SUCCESS, getServer());
+    }
+
+    @Override
+    public void onConnectionClosed(@NotNull StreamlabsSocketClient.DisconnectReason reason, @Nullable String message) {
+        if (this.showStatusMessages())
+            reason.sendToPlayers(getServer());
     }
 
     @Override
     public void onDisable() {
         if (socketClient != null && socketClient.isOpen()) {
-            socketClient.close();
+            StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(socketClient);
         }
     }
 

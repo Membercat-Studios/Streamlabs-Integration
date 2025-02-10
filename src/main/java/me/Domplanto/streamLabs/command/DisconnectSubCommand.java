@@ -25,7 +25,7 @@ public class DisconnectSubCommand extends SubCommand {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         StreamlabsSocketClient socketClient = getPlugin().getSocketClient();
         if (socketClient.isOpen()) {
-            socketClient.close();
+            StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(socketClient);
             sender.sendMessage(ChatColor.RED + "Disconnected from Streamlabs!");
         } else {
             sender.sendMessage(ChatColor.YELLOW + "Not connected to Streamlabs!");

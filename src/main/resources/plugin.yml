@@ -14,10 +14,13 @@ softdepend:
 commands:
   streamlabs:
     description: Main command for Streamlabs integration
-    usage: /<command> <connect|disconnect|player|ratelimiters|test|status|reload>
+    usage: /<command> <connect|disconnect|player|ratelimiters|test|goal|status|reload>
     permission: streamlabs.admin
 
 permissions:
   streamlabs.admin:
     description: Allows access to all Streamlabs commands
+    default: op
+  streamlabs.status:
+    description: Players with this permission will be able to see all status messages sent by the plugin.
     default: op
