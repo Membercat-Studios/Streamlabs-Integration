@@ -126,8 +126,10 @@ public class StreamlabsSocketClient extends WebSocketClient {
 
     public enum DisconnectReason {
         PLUGIN_CLOSED_CONNECTION(4000, "Connection was intentionally closed by the plugin.", "streamlabs.status.socket_closed", ColorScheme.DISABLE),
-        INVALID_TOKEN(4001, "The streamlabs server refused the access token.", "streamlabs.status.invalid_token", ColorScheme.INVALID),
-        LOST_CONNECTION(4002, "", "streamlabs.status.lost_connection", ColorScheme.ERROR);
+        PLUGIN_RECONNECTING(4001, "Connection was intentionally closed by the plugin with the intention of reconnecting shortly after.", "streamlabs.status.socket_reconnecting", ColorScheme.DISABLE),
+        INVALID_TOKEN(4002, "The streamlabs server refused the access token.", "streamlabs.status.invalid_token", ColorScheme.INVALID),
+        CONNECTION_FAILURE(-1, "A previous attempt at initializing a connection failed.", "streamlabs.status.connection_failure", ColorScheme.ERROR),
+        LOST_CONNECTION(4003, "Connection to the server lost.", "streamlabs.status.lost_connection", ColorScheme.ERROR);
         private final int statusCode;
         private final String closeMessage;
         private final String translationKey;

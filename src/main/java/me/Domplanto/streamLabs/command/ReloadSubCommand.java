@@ -35,7 +35,7 @@ public class ReloadSubCommand extends SubCommand {
         getPlugin().getSocketClient().updateToken(getPlugin().pluginConfig().getOptions().socketToken);
         if (strings.length > 1 && strings[1].equals("noreconnect")) return true;
         if (getPlugin().getSocketClient().isOpen() || (getPlugin().pluginConfig().getOptions().autoConnect && !getPlugin().getSocketClient().isOpen())) {
-            StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(getPlugin().getSocketClient());
+            StreamlabsSocketClient.DisconnectReason.PLUGIN_RECONNECTING.close(getPlugin().getSocketClient());
             getPlugin().getSocketClient().reconnectAsync();
         }
         return true;
