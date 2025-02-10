@@ -67,7 +67,9 @@ public class Message {
     }
 
     public Message replacePlaceholders(ActionExecutionContext ctx) {
-        return new Message(this.type, ActionPlaceholder.replacePlaceholders(this.content, ctx));
+        String newContent = ActionPlaceholder.replacePlaceholders(this.content, ctx);
+        //noinspection deprecation
+        return new Message(this.type, ChatColor.translateAlternateColorCodes('&', newContent), this.location);
     }
 
     public static List<Message> parseAll(List<String> messageStrings, ConfigIssueHelper issueHelper) {
@@ -83,6 +85,11 @@ public class Message {
                         issueHelper.appendAtPath(WM0.apply(typeStr, type.name()));
                     }
 
+                    //noinspection deprecation
+                    if (!ChatColor.stripColor(resolver.getContent()).equals(resolver.getContent()))
+                        issueHelper.appendAtPath(WM1);
+
+                    ConfigPathStack stack = issueHelper.stackCopy();
                     issueHelper.pop();
                     return new Message(type, resolver.getContent(), stack);
                 })

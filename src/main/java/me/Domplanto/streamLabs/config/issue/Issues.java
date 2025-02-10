@@ -16,6 +16,7 @@ public class Issues {
     public static ConfigIssue WI1 = new ConfigIssue("WI1", ConfigIssue.Level.WARNING, "Failed to assign issues to property, detailed information can be found in the logs!");
     public static Function<String, ConfigIssue> WR0 = type -> new ConfigIssue("WR0", ConfigIssue.Level.WARNING, "No rate limiter of type \"%s\" could be found, possible typo?".formatted(type));
     public static BiFunction<String, String, ConfigIssue> WM0 = (type, def) -> new ConfigIssue("WM0", ConfigIssue.Level.WARNING, "No message of type \"%s\" could be found, possible typo? (Defaulting to %s)".formatted(type, def));
+    public static ConfigIssue WM1 = new ConfigIssue("WM1", ConfigIssue.Level.WARNING, "Message contains legacy formatting codes (&), which are not supported by MiniMessage. MiniMessage tags will not be processed in this message, for more info take a look at https://docs.advntr.dev/minimessage/");
     public static BiFunction<String, ConditionGroup.Mode, ConfigIssue> WC0 = (modeString, groupMode) -> new ConfigIssue("WC0", ConfigIssue.Level.WARNING, "No condition group mode \"%s\" could be found, defaulting to %s".formatted(modeString, groupMode));
     public static ConfigIssue WC1 = new ConfigIssue("WC1", ConfigIssue.Level.WARNING, "No valid condition operator found, skipping condition");
     public static ConfigIssue WC2 = new ConfigIssue("WC2", ConfigIssue.Level.WARNING, "Condition contains no elements and will be skipped");
