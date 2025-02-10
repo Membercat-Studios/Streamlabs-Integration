@@ -2,7 +2,9 @@ package me.Domplanto.streamLabs.command;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
-import org.bukkit.ChatColor;
+import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
+import me.Domplanto.streamLabs.util.components.ColorScheme;
+import me.Domplanto.streamLabs.util.components.Translations;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +24,8 @@ public class ReloadSubCommand extends SubCommand {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
+        Translations.sendPrefixedResponse("streamlabs.commands.config.reload", ColorScheme.DONE, sender);
         getPlugin().reloadConfig();
         try {
             getPlugin().pluginConfig().load(getPlugin().getConfig());
@@ -30,15 +33,16 @@ public class ReloadSubCommand extends SubCommand {
             getPlugin().printIssues(e.getIssues(), sender);
         }
         getPlugin().getSocketClient().updateToken(getPlugin().pluginConfig().getOptions().socketToken);
-        sender.sendMessage(ChatColor.GREEN + "Configuration reloaded!");
         if (strings.length > 1 && strings[1].equals("noreconnect")) return true;
-        if (getPlugin().getSocketClient().isOpen() || (getPlugin().pluginConfig().getOptions().autoConnect && !getPlugin().getSocketClient().isOpen()))
+        if (getPlugin().getSocketClient().isOpen() || (getPlugin().pluginConfig().getOptions().autoConnect && !getPlugin().getSocketClient().isOpen())) {
+            StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(getPlugin().getSocketClient());
             getPlugin().getSocketClient().reconnectAsync();
+        }
         return true;
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         return strings.length > 1 ? List.of("noreconnect") : List.of();
     }
 }

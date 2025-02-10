@@ -2,7 +2,8 @@ package me.Domplanto.streamLabs.command;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
-import org.bukkit.ChatColor;
+import me.Domplanto.streamLabs.util.components.ColorScheme;
+import me.Domplanto.streamLabs.util.components.Translations;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -22,20 +23,20 @@ public class ConnectSubCommand extends SubCommand {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         StreamlabsSocketClient socketClient = getPlugin().getSocketClient();
         if (!socketClient.isOpen()) {
             socketClient.reconnectAsync();
-            sender.sendMessage(ChatColor.GREEN + "Connecting to Streamlabs...");
+            Translations.sendPrefixedResponse("streamlabs.commands.connection.connecting", ColorScheme.DONE, sender);
         } else {
-            sender.sendMessage(ChatColor.YELLOW + "Already connected to Streamlabs!");
+            Translations.sendPrefixedResponse("streamlabs.commands.connection.already_connected", ColorScheme.DISABLE, sender);
         }
 
         return true;
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         return List.of();
     }
 }

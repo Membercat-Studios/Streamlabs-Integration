@@ -30,7 +30,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static net.kyori.adventure.text.Component.text;
 
 public class StreamLabs extends JavaPlugin implements SocketEventListener {
     private static final String NAMESPACE = "streamlabs";
@@ -147,7 +150,7 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         return executor;
     }
 
-    private boolean showStatusMessages() {
+    public boolean showStatusMessages() {
         return this.pluginConfig.getOptions().showStatusMessages;
     }
 
@@ -162,30 +165,36 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, String @NotNull [] args) {
         if (command.getName().equalsIgnoreCase("streamlabs")) {
-            if (!sender.hasPermission("streamlabs.admin")) {
-                sender.sendMessage(ChatColor.RED + "You don't have permission to use this command!");
+            try {
+                if (!sender.hasPermission("streamlabs.admin")) {
+                    Translations.sendPrefixedResponse("streamlabs.command.error.permission", ColorScheme.ERROR, sender);
+                    return true;
+                }
+
+                if (args.length == 0) {
+                    Translations.sendPrefixedResponse("streamlabs.command.error.missing_sub_command", ColorScheme.INVALID, sender);
+                    return true;
+                }
+
+                return SUB_COMMANDS.stream()
+                        .filter(c -> c.getName().equals(args[0]))
+                        .findFirst()
+                        .map(c -> c.onCommand(sender, command, label, args))
+                        .orElseGet(() -> {
+                            Translations.sendPrefixedResponse("streamlabs.command.error.invalid_sub_command", ColorScheme.INVALID, sender, text(args[0]));
+                            return true;
+                        });
+            } catch (Exception e) {
+                getLogger().log(Level.SEVERE, "Unexpected error while trying to execute command with args: %s".formatted(String.join(" ", args)), e);
+                sender.sendMessage(Translations.withPrefix(Translations.UNEXPECTED_ERROR, true));
                 return true;
             }
-
-            if (args.length == 0) {
-                sender.sendMessage(ChatColor.RED + "Please add a sub-command!");
-                return true;
-            }
-
-            return SUB_COMMANDS.stream()
-                    .filter(c -> c.getName().equals(args[0]))
-                    .findFirst()
-                    .map(c -> c.onCommand(sender, command, label, args))
-                    .orElseGet(() -> {
-                        sender.sendMessage(ChatColor.RED + "Unknown sub-command!");
-                        return true;
-                    });
         }
         return false;
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String @NotNull [] args) {
         if (args.length <= 1) {
             return SUB_COMMANDS.stream()
                     .map(SubCommand::getName)

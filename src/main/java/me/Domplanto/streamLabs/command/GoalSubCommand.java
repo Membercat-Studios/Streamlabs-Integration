@@ -2,13 +2,16 @@ package me.Domplanto.streamLabs.command;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
-import org.bukkit.ChatColor;
+import me.Domplanto.streamLabs.util.components.ColorScheme;
+import me.Domplanto.streamLabs.util.components.Translations;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+
+import static net.kyori.adventure.text.Component.text;
 
 @SuppressWarnings("unused")
 public class GoalSubCommand extends SubCommand {
@@ -22,9 +25,9 @@ public class GoalSubCommand extends SubCommand {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] args) {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Invalid command arguments!");
+            Translations.sendPrefixedResponse("streamlabs.command.error.missing_sub_command", ColorScheme.INVALID, sender);
             return true;
         }
 
@@ -32,47 +35,47 @@ public class GoalSubCommand extends SubCommand {
             case "start" -> {
                 DonationGoal goal = getPlugin().pluginConfig().getGoal(args[2]);
                 if (goal == null) {
-                    sender.sendMessage(ChatColor.RED + String.format("No goal type \"%s\" was found.", args[2]));
+                    Translations.sendPrefixedResponse("streamlabs.commands.goal.error_not_found", ColorScheme.INVALID, sender, text(args[2]));
                     return true;
                 }
                 if (args.length < 4) {
-                    sender.sendMessage(ChatColor.RED + "Please enter a goal amount!");
+                    Translations.sendPrefixedResponse("streamlabs.commands.goal.error_no_amount", ColorScheme.INVALID, sender);
                     return true;
                 }
                 try {
                     getPlugin().getExecutor().activateGoal(goal, Integer.parseInt(args[3]));
                 } catch (NumberFormatException e) {
-                    sender.sendMessage(ChatColor.RED + "Goal amount is not a valid number!");
+                    Translations.sendPrefixedResponse("streamlabs.commands.goal.error_amount_invalid", ColorScheme.INVALID, sender);
                     return true;
                 }
 
-                sender.sendMessage(ChatColor.GREEN + String.format("A goal of type %s has been started!", args[2]));
+                Translations.sendPrefixedResponse("streamlabs.commands.goal.goal_started", ColorScheme.SUCCESS, sender, text(args[2]));
             }
             case "stop" -> {
                 if (getPlugin().getExecutor().getActiveGoal() == null) {
-                    sender.sendMessage(ChatColor.RED + "No goal is currently active!");
+                    Translations.sendPrefixedResponse("streamlabs.commands.goal.error_no_goal_active", ColorScheme.DISABLE, sender);
                     return true;
                 }
 
                 getPlugin().getExecutor().stopGoal();
-                sender.sendMessage(ChatColor.GREEN + "The current goal has been stopped!");
+                Translations.sendPrefixedResponse("streamlabs.commands.goal.goal_stopped", ColorScheme.SUCCESS, sender);
             }
             case "remove" -> {
                 if (getPlugin().getExecutor().getActiveGoal() == null) {
-                    sender.sendMessage(ChatColor.RED + "No goal is currently active!");
+                    Translations.sendPrefixedResponse("streamlabs.commands.goal.error_no_goal_active", ColorScheme.DISABLE, sender);
                     return true;
                 }
 
                 getPlugin().getExecutor().removeGoal();
-                sender.sendMessage(ChatColor.GREEN + "Goal has been removed!");
+                Translations.sendPrefixedResponse("streamlabs.commands.goal.goal_removed", ColorScheme.SUCCESS, sender);
             }
-            default -> sender.sendMessage(ChatColor.RED + String.format("Unknown sub-command \"%s\"", args[1]));
+            default -> Translations.sendPrefixedResponse("streamlabs.command.error.invalid_sub_command", ColorScheme.INVALID, sender, text(args[1]));
         }
         return true;
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] args) {
         if (args.length == 2)
             return List.of("start", "stop", "remove");
         if (args[1].equals("start")) {

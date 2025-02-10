@@ -5,7 +5,8 @@ import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.youtube.YoutubeSuperchatEvent;
-import org.bukkit.ChatColor;
+import me.Domplanto.streamLabs.util.components.ColorScheme;
+import me.Domplanto.streamLabs.util.components.Translations;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -28,9 +29,9 @@ public class TestSubCommand extends SubCommand {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] args) {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Please specify an event type");
+            Translations.sendPrefixedResponse("streamlabs.commands.test.error_no_event_type", ColorScheme.INVALID, sender);
             return true;
         }
 
@@ -39,7 +40,7 @@ public class TestSubCommand extends SubCommand {
                 .findFirst()
                 .orElse(null);
         if (event == null) {
-            sender.sendMessage(ChatColor.RED + "Unknown event type!");
+            Translations.sendPrefixedResponse("streamlabs.commands.test.error_unknown_event_type", ColorScheme.INVALID, sender);
             return true;
         }
 
@@ -71,13 +72,13 @@ public class TestSubCommand extends SubCommand {
             }
         }
 
-        if (!getPlugin().getExecutor().checkAndExecute(event, object))
-            sender.sendMessage(ChatColor.RED + "Failed to execute some actions, check the logs for more details!");
+        if (!getPlugin().getExecutor().checkAndExecute(event, object) && getPlugin().showStatusMessages())
+            Translations.sendPrefixedResponse("streamlabs.error.action_failure", ColorScheme.ERROR, sender);
         return true;
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] args) {
         if (args.length == 2)
             return StreamLabs.getCachedEventObjects()
                     .stream().map(StreamlabsEvent::getId)
