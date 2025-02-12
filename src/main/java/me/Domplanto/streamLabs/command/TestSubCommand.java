@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import static net.kyori.adventure.text.Component.text;
+
 @SuppressWarnings("unused")
 public class TestSubCommand extends SubCommand {
     public TestSubCommand(StreamLabs pluginInstance) {
@@ -40,7 +42,7 @@ public class TestSubCommand extends SubCommand {
                 .findFirst()
                 .orElse(null);
         if (event == null) {
-            Translations.sendPrefixedResponse("streamlabs.commands.test.error_unknown_event_type", ColorScheme.INVALID, sender);
+            Translations.sendPrefixedResponse("streamlabs.commands.test.error_unknown_event_type", ColorScheme.INVALID, sender, text(args[1]));
             return true;
         }
 
