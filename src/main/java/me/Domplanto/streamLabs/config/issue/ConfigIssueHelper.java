@@ -120,28 +120,28 @@ public class ConfigIssueHelper {
             this.add(new RecordedIssue(issue, location));
         }
 
-        public Component getListMessage(long limit) {
+        public Component getListMessage(long limit, boolean groupIssues) {
             TextComponent.Builder builder = text()
                     .append(Translations.SEPARATOR_LINE).append(newline())
                     .append(translatable().key("streamlabs.issue.list.title").color(ColorScheme.DISABLE))
                     .append(text("\n\n"));
             Set<String> longIds = new HashSet<>();
-            this.forEach(issue -> {
-                if (this.indexOf(issue) >= (limit - 1) && limit != -1) return;
-                if (longIds.contains(issue.issue().getId())) return;
+            int i = 0;
+            for (RecordedIssue issue : this) {
+                if (longIds.contains(issue.issue().getId())) continue;
+                i++;
+                if (i > limit  && limit != -1) continue;
                 long count = stream().map(RecordedIssue::issue).filter(Predicate.isEqual(issue.issue())).count();
-                if (count > 2) {
+                if (count > 2 && groupIssues) {
                     builder.append(text().content("x%d ".formatted(count)).color(ColorScheme.DISABLE));
                     longIds.add(issue.issue().getId());
                 }
 
-                builder.append(issue.getMessage(count <= 2));
-                if (!this.getLast().equals(issue))
-                    builder.append(text("\n\n"));
-            });
-            long distCount = stream().map(RecordedIssue::issue).distinct().count();
-            if (distCount > limit && limit != -1)
-                builder.append(translatable("streamlabs.issue.list.view_more", ColorScheme.COMMENT, text(distCount - limit))).append(space())
+                builder.append(issue.getMessage(count <= 2 || !groupIssues))
+                        .append(text("\n\n"));
+            }
+            if (i > limit && limit != -1)
+                builder.append(translatable("streamlabs.issue.list.view_more", ColorScheme.DISABLE, text(i - limit))).append(space())
                         .append(translatable("streamlabs.issue.list.show_in_console", Style.style(ColorScheme.DONE, TextDecoration.UNDERLINED))
                                 .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.show_in_console")))
                                 .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, ReloadSubCommand.SHOW_IN_CONSOLE)))

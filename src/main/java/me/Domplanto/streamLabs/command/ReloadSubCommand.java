@@ -28,8 +28,9 @@ public class ReloadSubCommand extends SubCommand {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
-        Translations.sendPrefixedResponse("streamlabs.commands.config.reload", ColorScheme.DONE, sender);
         boolean printToConsole = strings.length > 1 && strings[1].equals("_console");
+        if (!printToConsole)
+            Translations.sendPrefixedResponse("streamlabs.commands.config.reload", ColorScheme.DONE, sender);
         getPlugin().reloadConfig();
         try {
             getPlugin().pluginConfig().load(getPlugin().getConfig());

@@ -110,7 +110,8 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
     }
 
     public void printIssues(ConfigIssueHelper.IssueList issues, CommandSender sender) {
-        sender.sendMessage(issues.getListMessage(sender instanceof ConsoleCommandSender ? -1 : 7));
+        boolean isConsole = sender instanceof ConsoleCommandSender;
+        sender.sendMessage(issues.getListMessage(isConsole ? -1 : 7, !isConsole));
     }
 
     @Override
