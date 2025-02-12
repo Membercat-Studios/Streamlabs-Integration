@@ -18,7 +18,7 @@ import java.util.Set;
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ConfigPathSegment(id = "rate_limiter")
-public abstract class RateLimiter implements YamlPropertyObject {
+public abstract class RateLimiter implements YamlPropertyObject, Cloneable {
     private static final Set<? extends RateLimiter> RATE_LIMITERS = RateLimiter.findRateLimiterClasses();
     @NotNull
     private final String id;
@@ -52,7 +52,7 @@ public abstract class RateLimiter implements YamlPropertyObject {
         try {
             instance = RATE_LIMITERS.stream()
                     .filter(limiter -> limiter.getId().equals(type))
-                    .findAny().orElse(null);
+                    .findAny().map(RateLimiter::createInstance).orElse(null);
             if (instance == null)
                 issueHelper.appendAtPath(WR0.apply(type));
         } catch (Exception e) {
@@ -61,6 +61,14 @@ public abstract class RateLimiter implements YamlPropertyObject {
 
         issueHelper.pop();
         return instance;
+    }
+
+    public RateLimiter createInstance() {
+        try {
+            return (RateLimiter) this.clone();
+        } catch (CloneNotSupportedException | ClassCastException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @YamlPropertyIssueAssigner(propertyName = "value")
