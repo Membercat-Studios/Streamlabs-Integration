@@ -2,25 +2,42 @@ package me.Domplanto.streamLabs.util.yaml;
 
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 
-@SuppressWarnings("unused")
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
+
 public abstract class ConfigRoot implements YamlPropertyObject {
     private final ConfigIssueHelper issueHelper;
+    private boolean loaded = false;
 
     public ConfigRoot(Logger logger) {
         this.issueHelper = new ConfigIssueHelper(logger);
     }
 
-    public final void load(@NotNull FileConfiguration config) throws ConfigLoadedWithIssuesException {
+    public final void load(@NotNull File configFile) throws ConfigLoadedWithIssuesException {
         this.issueHelper.reset();
-        this.acceptYamlProperties(config, this.issueHelper);
-        this.customLoad(config);
+        YamlConfiguration config = new YamlConfiguration();
+        boolean loadSucceeded = false;
+        try {
+            config.load(configFile);
+            loadSucceeded = true;
+            this.loaded = true;
+            this.acceptYamlProperties(config, this.issueHelper);
+            this.customLoad(config);
+        } catch (IOException e) {
+            this.issueHelper.appendAtPathAndLog(EL3, e);
+        } catch (InvalidConfigurationException e) {
+            this.issueHelper.appendAtPath(EL2.apply(e.getMessage()));
+        }
+
+        if (!loadSucceeded) this.issueHelper.appendAtPath(loaded ? EL1 : EL0);
         this.issueHelper.complete();
     }
 
@@ -28,10 +45,5 @@ public abstract class ConfigRoot implements YamlPropertyObject {
 
     public ConfigIssueHelper issueHelper() {
         return this.issueHelper;
-    }
-
-    @Nullable
-    public <T extends YamlPropertyObject> T createInstance(Class<T> type, ConfigurationSection section) {
-        return YamlPropertyObject.createInstance(type, section, this.issueHelper);
     }
 }

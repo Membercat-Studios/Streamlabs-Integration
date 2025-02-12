@@ -8,9 +8,15 @@ import java.lang.reflect.Field;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 
 public class Issues {
+    public static ConfigIssue EL0 = new ConfigIssue("EL0", ConfigIssue.Level.WARNING);
+    public static ConfigIssue EL1 = new ConfigIssue("EL1", ConfigIssue.Level.WARNING);
+    public static Function<String, ConfigIssue> EL2 = errorMsg -> new ConfigIssue("EL2", ConfigIssue.Level.ERROR, newline().append(text(errorMsg)));
+    public static ConfigIssue EL3 = new ConfigIssue("EL3", ConfigIssue.Level.ERROR);
+
     public static ConfigIssue EI0 = new ConfigIssue("EI0", ConfigIssue.Level.ERROR);
     public static ConfigIssue EI1 = new ConfigIssue("EI1", ConfigIssue.Level.ERROR);
     public static ConfigIssue ES0 = new ConfigIssue("ES0", ConfigIssue.Level.ERROR);

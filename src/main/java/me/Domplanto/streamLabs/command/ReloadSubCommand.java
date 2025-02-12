@@ -31,9 +31,8 @@ public class ReloadSubCommand extends SubCommand {
         boolean printToConsole = strings.length > 1 && strings[1].equals("_console");
         if (!printToConsole)
             Translations.sendPrefixedResponse("streamlabs.commands.config.reload", ColorScheme.DONE, sender);
-        getPlugin().reloadConfig();
         try {
-            getPlugin().pluginConfig().load(getPlugin().getConfig());
+            getPlugin().reloadPluginConfig();
         } catch (ConfigLoadedWithIssuesException e) {
             getPlugin().printIssues(e.getIssues(), printToConsole ? Bukkit.getConsoleSender() : sender);
         }

@@ -26,6 +26,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -47,6 +48,7 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
     private StreamlabsSocketClient socketClient;
     private PluginConfig pluginConfig;
     private ActionExecutor executor;
+    private File configFile;
 
     @Override
     public void onEnable() {
@@ -58,7 +60,8 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         this.initializeResourceBundles();
         this.pluginConfig = new PluginConfig(getLogger());
         try {
-            this.pluginConfig.load(getConfig());
+            this.configFile = new File(getDataFolder(), "config.yml");
+            this.pluginConfig.load(configFile);
         } catch (ConfigLoadedWithIssuesException e) {
             this.printIssues(e.getIssues(), Bukkit.getConsoleSender());
         }
@@ -136,6 +139,10 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         if (socketClient != null && socketClient.isOpen()) {
             StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(socketClient);
         }
+    }
+
+    public void reloadPluginConfig() throws ConfigLoadedWithIssuesException {
+        this.pluginConfig.load(this.configFile);
     }
 
     public StreamlabsSocketClient getSocketClient() {
