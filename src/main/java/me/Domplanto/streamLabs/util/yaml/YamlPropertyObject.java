@@ -46,6 +46,8 @@ public interface YamlPropertyObject {
                 if (sectionCls != null && section.isConfigurationSection(id))
                     sectionVal = loadSection(section.getConfigurationSection(id), sectionCls, issueHelper);
                 if (YamlPropertyObject.class.isAssignableFrom(field.getType()) && section.isConfigurationSection(id)) {
+                    issueHelper.pop();
+                    issueHelper.push(field.getType(), value);
                     ConfigurationSection subSection = section.getConfigurationSection(id);
                     //noinspection unchecked
                     sectionVal = YamlPropertyObject.createInstance((Class<? extends YamlPropertyObject>) field.getType(), subSection, issueHelper);
