@@ -1,15 +1,10 @@
 package me.Domplanto.streamLabs.config.issue;
 
-import me.Domplanto.streamLabs.command.ReloadSubCommand;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.components.Translations;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -130,7 +125,7 @@ public class ConfigIssueHelper {
             for (RecordedIssue issue : this) {
                 if (longIds.contains(issue.issue().getId())) continue;
                 i++;
-                if (i > limit  && limit != -1) continue;
+                if (i > limit && limit != -1) continue;
                 long count = stream().map(RecordedIssue::issue).filter(Predicate.isEqual(issue.issue())).count();
                 if (count > 2 && groupIssues) {
                     builder.append(text().content("x%d ".formatted(count)).color(ColorScheme.DISABLE));
@@ -141,11 +136,9 @@ public class ConfigIssueHelper {
                         .append(text("\n\n"));
             }
             if (i > limit && limit != -1)
-                builder.append(translatable("streamlabs.issue.list.view_more", ColorScheme.DISABLE, text(i - limit))).append(space())
-                        .append(translatable("streamlabs.issue.list.show_in_console", Style.style(ColorScheme.DONE, TextDecoration.UNDERLINED))
-                                .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.show_in_console")))
-                                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, ReloadSubCommand.SHOW_IN_CONSOLE)))
-                        .append(newline());
+                builder.append(Translations.withViewInConsole(translatable("streamlabs.issue.list.view_more", ColorScheme.DISABLE, text(i - limit))));
+            else if (!longIds.isEmpty())
+                builder.append(Translations.withViewInConsole(translatable("streamlabs.issue.list.grouped_issues", ColorScheme.DISABLE)));
 
             return builder.append(Translations.SEPARATOR_LINE).build();
         }
