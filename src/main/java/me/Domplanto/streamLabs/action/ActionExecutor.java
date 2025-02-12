@@ -41,7 +41,7 @@ public class ActionExecutor {
             }
 
             JsonObject object = data.getAsJsonArray().get(1).getAsJsonObject();
-            String type = object.get("a").getAsString();
+            String type = object.get("type").getAsString();
             if (StreamLabs.isDebugMode() && (!type.equals("alertPlaying") && !type.equals("streamlabels") && !type.equals("streamlabels.underlying")))
                 plugin.getLogger().info(String.format("Streamlabs message: %s", data));
 
