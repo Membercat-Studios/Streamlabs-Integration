@@ -23,15 +23,15 @@ import static me.Domplanto.streamLabs.config.issue.Issues.HI0;
 
 public class PluginConfig extends ConfigRoot {
     @YamlProperty(value = "streamlabs")
-    private PluginOptions options;
+    private PluginOptions options = new PluginOptions();
     @YamlProperty("affected_players")
-    private List<String> affectedPlayers;
+    private List<String> affectedPlayers = new ArrayList<>();
     @YamlPropertySection(value = "actions", elementClass = Action.class)
-    private Map<String, Action> actions;
+    private Map<String, Action> actions = new HashMap<>();
     @YamlPropertySection(value = "custom_placeholders", elementClass = CustomPlaceholder.class)
-    private Map<String, CustomPlaceholder> customPlaceholders;
+    private Map<String, CustomPlaceholder> customPlaceholders = new HashMap<>();
     @YamlPropertySection(value = "goal_types", elementClass = DonationGoal.class)
-    private Map<String, DonationGoal> goals;
+    private Map<String, DonationGoal> goals = new HashMap<>();
 
     public PluginConfig(Logger logger) {
         super(logger);
