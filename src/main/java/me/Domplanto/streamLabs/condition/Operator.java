@@ -10,6 +10,6 @@ public interface Operator {
     boolean check(Object element1, Object element2);
 
     static Set<? extends Operator> findOperatorClasses() {
-        return ReflectUtil.findClasses(Operator.class);
+        return ReflectUtil.initializeClasses(Operator.class);
     }
 }

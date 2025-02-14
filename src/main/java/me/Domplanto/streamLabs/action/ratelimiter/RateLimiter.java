@@ -78,6 +78,6 @@ public abstract class RateLimiter implements YamlPropertyObject, Cloneable {
     }
 
     private static Set<? extends RateLimiter> findRateLimiterClasses() {
-        return ReflectUtil.findClasses(RateLimiter.class);
+        return ReflectUtil.initializeClasses(RateLimiter.class);
     }
 }

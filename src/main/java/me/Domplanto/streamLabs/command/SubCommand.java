@@ -21,6 +21,6 @@ public abstract class SubCommand implements TabCompleter, CommandExecutor {
     }
 
     public static Set<? extends SubCommand> findSubCommandClasses(StreamLabs pluginInstance) {
-        return ReflectUtil.findClasses(SubCommand.class, pluginInstance);
+        return ReflectUtil.initializeClasses(SubCommand.class, pluginInstance);
     }
 }

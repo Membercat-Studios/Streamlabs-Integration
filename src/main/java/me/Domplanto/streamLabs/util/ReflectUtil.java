@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ReflectUtil {
-    public static <T> Set<? extends T> findClasses(Class<T> superType, Object... constructorArgs) {
+    public static <T> Set<? extends T> initializeClasses(Class<T> superType, Object... constructorArgs) {
         String packageName = superType.getPackageName();
         try (ScanResult result = new ClassGraph()
                 .enableAllInfo()

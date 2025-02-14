@@ -96,6 +96,6 @@ public abstract class StreamlabsEvent {
     }
 
     public static Set<? extends StreamlabsEvent> findEventClasses() {
-        return ReflectUtil.findClasses(StreamlabsEvent.class);
+        return ReflectUtil.initializeClasses(StreamlabsEvent.class);
     }
 }
