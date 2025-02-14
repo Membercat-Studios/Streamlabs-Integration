@@ -2,31 +2,51 @@ package me.Domplanto.streamLabs.util;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
+import me.Domplanto.streamLabs.util.components.Translations;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class ReflectUtil {
+    private static final Logger BASE_LOGGER = Logger.getLogger("StreamLabs Reflection Utils");
+
     public static <T> Set<? extends T> initializeClasses(Class<T> superType, Object... constructorArgs) {
+        return loadClasses(superType).stream()
+                .map(cls -> instantiate(cls, superType, constructorArgs))
+                .collect(Collectors.toSet());
+    }
+
+    @Nullable
+    public static <T extends S, S> T instantiate(Class<T> cls, Class<S> superType, Object... constructorArgs) {
+        try {
+            Class<?>[] argTypes = Arrays.stream(constructorArgs)
+                    .map(Object::getClass)
+                    .toArray(Class[]::new);
+            return cls.getConstructor(argTypes).newInstance(constructorArgs);
+        } catch (ReflectiveOperationException e) {
+            BASE_LOGGER.log(Level.SEVERE, "Failed to instantiate class %s (subtype of %s), please report this error to the developers at %s"
+                    .formatted(cls.getName(), superType.getName(), Translations.ISSUES_URL), e);
+            return null;
+        }
+    }
+
+    public static <T> List<Class<T>> loadClasses(Class<T> superType) {
         String packageName = superType.getPackageName();
         try (ScanResult result = new ClassGraph()
                 .enableAllInfo()
                 .acceptPackages(packageName)
                 .scan()) {
-            return (superType.isInterface() ? result.getClassesImplementing(superType) : result.getSubclasses(superType)).stream()
-                    .map(cls -> cls.loadClass(superType))
-                    .map(cls -> {
-                        try {
-                            Class<?>[] argTypes = Arrays.stream(constructorArgs)
-                                    .map(Object::getClass)
-                                    .toArray(Class[]::new);
-                            return cls.getConstructor(argTypes).newInstance(constructorArgs);
-                        } catch (ReflectiveOperationException ignored) {
-                            return null;
-                        }
-                    })
-                    .collect(Collectors.toSet());
+            return (superType.isInterface() ? result.getClassesImplementing(superType) : result.getSubclasses(superType))
+                    .loadClasses(superType, false);
+        } catch (Exception e) {
+            BASE_LOGGER.log(Level.SEVERE, "Failed to load classes of supertype %s, please report this error to the developers at %s"
+                    .formatted(superType.getName(), Translations.ISSUES_URL), e);
+            return List.of();
         }
     }
 
