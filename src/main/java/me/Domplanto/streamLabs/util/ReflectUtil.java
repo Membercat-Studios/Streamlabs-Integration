@@ -5,8 +5,11 @@ import io.github.classgraph.ScanResult;
 import me.Domplanto.streamLabs.util.components.Translations;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +38,18 @@ public class ReflectUtil {
         }
     }
 
+    public static <T> Map<String, Class<T>> loadClassesWithIds(Class<T> superType) {
+        return loadClasses(superType)
+                .stream().filter(cls -> {
+                    boolean hasAnnotation = cls.isAnnotationPresent(ClassId.class);
+                    if (!hasAnnotation)
+                        BASE_LOGGER.log(Level.SEVERE, "Failed to load class %s (subtype of %s) because of missing ID annotation, please report this error to the developers at %s"
+                                .formatted(cls.getName(), superType.getName(), Translations.ISSUES_URL));
+                    return hasAnnotation;
+                })
+                .collect(Collectors.toMap(cls -> cls.getAnnotation(ClassId.class).value(), cls -> cls));
+    }
+
     public static <T> List<Class<T>> loadClasses(Class<T> superType) {
         String packageName = superType.getPackageName();
         try (ScanResult result = new ClassGraph()
@@ -57,5 +72,10 @@ public class ReflectUtil {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface ClassId {
+        String value();
     }
 }
