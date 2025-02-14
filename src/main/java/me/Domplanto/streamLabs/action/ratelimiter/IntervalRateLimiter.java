@@ -1,23 +1,20 @@
 package me.Domplanto.streamLabs.action.ratelimiter;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
+import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 
 import java.util.Date;
 import java.util.HashMap;
 
 @SuppressWarnings("unused")
+@ReflectUtil.ClassId("interval")
 public class IntervalRateLimiter extends RateLimiter {
     @YamlProperty("interval")
     private double intervalSeconds = 10;
     @YamlProperty("reset_while_pending")
     private boolean resetWhilePending = true;
-    private final HashMap<String, Long> timestampedValues;
-
-    public IntervalRateLimiter() {
-        super("interval");
-        this.timestampedValues = new HashMap<>();
-    }
+    private final HashMap<String, Long> timestampedValues = new HashMap<>();
 
     @Override
     public boolean check(ActionExecutionContext ctx) {

@@ -7,10 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -21,6 +18,7 @@ public class ReflectUtil {
     public static <T> Set<? extends T> initializeClasses(Class<T> superType, Object... constructorArgs) {
         return loadClasses(superType).stream()
                 .map(cls -> instantiate(cls, superType, constructorArgs))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 
