@@ -1,0 +1,23 @@
+name: StreamLabs
+version: '${project.version}'
+description: A Minecraft plugin that allows Youtube/Twitch donations to trigger events in your Minecraft world using the Streamlabs API!
+authors:
+  - Membercat Studios
+  - Domplanto
+  - codingcat
+website: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki
+main: me.Domplanto.streamLabs.StreamLabs
+api-version: '1.21.4'
+dependencies:
+  server:
+    PlaceholderAPI:
+      required: false
+      load: BEFORE
+      join-classpath: true
+permissions:
+  streamlabs.admin:
+    description: Players with this permission will be granted access to the /streamlabs command.
+    default: op
+  streamlabs.status:
+    description: Players with this permission will be able to see all status messages sent by the plugin.
+    default: op

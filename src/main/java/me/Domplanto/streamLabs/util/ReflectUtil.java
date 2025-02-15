@@ -29,7 +29,7 @@ public class ReflectUtil {
                     .map(Object::getClass)
                     .toArray(Class[]::new);
             return cls.getConstructor(argTypes).newInstance(constructorArgs);
-        } catch (ReflectiveOperationException e) {
+        } catch (Exception e) {
             BASE_LOGGER.log(Level.SEVERE, "Failed to instantiate class %s (subtype of %s), please report this error to the developers at %s"
                     .formatted(cls.getName(), superType.getName(), Translations.ISSUES_URL), e);
             return null;
