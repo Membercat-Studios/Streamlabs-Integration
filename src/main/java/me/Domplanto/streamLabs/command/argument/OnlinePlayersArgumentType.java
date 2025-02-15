@@ -9,6 +9,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
+import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -37,15 +38,8 @@ public class OnlinePlayersArgumentType implements CustomArgumentType<List<Player
     }
 
     @Override
-    public @NotNull List<Player> parse(@NotNull StringReader stringReader) {
-        return List.of();
-    }
-
-    @Override
-    public <S> @NotNull List<Player> parse(@NotNull StringReader reader, @NotNull S source) throws CommandSyntaxException {
-        if (!(source instanceof CommandSourceStack stack)) throw new RuntimeException("Invalid source");
-
-        return this.server.selectEntities(stack.getSender(), reader.readString())
+    public @NotNull List<Player> parse(@NotNull StringReader stringReader) throws CommandSyntaxException {
+        return this.server.selectEntities(Bukkit.getConsoleSender(), stringReader.readString())
                 .stream().filter(entity -> entity instanceof Player)
                 .map(entity -> (Player) entity)
                 .filter(this.allow).toList();
