@@ -23,12 +23,13 @@ public abstract class SubCommand {
 
     public abstract LiteralCommandNode<CommandSourceStack> buildCommand();
 
-    public final int exceptionHandler(CommandContext<CommandSourceStack> source, Consumer<CommandSender> action) {
+    public final int exceptionHandler(CommandContext<CommandSourceStack> ctx, Consumer<CommandSender> action) {
+        CommandSender sender = ctx.getSource().getSender();
         try {
-            action.accept(source.getSource().getSender());
+            action.accept(sender);
         } catch (Exception e) {
             pluginInstance.getLogger().log(Level.SEVERE, "Unexpected error while trying to execute command", e);
-            source.getSource().getSender().sendMessage(Translations.withPrefix(Translations.UNEXPECTED_ERROR, true));
+            sender.sendMessage(Translations.withPrefix(Translations.UNEXPECTED_ERROR, true));
         }
 
         return Command.SINGLE_SUCCESS;

@@ -59,7 +59,6 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         saveDefaultConfig();
         LOGGER = getLogger();
         this.initializeResourceBundles();
-        this.registerCommandLoadHandler();
         this.pluginConfig = new PluginConfig(getLogger());
         try {
             this.configFile = new File(getDataFolder(), "config.yml");
@@ -71,6 +70,7 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         DEBUG_MODE = pluginConfig.getOptions().debugMode;
         this.executor = new ActionExecutor(this.pluginConfig, this);
         this.setupPlaceholderExpansions();
+        this.registerCommandLoadHandler();
         this.socketClient = new StreamlabsSocketClient(pluginConfig.getOptions().socketToken, getLogger())
                 .registerListeners(this);
         // The StreamlabsSocketClient will not connect at all if a connection in onEnable is not attempted,
@@ -110,7 +110,13 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal(NAMESPACE)
                 .requires(source -> source.getSender().hasPermission(NAMESPACE + ".admin"));
         SUB_COMMANDS.forEach(command -> builder.then(command.buildCommand()));
-        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> event.registrar().register(builder.build()));
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
+            try {
+                event.registrar().register(builder.build());
+            } catch (Exception e) {
+                getLogger().log(Level.SEVERE, "Failed to register brigadier commands, please report this error to the developers at %s".formatted(Translations.ISSUES_URL), e);
+            }
+        });
     }
 
     private boolean runPaperCheck() {
