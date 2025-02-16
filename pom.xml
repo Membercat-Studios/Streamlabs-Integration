@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.Domplanto</groupId>
-    <artifactId>streamlabs</artifactId>
+    <artifactId>StreamLabs-Inegration</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>streamlabs</name>
+    <name>StreamLabs-Inegration</name>
 
     <properties>
         <java.version>21</java.version>

@@ -1,4 +1,4 @@
-name: StreamLabs
+name: '${project.name}'
 version: '${project.version}'
 main: me.Domplanto.streamLabs.StreamLabs
 api-version: '1.21'
