@@ -29,6 +29,7 @@ public class DonationGoal extends PluginConfig.AbstractAction {
         this.active = true;
         return this;
     }
+
     public void disable() {
         this.active = false;
     }

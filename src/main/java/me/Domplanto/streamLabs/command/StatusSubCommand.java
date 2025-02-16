@@ -1,20 +1,17 @@
 package me.Domplanto.streamLabs.command;
 
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.components.Translations;
 import net.kyori.adventure.text.Component;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnstableApiUsage"})
 public class StatusSubCommand extends SubCommand {
     private static final Component CONNECTED = translatable()
             .key("streamlabs.status.connected")
@@ -30,25 +27,17 @@ public class StatusSubCommand extends SubCommand {
     }
 
     @Override
-    public String getName() {
-        return "status";
-    }
+    public LiteralCommandNode<CommandSourceStack> buildCommand() {
+        return Commands.literal("status")
+                .executes(ctx -> exceptionHandler(ctx, sender -> {
+                    Component status = translatable()
+                            .key("streamlabs.commands.status.prefix")
+                            .color(ColorScheme.STREAMLABS)
+                            .append(text(" "))
+                            .append(getPlugin().getSocketClient().isOpen() ? CONNECTED : DISCONNECTED)
+                            .build();
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
-        Component status = translatable()
-                .key("streamlabs.commands.status.prefix")
-                .color(ColorScheme.STREAMLABS)
-                .append(text(" "))
-                .append(getPlugin().getSocketClient().isOpen() ? CONNECTED : DISCONNECTED)
-                .build();
-
-        sender.sendMessage(Translations.withPrefix(status, true));
-        return true;
-    }
-
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
-        return List.of();
+                    sender.sendMessage(Translations.withPrefix(status, true));
+                })).build();
     }
 }

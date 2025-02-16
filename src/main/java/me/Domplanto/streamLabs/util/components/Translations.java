@@ -24,7 +24,7 @@ public class Translations {
             .build();
     private static final String REPO_URL = "https://github.com/Membercat-Studios/Streamlabs-Integration";
     private static final String STREAMLABS_URL = "%s/wiki".formatted(REPO_URL);
-    private static final String ISSUES_URL = "%s/issues".formatted(REPO_URL);
+    public static final String ISSUES_URL = "%s/issues".formatted(REPO_URL);
     public static Component UNEXPECTED_ERROR = translatable()
             .key("streamlabs.command.error.unexpected")
             .color(ColorScheme.ERROR)

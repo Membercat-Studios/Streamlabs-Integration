@@ -1,6 +1,10 @@
 package me.Domplanto.streamLabs;
 
 import com.google.gson.JsonElement;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.Domplanto.streamLabs.action.ActionExecutor;
 import me.Domplanto.streamLabs.command.SubCommand;
 import me.Domplanto.streamLabs.config.PluginConfig;
@@ -18,7 +22,6 @@ import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationRegistry;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,15 +30,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static net.kyori.adventure.text.Component.text;
-
+@SuppressWarnings("UnstableApiUsage")
 public class StreamLabs extends JavaPlugin implements SocketEventListener {
     private static final String NAMESPACE = "streamlabs";
     private static final Locale[] SUPPORTED_LOCALES = {Locale.US, Locale.GERMANY};
@@ -69,6 +70,7 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         DEBUG_MODE = pluginConfig.getOptions().debugMode;
         this.executor = new ActionExecutor(this.pluginConfig, this);
         this.setupPlaceholderExpansions();
+        this.registerCommandLoadHandler();
         this.socketClient = new StreamlabsSocketClient(pluginConfig.getOptions().socketToken, getLogger())
                 .registerListeners(this);
         // The StreamlabsSocketClient will not connect at all if a connection in onEnable is not attempted,
@@ -102,6 +104,19 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         }
 
         GlobalTranslator.translator().addSource(registry);
+    }
+
+    private void registerCommandLoadHandler() {
+        LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal(NAMESPACE)
+                .requires(source -> source.getSender().hasPermission(NAMESPACE + ".admin"));
+        SUB_COMMANDS.forEach(command -> builder.then(command.buildCommand()));
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
+            try {
+                event.registrar().register(builder.build());
+            } catch (Exception e) {
+                getLogger().log(Level.SEVERE, "Failed to register brigadier commands, please report this error to the developers at %s".formatted(Translations.ISSUES_URL), e);
+            }
+        });
     }
 
     private boolean runPaperCheck() {
@@ -171,50 +186,5 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
 
     public static boolean isPapiInstalled() {
         return PAPI_INSTALLED;
-    }
-
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, String @NotNull [] args) {
-        if (command.getName().equalsIgnoreCase("streamlabs")) {
-            try {
-                if (!sender.hasPermission("streamlabs.admin")) {
-                    Translations.sendPrefixedResponse("streamlabs.command.error.permission", ColorScheme.ERROR, sender);
-                    return true;
-                }
-
-                if (args.length == 0) {
-                    Translations.sendPrefixedResponse("streamlabs.command.error.missing_sub_command", ColorScheme.INVALID, sender);
-                    return true;
-                }
-
-                return SUB_COMMANDS.stream()
-                        .filter(c -> c.getName().equals(args[0]))
-                        .findFirst()
-                        .map(c -> c.onCommand(sender, command, label, args))
-                        .orElseGet(() -> {
-                            Translations.sendPrefixedResponse("streamlabs.command.error.invalid_sub_command", ColorScheme.INVALID, sender, text(args[0]));
-                            return true;
-                        });
-            } catch (Exception e) {
-                getLogger().log(Level.SEVERE, "Unexpected error while trying to execute command with args: %s".formatted(String.join(" ", args)), e);
-                sender.sendMessage(Translations.withPrefix(Translations.UNEXPECTED_ERROR, true));
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String @NotNull [] args) {
-        if (args.length <= 1) {
-            return SUB_COMMANDS.stream()
-                    .map(SubCommand::getName)
-                    .toList();
-        } else {
-            return SUB_COMMANDS.stream()
-                    .filter(c -> c.getName().equals(args[0]))
-                    .findFirst()
-                    .map(c -> c.onTabComplete(sender, command, alias, args)).orElse(List.of());
-        }
     }
 }

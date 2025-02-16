@@ -29,6 +29,6 @@ public abstract class SubPlaceholder {
     }
 
     public static Set<? extends SubPlaceholder> findSubPlaceholderClasses(StreamLabs plugin) {
-        return ReflectUtil.findClasses(SubPlaceholder.class, plugin);
+        return ReflectUtil.initializeClasses(SubPlaceholder.class, plugin);
     }
 }
