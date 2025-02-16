@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>me.Domplanto</groupId>
-  <artifactId>streamlabs</artifactId>
-  <name>streamlabs</name>
+  <artifactId>StreamLabs-Inegration</artifactId>
+  <name>StreamLabs-Inegration</name>
   <version>1.0.0</version>
   <build>
     <defaultGoal>clean package</defaultGoal>
