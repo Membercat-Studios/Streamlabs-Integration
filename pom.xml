@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.Domplanto</groupId>
-    <artifactId>StreamLabs-Inegration</artifactId>
+    <artifactId>StreamlabsIntegration</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>StreamLabs-Inegration</name>
+    <name>StreamlabsIntegration</name>
 
     <properties>
         <java.version>21</java.version>
@@ -47,7 +47,7 @@
                 <version>2.4</version>
                 <configuration>
                     <outputDirectory>${basedir}/run/plugins</outputDirectory>
-                    <finalName>StreamLabs-${project.version}</finalName>
+                    <finalName>StreamlabsIntegration-${project.version}</finalName>
                 </configuration>
             </plugin>
             <plugin>
