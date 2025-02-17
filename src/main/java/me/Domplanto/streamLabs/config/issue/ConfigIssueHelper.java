@@ -18,16 +18,19 @@ public class ConfigIssueHelper {
     private final IssueList issues;
     private final ConfigPathStack pathStack;
     private final Logger logger;
+    private final Set<String> globalSuppressions;
 
     public ConfigIssueHelper(Logger logger) {
         this.issues = new IssueList();
         this.pathStack = new ConfigPathStack();
+        this.globalSuppressions = new HashSet<>();
         this.logger = logger;
     }
 
     public void reset() {
         this.issues.clear();
         this.pathStack.clear();
+        this.globalSuppressions.clear();
     }
 
     public void complete() throws ConfigLoadedWithIssuesException {
@@ -69,7 +72,10 @@ public class ConfigIssueHelper {
     }
 
     public void suppress(Collection<String> issueIds) {
-        if (this.pathStack.isEmpty()) return;
+        if (this.pathStack.isEmpty()) {
+            this.globalSuppressions.addAll(issueIds);
+            return;
+        }
         this.pathStack.peek().suppress(issueIds);
     }
 
@@ -85,6 +91,7 @@ public class ConfigIssueHelper {
     }
 
     private boolean checkIssueSuppressed(ConfigIssue issue) {
+        if (this.globalSuppressions.contains(issue.getId())) return true;
         return !this.pathStack.isEmpty() && this.pathStack.peek().suppressedIssues().contains(issue.getId());
     }
 
