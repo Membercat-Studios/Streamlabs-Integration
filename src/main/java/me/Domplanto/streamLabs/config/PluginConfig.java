@@ -113,6 +113,7 @@ public class PluginConfig extends ConfigRoot {
         public boolean enabled;
     }
 
+    @ConfigPathSegment(id = "plugin_options")
     public static class PluginOptions implements YamlPropertyObject {
         @YamlProperty("socket_token")
         public String socketToken;
