@@ -55,8 +55,11 @@ public class Condition implements ConditionBase {
                     if (obj instanceof String string)
                         return parseStr(rawConditions.indexOf(string), string, issueHelper, isDonation);
                     if (obj instanceof HashMap<?, ?> objMap) {
+                        issueHelper.push(ConditionGroup.class, String.valueOf(rawConditions.indexOf(objMap)));
                         ConfigurationSection newSection = new MemoryConfiguration().createSection("group", objMap);
-                        return YamlPropertyObject.createInstance(ConditionGroup.class, newSection, issueHelper);
+                        ConditionGroup group = YamlPropertyObject.createInstance(ConditionGroup.class, newSection, issueHelper);
+                        issueHelper.pop();
+                        return group;
                     }
 
                     return null;
