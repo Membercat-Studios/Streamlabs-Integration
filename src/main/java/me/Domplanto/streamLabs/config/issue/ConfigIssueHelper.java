@@ -90,6 +90,27 @@ public class ConfigIssueHelper {
         this.logger.warn(translatable("streamlabs.log.issue", issue.getDescription(), text(issue.getId()), pathStack.toComponent()), throwable);
     }
 
+    public boolean lastIssueIs(ConfigIssue... issues) {
+        return Arrays.stream(issues).anyMatch(issue -> lastIssueIs(issue.getId()));
+    }
+
+    public boolean lastIssueIs(String issueId) {
+        if (this.issues.isEmpty()) return false;
+        return this.issues.getLast().issue().getId().equals(issueId);
+    }
+
+    public void removeLast() {
+        if (!this.issues.isEmpty())
+            this.issues.removeLast();
+    }
+
+    private void replacePaths(ConfigPathStack.Entry newTopEntry) {
+        this.issues.forEach(issue -> {
+            issue.location.clear();
+            issue.location.add(newTopEntry);
+        });
+    }
+
     private boolean checkIssueSuppressed(ConfigIssue issue) {
         if (this.globalSuppressions.contains(issue.getId())) return true;
         return !this.pathStack.isEmpty() && this.pathStack.peek().suppressedIssues().contains(issue.getId());

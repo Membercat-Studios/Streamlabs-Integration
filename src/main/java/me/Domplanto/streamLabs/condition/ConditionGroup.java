@@ -7,8 +7,10 @@ import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -17,11 +19,11 @@ import static me.Domplanto.streamLabs.config.issue.Issues.WC0;
 @ConfigPathSegment(id = "condition_group")
 public class ConditionGroup implements ConditionBase, YamlPropertyObject {
     @YamlProperty("conditions")
-    private List<ConditionBase> conditions = new ArrayList<>();
+    public List<ConditionBase> conditions = new ArrayList<>();
     @YamlProperty("donation_conditions")
-    private List<DonationCondition> donationConditions = new ArrayList<>();
+    public List<DonationCondition> donationConditions = new ArrayList<>();
     @YamlProperty("mode")
-    private Mode groupMode = Mode.AND;
+    public Mode groupMode = Mode.AND;
 
     @YamlPropertyCustomDeserializer(propertyName = "conditions")
     private List<ConditionBase> deserializeConditions(@NotNull List<Object> rawConditions, ConfigIssueHelper issueHelper) {
@@ -55,22 +57,37 @@ public class ConditionGroup implements ConditionBase, YamlPropertyObject {
                 if (!condition.check(ctx)) return false;
 
             return true;
-        }),
+        }, '[', ']'),
         OR((ctx, conditionList) -> {
             for (ConditionBase condition : conditionList)
                 if (condition.check(ctx)) return true;
 
             return false;
-        });
+        }, '(', ')');
 
         private final BiFunction<ActionExecutionContext, List<? extends ConditionBase>, Boolean> checkFunc;
+        private final char startBracket;
+        private final char endBracket;
 
-        Mode(BiFunction<ActionExecutionContext, List<? extends ConditionBase>, Boolean> checkFunc) {
+        Mode(BiFunction<ActionExecutionContext, List<? extends ConditionBase>, Boolean> checkFunc, char startBracket, char endBracket) {
             this.checkFunc = checkFunc;
+            this.startBracket = startBracket;
+            this.endBracket = endBracket;
         }
 
         public boolean check(ActionExecutionContext ctx, List<? extends ConditionBase> conditions) {
             return checkFunc.apply(ctx, conditions);
+        }
+
+        @Nullable
+        public static Mode getFromStartBracket(char startBracket) {
+            return Arrays.stream(values())
+                    .filter(mode -> mode.startBracket == startBracket)
+                    .findAny().orElse(null);
+        }
+
+        public char getEndBracket() {
+            return this.endBracket;
         }
     }
 }

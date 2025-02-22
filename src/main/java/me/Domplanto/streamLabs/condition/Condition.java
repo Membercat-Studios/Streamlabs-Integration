@@ -5,16 +5,20 @@ import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
+import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ConfigPathSegment(id = "condition")
 public class Condition implements ConditionBase {
     private static final Set<? extends Operator> OPERATORS = Operator.findOperatorClasses();
+    private static final String SEPARATOR_REGEX = "\\|";
     private final ActionPlaceholder.PlaceholderFunction element1;
     private final ActionPlaceholder.PlaceholderFunction element2;
     private final Operator operator;
@@ -68,7 +72,59 @@ public class Condition implements ConditionBase {
                 .toList();
     }
 
-    private static Condition parseStr(int idx, String string, ConfigIssueHelper issueHelper, boolean isDonation) {
+    private static ConditionBase parseStr(int idx, String input, ConfigIssueHelper issueHelper, boolean isDonation) {
+        String str = input.trim();
+        return Objects.requireNonNullElseGet(parseStr(idx, str, issueHelper),
+                () -> Condition.parseConditionStr(idx, str, issueHelper, isDonation));
+    }
+
+    @Nullable
+    private static ConditionBase parseStr(int idx, String input, ConfigIssueHelper issueHelper) {
+        ConditionGroup.Mode mode = ConditionGroup.Mode.getFromStartBracket(input.charAt(0));
+        if (mode == null) return null;
+        issueHelper.push(ConditionGroup.class, String.valueOf(idx));
+        int end = input.lastIndexOf(mode.getEndBracket());
+        if (end == -1) {
+            issueHelper.appendAtPath(HCG0);
+            issueHelper.pop();
+            return null;
+        }
+
+        ConditionGroup root = new ConditionGroup();
+        root.groupMode = mode;
+        int conditionIdx = 0;
+        String[] subElements = input.substring(1, end).split(SEPARATOR_REGEX);
+        AtomicInteger skipped;
+        for (int i = 0; i < subElements.length; i++) {
+            ConditionBase condition = tryParseFromElements(skipped = new AtomicInteger(0), conditionIdx,
+                    Arrays.copyOfRange(subElements, i, subElements.length), issueHelper);
+            if (condition != null)
+                root.conditions.add(condition);
+            conditionIdx++;
+            i += skipped.get();
+        }
+
+        issueHelper.pop();
+        return root;
+    }
+
+    private static ConditionBase tryParseFromElements(AtomicInteger skipped, int conditionIdx, String[] elements, ConfigIssueHelper issueHelper) {
+        ConditionBase base = parseStr(conditionIdx, elements[0], issueHelper, false);
+        if (issueHelper.lastIssueIs(HCG0) && elements.length > 1) {
+            do issueHelper.removeLast();
+            while (issueHelper.lastIssueIs(WC1, WC2, HC0));
+            skipped.incrementAndGet();
+            String[] newElements = {elements[0] + "|" + elements[1]};
+            if (elements.length > 2)
+                newElements = ArrayUtils.addAll(newElements, Arrays.copyOfRange(elements, 2, elements.length));
+            return tryParseFromElements(skipped, conditionIdx, newElements, issueHelper);
+        }
+
+        return base;
+    }
+
+    @Nullable
+    private static Condition parseConditionStr(int idx, String string, ConfigIssueHelper issueHelper, boolean isDonation) {
         issueHelper.push(isDonation ? DonationCondition.class : Condition.class, String.valueOf(idx));
         boolean invert = string.startsWith("!");
         if (invert)
