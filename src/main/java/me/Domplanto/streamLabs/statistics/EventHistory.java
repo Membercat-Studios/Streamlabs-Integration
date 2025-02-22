@@ -35,13 +35,13 @@ public class EventHistory {
     }
 
     @Nullable
-    public LoggedEvent getEvent(EventHistorySelector selector) {
+    public LoggedEvent getEvent(EventFilter filter) {
         List<LoggedEvent> matchingEvents = executionHistory.reversed()
-                .stream().filter(selector::check)
+                .stream().filter(filter::check)
                 .toList();
 
         for (int i = 0; i < matchingEvents.size(); i++) {
-            if (selector.checkRelativeId(i))
+            if (filter.checkRelativeId(i))
                 return matchingEvents.get(i);
         }
 

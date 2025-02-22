@@ -4,10 +4,11 @@ import me.Domplanto.streamLabs.condition.Condition;
 import me.Domplanto.streamLabs.condition.ConditionBase;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class EventHistorySelector {
+public class EventHistorySelector implements EventFilter {
     private final int relativeId;
     private final Set<ConditionBase> placeholderConditions;
 
@@ -20,11 +21,13 @@ public class EventHistorySelector {
         this.placeholderConditions.addAll(conditions);
     }
 
+    @Override
     public boolean checkRelativeId(int id) {
         return this.relativeId == id;
     }
 
-    public boolean check(EventHistory.LoggedEvent event) {
+    @Override
+    public boolean check(@NotNull EventHistory.LoggedEvent event) {
         for (ConditionBase condition : this.placeholderConditions)
             if (!condition.check(event.createContext())) return false;
 
