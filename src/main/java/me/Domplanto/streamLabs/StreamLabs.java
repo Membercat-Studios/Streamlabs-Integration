@@ -59,7 +59,7 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         saveDefaultConfig();
         LOGGER = getLogger();
         this.initializeResourceBundles();
-        this.pluginConfig = new PluginConfig(getLogger());
+        this.pluginConfig = new PluginConfig(getComponentLogger());
         try {
             this.configFile = new File(getDataFolder(), "config.yml");
             this.pluginConfig.load(configFile);

@@ -5,11 +5,11 @@ import me.Domplanto.streamLabs.util.components.Translations;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.EI1;
 import static net.kyori.adventure.text.Component.*;
@@ -17,10 +17,10 @@ import static net.kyori.adventure.text.Component.*;
 public class ConfigIssueHelper {
     private final IssueList issues;
     private final ConfigPathStack pathStack;
-    private final Logger logger;
+    private final ComponentLogger logger;
     private final Set<String> globalSuppressions;
 
-    public ConfigIssueHelper(Logger logger) {
+    public ConfigIssueHelper(ComponentLogger logger) {
         this.issues = new IssueList();
         this.pathStack = new ConfigPathStack();
         this.globalSuppressions = new HashSet<>();
@@ -87,7 +87,7 @@ public class ConfigIssueHelper {
     public void appendAtPathAndLog(ConfigIssue issue, Throwable throwable) {
         if (checkIssueSuppressed(issue)) return;
         this.issues.add(issue, this.stackCopy());
-        this.logger.log(issue.getLevel().getLogLevel(), "Detailed exception for config issue \"%s\" at %s:".formatted(issue.getDescription(), pathStack.toFormattedString()), throwable);
+        this.logger.warn(translatable("streamlabs.log.issue", issue.getDescription(), text(issue.getId()), pathStack.toComponent()), throwable);
     }
 
     private boolean checkIssueSuppressed(ConfigIssue issue) {

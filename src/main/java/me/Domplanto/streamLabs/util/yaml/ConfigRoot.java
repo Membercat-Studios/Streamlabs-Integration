@@ -2,6 +2,7 @@ package me.Domplanto.streamLabs.util.yaml;
 
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -9,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
@@ -17,7 +17,7 @@ public abstract class ConfigRoot implements YamlPropertyObject {
     private final ConfigIssueHelper issueHelper;
     private boolean loaded = false;
 
-    public ConfigRoot(Logger logger) {
+    public ConfigRoot(ComponentLogger logger) {
         this.issueHelper = new ConfigIssueHelper(logger);
     }
 

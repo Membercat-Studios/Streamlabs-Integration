@@ -9,12 +9,12 @@ import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
 import me.Domplanto.streamLabs.util.yaml.*;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +33,7 @@ public class PluginConfig extends ConfigRoot {
     @YamlPropertySection(value = "goal_types", elementClass = DonationGoal.class)
     private Map<String, DonationGoal> goals = new HashMap<>();
 
-    public PluginConfig(Logger logger) {
+    public PluginConfig(ComponentLogger logger) {
         super(logger);
     }
 
