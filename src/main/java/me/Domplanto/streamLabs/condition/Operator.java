@@ -1,5 +1,6 @@
 package me.Domplanto.streamLabs.condition;
 
+import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 
 import java.util.Arrays;
@@ -11,6 +12,9 @@ public interface Operator {
     String getName();
 
     boolean check(Object element1, Object element2);
+
+    default void assignIssues(Object element1, Object element2, ConfigIssueHelper issueHelper) {
+    }
 
     static Set<? extends Operator> findOperatorClasses() {
         //noinspection unchecked

@@ -147,9 +147,10 @@ public class Condition implements ConditionBase {
             return null;
         }
 
+        String element2 = elements.length >= 2 ? elements[1] : "";
+        op.assignIssues(elements[0], elements[1], issueHelper);
         ActionPlaceholder.PlaceholderFunction e1 = parseElement(elements[0], issueHelper);
-        ActionPlaceholder.PlaceholderFunction e2 = elements.length >= 2 ? parseElement(elements[1], issueHelper)
-                : ActionPlaceholder.PlaceholderFunction.of("");
+        ActionPlaceholder.PlaceholderFunction e2 = parseElement(element2, issueHelper);
         issueHelper.pop();
         if (isDonation)
             return new DonationCondition(op, invert, e1, e2);
