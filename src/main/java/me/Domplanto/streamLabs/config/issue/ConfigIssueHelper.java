@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static me.Domplanto.streamLabs.config.issue.Issues.EI1;
+import static me.Domplanto.streamLabs.config.issue.Issues.EI2;
 import static net.kyori.adventure.text.Component.*;
 
 public class ConfigIssueHelper {
@@ -35,8 +35,8 @@ public class ConfigIssueHelper {
 
     public void complete() throws ConfigLoadedWithIssuesException {
         if (!pathStack.empty()) {
-            this.reset();
-            this.appendAtPathAndLog(EI1, new IllegalStateException("Path stack not empty"));
+            this.appendAtPath(EI2);
+            this.replacePaths(new ConfigPathStack.Entry(null, null, "unknown", new HashSet<>()));
         }
 
         if (!this.issues.isEmpty())

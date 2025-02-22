@@ -5,7 +5,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -24,7 +23,8 @@ public class ConfigPathStack extends Stack<ConfigPathStack.Entry> {
         TextComponent.Builder builder = text();
         for (ConfigPathStack.Entry segment : this) {
             builder.append(text("/"));
-            String staticName = segment.annotation() != null ? segment.annotation().id() : segment.cls().getTypeName();
+            String clsName = segment.cls() != null ? segment.cls().getTypeName() : "unknown";
+            String staticName = segment.annotation() != null ? segment.annotation().id() : clsName;
             builder.append(text()
                     .content(segment.ownName() != null ? segment.ownName() : staticName)
                     .color(this.lastElement().equals(segment) ? ColorScheme.DONE : null)
@@ -40,7 +40,7 @@ public class ConfigPathStack extends Stack<ConfigPathStack.Entry> {
     }
 
     public record Entry(
-            @NotNull Class<?> cls,
+            @Nullable Class<?> cls,
             @Nullable ConfigPathSegment annotation,
             @Nullable String ownName,
             Set<String> suppressedIssues

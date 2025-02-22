@@ -19,6 +19,7 @@ public class Issues {
 
     public static ConfigIssue EI0 = new ConfigIssue("EI0", ConfigIssue.Level.ERROR);
     public static ConfigIssue EI1 = new ConfigIssue("EI1", ConfigIssue.Level.ERROR);
+    public static ConfigIssue EI2 = new ConfigIssue("EI2", ConfigIssue.Level.ERROR);
     public static ConfigIssue ES0 = new ConfigIssue("ES0", ConfigIssue.Level.ERROR);
 
     public static ConfigIssue WI0 = new ConfigIssue("WI0", ConfigIssue.Level.WARNING);
