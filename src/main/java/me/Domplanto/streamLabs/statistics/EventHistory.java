@@ -7,26 +7,31 @@ import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class EventHistory {
     private final Stack<LoggedEvent> executionHistory;
     private final HashMap<String, String> giftedMembershipIdMap;
+    private final Set<HistoryChangedListener> listeners;
 
     public EventHistory() {
         this.executionHistory = new Stack<>();
         this.giftedMembershipIdMap = new HashMap<>();
+        this.listeners = new HashSet<>();
     }
 
     public void store(StreamlabsEvent event, PluginConfig config, JsonObject baseObject) {
-        this.executionHistory.push(new LoggedEvent(event, config, baseObject, new Date().getTime()));
+        LoggedEvent newEvent = new LoggedEvent(event, config, baseObject, new Date().getTime());
+        this.executionHistory.push(newEvent);
+        this.listeners.forEach(listener -> listener.onHistoryChanged(this, newEvent));
     }
 
     public void storeGiftedMembershipId(String id, String userName) {
         this.giftedMembershipIdMap.put(id, userName);
+    }
+
+    public void registerListeners(HistoryChangedListener... listeners) {
+        this.listeners.addAll(Arrays.asList(listeners));
     }
 
     @Nullable
