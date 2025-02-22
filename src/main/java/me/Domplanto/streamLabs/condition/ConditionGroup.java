@@ -86,6 +86,10 @@ public class ConditionGroup implements ConditionBase, YamlPropertyObject {
                     .findAny().orElse(null);
         }
 
+        public char getStartBracket() {
+            return this.startBracket;
+        }
+
         public char getEndBracket() {
             return this.endBracket;
         }

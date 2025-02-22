@@ -2,11 +2,12 @@ package me.Domplanto.streamLabs.statistics;
 
 import me.Domplanto.streamLabs.condition.Condition;
 import me.Domplanto.streamLabs.condition.ConditionBase;
+import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
-import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.ToIntFunction;
 
 public class EventHistorySelector implements EventFilter {
     private final int relativeId;
@@ -34,23 +35,23 @@ public class EventHistorySelector implements EventFilter {
         return true;
     }
 
-    public static EventHistorySelector deserialize(String input) throws ConfigLoadedWithIssuesException {
-        int end = input.contains("[") ? input.indexOf('[') : input.length() - 1;
-        int relId = parseRelativeId(input.substring(0, end));
+    public static EventHistorySelector deserialize(String input, ConfigIssueHelper issueHelper) {
+        ToIntFunction<ConditionGroup.Mode> getIndexFunc = mode -> input.indexOf(mode.getStartBracket());
+        int idx = Arrays.stream(ConditionGroup.Mode.values())
+                .sorted(Comparator.comparingInt(getIndexFunc))
+                .filter(mode -> getIndexFunc.applyAsInt(mode) != -1)
+                .findFirst().map(getIndexFunc::applyAsInt).orElse(input.length() - 1);
+
+        int relId = parseRelativeId(input.substring(0, idx));
+        String conditionGroup = idx < input.length() - 1 ? input.substring(idx) : null;
         EventHistorySelector selector = new EventHistorySelector(relId);
-        if (!input.contains("[") || !input.contains("]")) return selector;
-
-        String selectorContent = input.substring(input.indexOf('[') + 1, input.indexOf(']'));
-        List<String> conditionStrings = Arrays.stream(selectorContent.split(",")).map(String::trim).toList();
-        ConfigIssueHelper issueHelper = new ConfigIssueHelper(null);
-        selector.addConditions(Condition.parseConditions(conditionStrings, issueHelper));
-        issueHelper.complete();
-
+        if (conditionGroup != null)
+            selector.addConditions(Condition.parseConditions(List.of(conditionGroup), issueHelper));
         return selector;
     }
 
     private static int parseRelativeId(String input) {
-        if (input.equals("last")) return 0;
+        if (input.startsWith("last")) return 0;
         return Math.max(0, Integer.parseInt(input));
     }
 }
