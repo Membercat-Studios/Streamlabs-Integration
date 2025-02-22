@@ -74,13 +74,16 @@ public class Condition implements ConditionBase {
 
     private static ConditionBase parseStr(int idx, String input, ConfigIssueHelper issueHelper, boolean isDonation, boolean alwaysProvideCondition) {
         String str = input.trim();
-        return Objects.requireNonNullElseGet(parseStr(idx, str, issueHelper),
-                () -> !alwaysProvideCondition && issueHelper.lastIssueIs(HCG0) ? new ConditionBase.Default() : Condition.parseConditionStr(idx, str, issueHelper, isDonation));
+        ConditionBase condition = parseStr(idx, str, issueHelper);
+        if (condition == null && (alwaysProvideCondition || !issueHelper.lastIssueIs(HCG0)))
+            condition = Condition.parseConditionStr(idx, str, issueHelper, isDonation);
+        return condition;
     }
 
     @Nullable
     private static ConditionBase parseStr(int idx, String input, ConfigIssueHelper issueHelper) {
-        ConditionGroup.Mode mode = ConditionGroup.Mode.getFromStartBracket(input.charAt(0));
+        char first = !input.isEmpty() ? input.charAt(0) : ' ';
+        ConditionGroup.Mode mode = ConditionGroup.Mode.getFromStartBracket(first);
         if (mode == null) return null;
         issueHelper.push(ConditionGroup.class, String.valueOf(idx));
         int end = input.lastIndexOf(mode.getEndBracket());
