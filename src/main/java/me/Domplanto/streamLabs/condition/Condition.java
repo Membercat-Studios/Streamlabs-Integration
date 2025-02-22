@@ -57,7 +57,7 @@ public class Condition implements ConditionBase {
         return rawConditions.stream()
                 .map(obj -> {
                     if (obj instanceof String string)
-                        return parseStr(rawConditions.indexOf(string), string, issueHelper, isDonation);
+                        return parseStr(rawConditions.indexOf(string), string, issueHelper, isDonation, true);
                     if (obj instanceof HashMap<?, ?> objMap) {
                         issueHelper.push(ConditionGroup.class, String.valueOf(rawConditions.indexOf(objMap)));
                         ConfigurationSection newSection = new MemoryConfiguration().createSection("group", objMap);
@@ -72,10 +72,10 @@ public class Condition implements ConditionBase {
                 .toList();
     }
 
-    private static ConditionBase parseStr(int idx, String input, ConfigIssueHelper issueHelper, boolean isDonation) {
+    private static ConditionBase parseStr(int idx, String input, ConfigIssueHelper issueHelper, boolean isDonation, boolean alwaysProvideCondition) {
         String str = input.trim();
         return Objects.requireNonNullElseGet(parseStr(idx, str, issueHelper),
-                () -> Condition.parseConditionStr(idx, str, issueHelper, isDonation));
+                () -> !alwaysProvideCondition && issueHelper.lastIssueIs(HCG0) ? new ConditionBase.Default() : Condition.parseConditionStr(idx, str, issueHelper, isDonation));
     }
 
     @Nullable
@@ -109,10 +109,9 @@ public class Condition implements ConditionBase {
     }
 
     private static ConditionBase tryParseFromElements(AtomicInteger skipped, int conditionIdx, String[] elements, ConfigIssueHelper issueHelper) {
-        ConditionBase base = parseStr(conditionIdx, elements[0], issueHelper, false);
+        ConditionBase base = parseStr(conditionIdx, elements[0], issueHelper, false, false);
         if (issueHelper.lastIssueIs(HCG0) && elements.length > 1) {
-            do issueHelper.removeLast();
-            while (issueHelper.lastIssueIs(WC1, WC2, HC0));
+            issueHelper.removeLast();
             skipped.incrementAndGet();
             String[] newElements = {elements[0] + "|" + elements[1]};
             if (elements.length > 2)
