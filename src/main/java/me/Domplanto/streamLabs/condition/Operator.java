@@ -4,8 +4,12 @@ import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static me.Domplanto.streamLabs.config.issue.Issues.HC1;
 
 @SuppressWarnings("unused")
 public interface Operator {
@@ -20,6 +24,7 @@ public interface Operator {
         //noinspection unchecked
         return Arrays.stream(Operator.class.getClasses())
                 .filter(Operator.class::isAssignableFrom)
+                .filter(Predicate.not(Class::isInterface))
                 .map(cls -> ReflectUtil.instantiate((Class<? extends Operator>) cls, Operator.class))
                 .collect(Collectors.toSet());
     }
@@ -36,58 +41,70 @@ public interface Operator {
         }
     }
 
-    class Larger implements Operator {
+    interface Numeric extends Operator {
+        boolean check(Double d1, Double d2);
+
+        @Override
+        default void assignIssues(Object element1, Object element2, ConfigIssueHelper issueHelper) {
+            for (Object element : List.of(element1, element2)) {
+                if (element.toString().isBlank()) {
+                    issueHelper.appendAtPath(HC1);
+                    return;
+                }
+            }
+        }
+
+        @Override
+        default boolean check(Object element1, Object element2) {
+            if (!(element1 instanceof Double d1) || !(element2 instanceof Double d2)) return false;
+            return this.check(d1, d2);
+        }
+    }
+
+    class Larger implements Operator.Numeric {
         @Override
         public String getName() {
             return ">";
         }
 
         @Override
-        public boolean check(Object element1, Object element2) {
-            if (!(element1 instanceof Double d1) || !(element2 instanceof Double d2)) return false;
-
+        public boolean check(Double d1, Double d2) {
             return d1 > d2;
         }
     }
 
-    class LargerEquals implements Operator {
+    class LargerEquals implements Operator.Numeric {
         @Override
         public String getName() {
             return ">=";
         }
 
         @Override
-        public boolean check(Object element1, Object element2) {
-            if (!(element1 instanceof Double d1) || !(element2 instanceof Double d2)) return false;
-
+        public boolean check(Double d1, Double d2) {
             return d1 >= d2;
         }
     }
 
-    class Smaller implements Operator {
+    class Smaller implements Operator.Numeric {
         @Override
         public String getName() {
             return "<";
         }
 
         @Override
-        public boolean check(Object element1, Object element2) {
-            if (!(element1 instanceof Double d1) || !(element2 instanceof Double d2)) return false;
-
+        public boolean check(Double d1, Double d2) {
             return d1 < d2;
         }
     }
 
-    class SmallerEquals implements Operator {
+    class SmallerEquals implements Operator.Numeric {
         @Override
         public String getName() {
             return "<=";
         }
 
         @Override
-        public boolean check(Object element1, Object element2) {
-            if (!(element1 instanceof Double d1) || !(element2 instanceof Double d2)) return false;
-
+        public boolean check(Double d1, Double d2) {
             return d1 <= d2;
         }
     }

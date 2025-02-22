@@ -34,6 +34,7 @@ public class Issues {
     public static ConfigIssue HR0 = new ConfigIssue("HR0", ConfigIssue.Level.HINT);
     public static ConfigIssue HB0 = new ConfigIssue("HB0", ConfigIssue.Level.HINT);
     public static ConfigIssue HC0 = new ConfigIssue("HC0", ConfigIssue.Level.HINT);
+    public static ConfigIssue HC1 = new ConfigIssue("HC1", ConfigIssue.Level.HINT);
     public static ConfigIssue HCG0 = new ConfigIssue("HCG0", ConfigIssue.Level.HINT);
     public static ConfigIssue HI0 = new ConfigIssue("HI0", ConfigIssue.Level.HINT);
 
