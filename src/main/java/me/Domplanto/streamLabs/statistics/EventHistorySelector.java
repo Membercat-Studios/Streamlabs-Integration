@@ -40,7 +40,7 @@ public class EventHistorySelector implements EventFilter {
         int idx = Arrays.stream(ConditionGroup.Mode.values())
                 .sorted(Comparator.comparingInt(getIndexFunc))
                 .filter(mode -> getIndexFunc.applyAsInt(mode) != -1)
-                .findFirst().map(getIndexFunc::applyAsInt).orElse(input.length() - 1);
+                .findFirst().map(getIndexFunc::applyAsInt).orElse(input.length());
 
         int relId = parseRelativeId(input.substring(0, idx));
         String conditionGroup = idx < input.length() - 1 ? input.substring(idx) : null;
@@ -51,7 +51,11 @@ public class EventHistorySelector implements EventFilter {
     }
 
     private static int parseRelativeId(String input) {
-        if (input.startsWith("last")) return 0;
-        return Math.max(0, Integer.parseInt(input));
+        if (input.equals("last")) return 0;
+        try {
+            return Math.max(0, Integer.parseInt(input));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }

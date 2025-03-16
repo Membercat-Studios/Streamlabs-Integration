@@ -7,10 +7,14 @@ import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
 import me.Domplanto.streamLabs.statistics.EventHistory;
 import me.Domplanto.streamLabs.statistics.EventHistorySelector;
 import me.Domplanto.streamLabs.statistics.HistoryChangedListener;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
@@ -18,6 +22,7 @@ public class HistorySubPlaceholder extends SubPlaceholder implements HistoryChan
     private final EventHistory history;
     private final HashMap<String, EventHistorySelector> selectorCache = new HashMap<>();
     private final HashMap<String, String> values = new HashMap<>();
+    private final static Map<String, EventHistorySelector> DEFAULT_SELECTORS;
 
     public HistorySubPlaceholder(StreamLabs plugin) {
         super(plugin, "history");
@@ -32,7 +37,7 @@ public class HistorySubPlaceholder extends SubPlaceholder implements HistoryChan
         String selector = params.substring(0, idx);
 
         if (!selectorCache.containsKey(selector))
-            this.buildSelector(selector);
+            this.selectorCache.put(selector, this.buildSelector(selector));
         if (!values.containsKey(params)) {
             EventHistorySelector historySelector = selectorCache.get(selector);
             if (historySelector == null) return Optional.of("Error: Invalid history selector");
@@ -43,7 +48,11 @@ public class HistorySubPlaceholder extends SubPlaceholder implements HistoryChan
         return Optional.of(this.values.get(params));
     }
 
-    private void buildSelector(String selector) {
+    @Nullable
+    private EventHistorySelector buildSelector(String selector) {
+        if (DEFAULT_SELECTORS.containsKey(selector))
+            return DEFAULT_SELECTORS.get(selector);
+
         ConfigIssueHelper issueHelper = new ConfigIssueHelper(null);
         EventHistorySelector built = EventHistorySelector.deserialize(selector, issueHelper);
         try {
@@ -52,12 +61,28 @@ public class HistorySubPlaceholder extends SubPlaceholder implements HistoryChan
             if (e.getIssues().stream().anyMatch(issue -> issue.issue().getLevel() != ConfigIssue.Level.HINT))
                 built = null;
         }
-
-        this.selectorCache.put(selector, built);
+        
+        return built;
     }
 
     @Override
     public void onHistoryChanged(EventHistory history, EventHistory.LoggedEvent newEvent) {
         this.values.clear();
+    }
+
+    static {
+        ComponentLogger logger = ComponentLogger.logger(HistorySubPlaceholder.class);
+        ConfigIssueHelper issueHelper = new ConfigIssueHelper(logger);
+        DEFAULT_SELECTORS = Map.of(
+                "last_donation", EventHistorySelector.deserialize("last_[{amount}>0]", issueHelper),
+                "last_follow", EventHistorySelector.deserialize("last_({_type}=youtube_subscription|{_type}=twitch_follow)", issueHelper)
+        );
+
+        try {
+            issueHelper.complete();
+        } catch (ConfigLoadedWithIssuesException e) {
+            logger.error("Found issues while creating default history placeholders");
+            logger.error(Component.newline().append(e.getIssues().getListMessage(-1, false)));
+        }
     }
 }
