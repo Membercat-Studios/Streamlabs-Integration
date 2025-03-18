@@ -4,7 +4,7 @@
   <groupId>me.Domplanto</groupId>
   <artifactId>StreamlabsIntegration</artifactId>
   <name>StreamlabsIntegration</name>
-  <version>1.0.0</version>
+  <version>0.1.0</version>
   <build>
     <defaultGoal>clean package</defaultGoal>
     <resources>
