@@ -38,6 +38,7 @@ public final class CustomPlaceholder extends ActionPlaceholder implements YamlPr
                 .filter(Objects::nonNull)
                 .filter(s -> !s.getName().equals("default_value") || !s.getName().equals("__suppress"))
                 .map(s -> {
+                    issueHelper.process(s.getName());
                     issueHelper.push(StateBasedValue.class, s.getName());
                     StateBasedValue value = YamlPropertyObject.createInstance(StateBasedValue.class, s, issueHelper);
                     issueHelper.pop();
@@ -45,6 +46,7 @@ public final class CustomPlaceholder extends ActionPlaceholder implements YamlPr
                 })
                 .toList();
 
+        issueHelper.process("default_value");
         return new CustomPlaceholder(section.getName(), YamlPropertyObject.getString(section, "default_value"), values);
     }
 

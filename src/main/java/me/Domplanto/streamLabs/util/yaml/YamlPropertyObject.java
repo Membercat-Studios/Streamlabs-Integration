@@ -30,12 +30,13 @@ public interface YamlPropertyObject {
                 Class<? extends YamlPropertyObject> sectionCls = isSection ? field.getAnnotation(YamlPropertySection.class).elementClass() : null;
                 String id = getPrefix() != null ? "%s.%s".formatted(getPrefix(), value) : value;
                 Set<Method> issueAssigners = this.getIssueAssignerMethods(value);
+                boolean actuallySet = getSectionKeys(section, true).contains(id);
+                if (actuallySet) issueHelper.process(id);
+
                 if (isSection)
                     issueHelper.pushSection(value);
                 else
                     issueHelper.pushProperty(value);
-
-                boolean actuallySet = getSectionKeys(section, true).contains(id);
                 field.setAccessible(true);
                 Method customDeserializer = this.getCustomDeserializer(value, field.getType());
                 Object sectionVal = actuallySet ? section.get(id) : null;
@@ -80,6 +81,10 @@ public interface YamlPropertyObject {
                 }
                 issueHelper.pop();
             }
+
+            getSectionKeys(section, false).stream()
+                    .filter(key -> !issueHelper.getProcessed().contains(key))
+                    .forEach(key -> issueHelper.appendAtPath(WY0.apply(key)));
         } catch (ReflectiveOperationException e) {
             issueHelper.appendAtPathAndLog(EI1, e);
             issueHelper.popIfProperty();

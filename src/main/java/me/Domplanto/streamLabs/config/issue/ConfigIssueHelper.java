@@ -36,7 +36,7 @@ public class ConfigIssueHelper {
     public void complete() throws ConfigLoadedWithIssuesException {
         if (!pathStack.empty()) {
             this.appendAtPath(EI2);
-            this.replacePaths(new ConfigPathStack.Entry(null, null, "unknown", new HashSet<>()));
+            this.replacePaths(new ConfigPathStack.Entry(null, null, "unknown", new HashSet<>(), new HashSet<>()));
         }
 
         if (!this.issues.isEmpty())
@@ -54,11 +54,16 @@ public class ConfigIssueHelper {
     public void push(Class<?> segment, String name) {
         ConfigPathSegment annotation = segment.getAnnotation(ConfigPathSegment.class);
         this.pathStack.push(new ConfigPathStack.Entry(segment, annotation, name,
-                !this.pathStack.empty() ? this.pathStack.peek().suppressedIssues() : new HashSet<>()));
+                !this.pathStack.empty() ? this.pathStack.peek().suppressedIssues() : new HashSet<>(), new HashSet<>()));
     }
 
     public void pop() {
         this.pathStack.pop();
+    }
+
+    public void process(String... properties) {
+        if (!this.pathStack.isEmpty())
+            this.pathStack.peek().process(properties);
     }
 
     public void popIfSection() {
@@ -114,6 +119,10 @@ public class ConfigIssueHelper {
     private boolean checkIssueSuppressed(ConfigIssue issue) {
         if (this.globalSuppressions.contains(issue.getId())) return true;
         return !this.pathStack.isEmpty() && this.pathStack.peek().suppressedIssues().contains(issue.getId());
+    }
+
+    public Set<String> getProcessed() {
+        return !this.pathStack.isEmpty() ? this.pathStack.peek().processedProperties() : Set.of();
     }
 
     public @NotNull ConfigPathStack stackCopy() {

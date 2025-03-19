@@ -36,6 +36,7 @@ public abstract class RateLimiter implements YamlPropertyObject {
         if (section == null) return null;
 
         String type = YamlPropertyObject.getString(section, "type");
+        issueHelper.process("type");
         issueHelper.pushProperty("type");
         RateLimiter instance = null;
         try {

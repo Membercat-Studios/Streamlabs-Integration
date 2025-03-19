@@ -30,6 +30,7 @@ public class Issues {
     public static BiFunction<String, ConditionGroup.Mode, ConfigIssue> WC0 = (modeString, groupMode) -> new ConfigIssue("WC0", ConfigIssue.Level.WARNING, text(modeString), text(groupMode.name()));
     public static ConfigIssue WC1 = new ConfigIssue("WC1", ConfigIssue.Level.WARNING);
     public static ConfigIssue WC2 = new ConfigIssue("WC2", ConfigIssue.Level.WARNING);
+    public static Function<String, ConfigIssue> WY0 = yamlKey -> new ConfigIssue("WY0", ConfigIssue.Level.WARNING, text(yamlKey));
 
     public static ConfigIssue HR0 = new ConfigIssue("HR0", ConfigIssue.Level.HINT);
     public static ConfigIssue HB0 = new ConfigIssue("HB0", ConfigIssue.Level.HINT);
