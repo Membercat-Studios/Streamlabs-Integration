@@ -18,22 +18,21 @@ public class ConfigIssueHelper {
     private final IssueList issues;
     private final ConfigPathStack pathStack;
     private final ComponentLogger logger;
-    private final Set<String> globalSuppressions;
 
     public ConfigIssueHelper(ComponentLogger logger) {
         this.issues = new IssueList();
         this.pathStack = new ConfigPathStack();
-        this.globalSuppressions = new HashSet<>();
         this.logger = logger;
     }
 
-    public void reset() {
+    public void initialize() {
         this.issues.clear();
         this.pathStack.clear();
-        this.globalSuppressions.clear();
+        this.push(ConfigPathStack.Root.class, "");
     }
 
     public void complete() throws ConfigLoadedWithIssuesException {
+        this.popIf(ConfigPathStack.Entry::isRoot);
         if (!pathStack.empty()) {
             this.appendAtPath(EI2);
             this.replacePaths(new ConfigPathStack.Entry(null, null, "unknown", new HashSet<>(), new HashSet<>()));
@@ -66,22 +65,14 @@ public class ConfigIssueHelper {
             this.pathStack.peek().process(properties);
     }
 
-    public void popIfSection() {
-        if (!this.pathStack.isEmpty() && this.pathStack.peek().isSection())
-            this.pathStack.pop();
-    }
-
-    public void popIfProperty() {
-        if (!this.pathStack.isEmpty() && this.pathStack.peek().isProperty())
+    public void popIf(Predicate<ConfigPathStack.Entry> predicate) {
+        if (!this.pathStack.isEmpty() && predicate.test(this.pathStack.peek()))
             this.pathStack.pop();
     }
 
     public void suppress(Collection<String> issueIds) {
-        if (this.pathStack.isEmpty()) {
-            this.globalSuppressions.addAll(issueIds);
-            return;
-        }
-        this.pathStack.peek().suppress(issueIds);
+        if (!this.pathStack.isEmpty())
+            this.pathStack.peek().suppress(issueIds);
     }
 
     public void appendAtPath(ConfigIssue issue) {
@@ -117,7 +108,6 @@ public class ConfigIssueHelper {
     }
 
     private boolean checkIssueSuppressed(ConfigIssue issue) {
-        if (this.globalSuppressions.contains(issue.getId())) return true;
         return !this.pathStack.isEmpty() && this.pathStack.peek().suppressedIssues().contains(issue.getId());
     }
 

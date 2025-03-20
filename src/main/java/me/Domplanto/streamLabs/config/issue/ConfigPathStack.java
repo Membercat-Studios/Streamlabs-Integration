@@ -20,13 +20,13 @@ public class ConfigPathStack extends Stack<ConfigPathStack.Entry> {
     public Component toComponent() {
         TextComponent.Builder builder = text();
         for (ConfigPathStack.Entry segment : this) {
-            builder.append(text("/"));
             String clsName = segment.cls() != null ? segment.cls().getTypeName() : "unknown";
             String staticName = segment.annotation() != null ? segment.annotation().id() : clsName;
             builder.append(text()
                     .content(segment.ownName() != null ? segment.ownName() : staticName)
                     .color(this.lastElement().equals(segment) ? ColorScheme.DONE : null)
                     .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.config_type", ColorScheme.STREAMLABS, text(staticName, ColorScheme.SUCCESS)))));
+            if (!this.lastElement().equals(segment)) builder.append(text("/"));
         }
 
         return builder.build();
@@ -52,6 +52,10 @@ public class ConfigPathStack extends Stack<ConfigPathStack.Entry> {
             return cls() == Section.class;
         }
 
+        public boolean isRoot() {
+            return cls() == Root.class;
+        }
+
         public void suppress(Collection<String> issueIds) {
             this.suppressedIssues.addAll(issueIds);
         }
@@ -59,6 +63,10 @@ public class ConfigPathStack extends Stack<ConfigPathStack.Entry> {
         public void process(String... properties) {
             this.processedProperties.addAll(Arrays.asList(properties));
         }
+    }
+
+    @ConfigPathSegment(id = "root")
+    public record Root() {
     }
 
     @ConfigPathSegment(id = "property")

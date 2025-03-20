@@ -22,7 +22,7 @@ public abstract class ConfigRoot implements YamlPropertyObject {
     }
 
     public final void load(@NotNull File configFile) throws ConfigLoadedWithIssuesException {
-        this.issueHelper.reset();
+        this.issueHelper.initialize();
         YamlConfiguration config = new YamlConfiguration();
         boolean loadSucceeded = false;
         try {

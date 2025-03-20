@@ -15,6 +15,8 @@ import java.util.stream.Stream;
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 public interface YamlPropertyObject {
+    String SUPPRESS_KEY = "__suppress";
+
     @Nullable
     default String getPrefix() {
         return null;
@@ -87,8 +89,7 @@ public interface YamlPropertyObject {
                     .forEach(key -> issueHelper.appendAtPath(WY0.apply(key)));
         } catch (ReflectiveOperationException e) {
             issueHelper.appendAtPathAndLog(EI1, e);
-            issueHelper.popIfProperty();
-            issueHelper.popIfSection();
+            issueHelper.popIf(entry -> entry.isProperty() || entry.isSection());
         }
     }
 
@@ -130,8 +131,10 @@ public interface YamlPropertyObject {
     }
 
     private static void suppressForSection(ConfigurationSection section, ConfigIssueHelper issueHelper) {
-        if (getSectionKeys(section, false).contains("__suppress"))
-            issueHelper.suppress(section.getStringList("__suppress"));
+        if (getSectionKeys(section, false).contains(SUPPRESS_KEY)) {
+            issueHelper.process(SUPPRESS_KEY);
+            issueHelper.suppress(section.getStringList(SUPPRESS_KEY));
+        }
     }
 
     private Set<Field> getYamlPropertyFields() {
