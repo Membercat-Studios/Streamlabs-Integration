@@ -1,83 +1,24 @@
-![Streamlabs Integration](https://github.com/Membercat-Studios/StreamLabsPlugin/blob/main/streamlabs_integration_banner.png?raw=true)
-# Streamlabs Integration
-A simple minecraft plugin that allows your YouTube and Twitch chat to interact with your Minecraft game via donations.
-Visit the [Wiki](https://github.com/Membercat-Studios/StreamLabsPlugin/wiki) for instruction on how to use the configuration!
+![Streamlabs Integration](https://raw.githubusercontent.com/Membercat-Studios/Streamlabs-Integration/refs/heads/main/streamlabs_integration_banner.png)
 
-## Installation
-1. Download the latest release from the Releases page on GitHub
-2. Put the plugin it the plugins folder
-3. Restart the server
-4. Go to The Streamlabs dashboard. Then, in the top right corner, click on the account icon and go to *Account Settings*
-5. Click on *API Settings* and copy your socket token
-6. Go to /plugins/Streamlabs/config.yml and paste the socket token in the config
-7. Enter `/streamlabs reload` and wait for the plugin to connect to the streamlabs API
+**Streamlabs Integration** allows your Youtube/Twitch viewers to trigger events in your minecraft world through donations, such as spawning mobs and teleporting the player! The plugin includes a feature-rich command system with placeholders and conditions to ensure maximal customizability.
 
-## Commands
-- `/streamlabs reload`: Loads changes in the config and reconnects
-- `/streamlabs status`: Shows whether the plugin is currently connected to the Streamlabs API
-- `/streamlabs connect`: Used to reconnect to Streamlabs after getting disconnected
-- `/streamlabs disconnect`: Disconnects from the Streamlabs API
-- `/streamlabs player add {name}`: Adds a player to the `affected_players` config
-- `/streamlabs player remove {name}`: Removes a player from the `affected_players` config
+# Features
+- **Respond to any kind of event from both Youtube and Twitch**: The plugin allows you to trigger in-game actions for any kind of donation, subscription, membership, follow, and many more
+- **Fully customizeable event conditions**: Our plugin's condition system is able to check for any value related to any event (such as the amount of gifted memberships on Youtube) and even check for value ranges in different currencies easily
+- **Execute commands and send messages**: The plugin features a widely customizable command system, allowing you to use data from the event in the command. Chat messages and titles can also be sent to specific players through the easy-to-use message system
 
-## Configuration
-To get started, put your Streamlabs socket token in the `socket_token` field:
-```yaml
-streamlabs:
-  socket_token: "(Your Streamlabs Socket token here)"
-```
+# Documentation
+This plugin can get quite complicated to use, so take a look at our [Wiki](https://github.com/Domplanto/StreamLabsPlugin/wiki) for detailed information on how to configure it to your needs!
 
-The plugin works based on **actions** that tell the plugin what to do in a specific scenario.
-You can add as many actions as you like in the `actions` field. An action has the following fields:
-```yaml
-actions:
-  example_action:
-    enabled: true # Whether the action is enabled
-    action: (Action type)
-    conditions:
-      - (List of conditions that have to be met in order for the action to execute)
-    donation_condition:
-      - (All conditions with the currency of the received donation will be checked, this will be ignored if the event is not a donation)
-    messages:
-      - (List of messages that will be sent in chat or as a title)
-    commands:
-      - (List of minecraft commands to execute)
-```
+# Installation
+Streamlabs Integration is compatible with **Paper**, **Purpur** and other forks, starting with version **1.21**. To install the plugin, simply save the .jar file into your `plugins` folder and restart your server! Read the [Wiki](https://github.com/Domplanto/StreamLabsPlugin/wiki) to get started with configuring it.
 
-## Default configuration
-```yaml
-streamlabs:
-  socket_token: "" # Put your Streamlabs socket token here
+# Support / Credits
+[<img src="https://codingcat2468.github.io/assets/images/membercat_studios.png" height="60" width="200"/>](https://membercat.com)
 
-affected_players: # Players that will be affected by the actions {player}
-  - domplanto
-  - codingcat
+This plugin is part of **Membercat Studios** by KasaiSora and has been created by:
+- **codingcat**: Developer
+- **Domplanto**: Developer
+- **Mazurex**: Reminding me that the plugin needs to be able to center messages in chat
 
-show_status_messages: true # Whether the plugin will send status messages in chat (for example "Successfully connected to Streamlabs")
-
-actions:
-  example_reward:
-    enabled: true # Whether the action is enabled
-    action: streamlabs_donation # The action that will trigger it
-    conditions: # Conditions that must be met for the action to trigger
-      - '{message}.>cats are cool'
-      - '{user}=codingcat24'
-    donation_conditions: # All conditions with the currency of the received donation will be checked (this will not be checked if the event is not a donation)
-      - "EUR>10"
-      - "EUR<50"
-      - "USD>10.54"
-      - "USD<50"
-      - "AUD>16.31"
-      - "AUD<50"
-    messages: # Messages that will be sent when the action triggers. USE § FOR COLOR CODES, NOT &!
-      - '[message]§l§6{user} §r§9donated {amount_formatted}!'
-      - '[title]§cNew Donation!'
-      - '[subtitle]§a{user} §9donated {amount_formatted}!'
-    commands: # Commands that will be executed when the action triggers. for ' do ''.
-      - 'give {player} diamond {amount}'
-      - 'effect give {player} regeneration {amount} 1'
-      - '[{amount}/10]execute at {player} run summon zombie ~ ~ ~ {CustomName:''[{"text":"{user}"}]''}' # [{amount}/10] will be replaced with the amount divided by 10
-```
-
-
-[<img src="https://codingcat2468.github.io/assets/images/membercat_studios.png" height="55" width="200"/>](https://membercat.com)
+To report any issues, receive support or tell us your feedback, join our [Discord Server](https://dc.kasai.gg) or create an issue on [GitHub](https://github.com/Membercat-Studios/StreamLabsPlugin/issues).
