@@ -40,8 +40,12 @@ public class ActionCommand {
     public int calculateExecutionCount(ActionExecutionContext ctx) {
         if (this.executionAmountExpression == null) return 1;
 
-        String fullExpression = ActionPlaceholder.replacePlaceholders(executionAmountExpression, ctx);
-        return new DoubleEvaluator().evaluate(fullExpression).intValue();
+        try {
+            String fullExpression = ActionPlaceholder.replacePlaceholders(executionAmountExpression, ctx);
+            return new DoubleEvaluator().evaluate(fullExpression).intValue();
+        } catch (IllegalArgumentException e) {
+            return 0;
+        }
     }
 
     public static List<ActionCommand> parseAll(List<String> rawCommands, ConfigIssueHelper issueHelper) {
