@@ -24,6 +24,8 @@ public class Issues {
 
     public static ConfigIssue WI0 = new ConfigIssue("WI0", ConfigIssue.Level.WARNING);
     public static ConfigIssue WI1 = new ConfigIssue("WI1", ConfigIssue.Level.WARNING);
+    public static Function<String, ConfigIssue> WA0 = action -> new ConfigIssue("WA0", ConfigIssue.Level.WARNING, text(action));
+    public static ConfigIssue WA1 = new ConfigIssue("WA1", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WR0 = type -> new ConfigIssue("WR0", ConfigIssue.Level.WARNING, text(type));
     public static BiFunction<String, String, ConfigIssue> WM0 = (type, def) -> new ConfigIssue("WM0", ConfigIssue.Level.WARNING, text(type), text(def));
     public static ConfigIssue WM1 = new ConfigIssue("WM1", ConfigIssue.Level.WARNING, Translations.MINIMESSAGE_LINK);

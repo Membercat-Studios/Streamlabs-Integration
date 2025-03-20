@@ -7,6 +7,7 @@ import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
+import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
 import me.Domplanto.streamLabs.util.yaml.*;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
@@ -18,8 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static me.Domplanto.streamLabs.config.issue.Issues.ES0;
-import static me.Domplanto.streamLabs.config.issue.Issues.HI0;
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 public class PluginConfig extends ConfigRoot {
     @YamlProperty(value = "streamlabs")
@@ -107,10 +107,23 @@ public class PluginConfig extends ConfigRoot {
 
     @ConfigPathSegment(id = "action")
     public static class Action extends AbstractAction {
+        private static final Set<String> ACTION_IDS = StreamLabs.getCachedEventObjects().stream()
+                .map(StreamlabsEvent::getId).collect(Collectors.toSet());
         @YamlProperty("action")
         public String eventType = "unknown";
         @YamlProperty("enabled")
-        public boolean enabled;
+        public boolean enabled = true;
+
+        @YamlPropertyIssueAssigner(propertyName = "action")
+        public void assignToAction(ConfigIssueHelper issueHelper, boolean actuallySet) {
+            if (!actuallySet) {
+                issueHelper.appendAtPath(WA1);
+                return;
+            }
+
+            if (!ACTION_IDS.contains(eventType))
+                issueHelper.appendAtPath(WA0.apply(eventType));
+        }
     }
 
     @ConfigPathSegment(id = "plugin_options")
