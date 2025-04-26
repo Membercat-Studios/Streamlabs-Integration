@@ -146,7 +146,7 @@ public interface YamlPropertyObject {
                 if (customDeserializer != null && (actuallySet || !customDeserializer.getAnnotation(YamlPropertyCustomDeserializer.class).onlyUseWhenActuallySet())) {
                     customDeserializer.setAccessible(true);
                     try {
-                        sectionVal = customDeserializer.invoke(this, sectionVal, issueHelper);
+                        sectionVal = customDeserializer.invoke(this, sectionVal, issueHelper, section);
                     } catch (Exception e) {
                         issueHelper.appendAtPathAndLog(WI0, e);
                     }
@@ -204,8 +204,8 @@ public interface YamlPropertyObject {
                 .flatMap(cls -> Arrays.stream(cls.getDeclaredMethods()))
                 .filter(method -> method.isAnnotationPresent(YamlPropertyCustomDeserializer.class))
                 .filter(method -> method.getAnnotation(YamlPropertyCustomDeserializer.class).propertyName().equals(propertyName))
-                .filter(method -> method.getParameterCount() == 2)
-                .filter(method -> method.getReturnType() == propertyCls && method.getParameterTypes()[1] == ConfigIssueHelper.class)
+                .filter(method -> method.getParameterCount() == 3)
+                .filter(method -> method.getReturnType() == propertyCls && method.getParameterTypes()[1] == ConfigIssueHelper.class && method.getParameterTypes()[2] == ConfigurationSection.class)
                 .findAny().orElse(null);
     }
 

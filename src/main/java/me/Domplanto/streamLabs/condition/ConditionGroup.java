@@ -6,6 +6,7 @@ import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,17 +27,17 @@ public class ConditionGroup implements ConditionBase, YamlPropertyObject {
     public Mode groupMode = Mode.AND;
 
     @YamlPropertyCustomDeserializer(propertyName = "conditions")
-    private List<ConditionBase> deserializeConditions(@NotNull List<Object> rawConditions, ConfigIssueHelper issueHelper) {
+    private List<ConditionBase> deserializeConditions(@NotNull List<Object> rawConditions, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
         return Condition.parseConditions(rawConditions, issueHelper);
     }
 
     @YamlPropertyCustomDeserializer(propertyName = "donation_conditions")
-    private List<DonationCondition> deserializeDonationConditions(@NotNull List<String> rawDonationConditions, ConfigIssueHelper issueHelper) {
+    private List<DonationCondition> deserializeDonationConditions(@NotNull List<String> rawDonationConditions, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
         return Condition.parseDonationConditions(rawDonationConditions, issueHelper);
     }
 
     @YamlPropertyCustomDeserializer(propertyName = "mode")
-    private Mode deserializeGroupMode(@NotNull String modeString, ConfigIssueHelper issueHelper) {
+    private Mode deserializeGroupMode(@NotNull String modeString, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
         try {
             return Mode.valueOf(modeString.toUpperCase());
         } catch (IllegalArgumentException e) {

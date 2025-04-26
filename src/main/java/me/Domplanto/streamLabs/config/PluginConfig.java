@@ -10,6 +10,7 @@ import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
 import me.Domplanto.streamLabs.util.yaml.*;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -92,8 +93,8 @@ public class PluginConfig extends ConfigRoot {
         public RateLimiter rateLimiter;
 
         @YamlPropertyCustomDeserializer(propertyName = "steps")
-        private List<? extends AbstractStep<?>> deserializeSteps(@NotNull List<Map<String, Object>> sections, ConfigIssueHelper issueHelper) {
-            return AbstractStep.parseAll(sections, issueHelper);
+        private List<? extends AbstractStep<?>> deserializeSteps(@NotNull List<Map<String, Object>> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+            return AbstractStep.parseAll(sections, parent, issueHelper);
         }
     }
 

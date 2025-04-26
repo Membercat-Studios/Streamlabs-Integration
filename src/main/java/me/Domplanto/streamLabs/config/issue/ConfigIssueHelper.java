@@ -119,6 +119,10 @@ public class ConfigIssueHelper {
         return this.pathStack.clone();
     }
 
+    public @NotNull ConfigPathStack stack() {
+        return this.pathStack;
+    }
+
     public static class IssueList extends ArrayList<IssueList.RecordedIssue> {
         public record RecordedIssue(
                 ConfigIssue issue,

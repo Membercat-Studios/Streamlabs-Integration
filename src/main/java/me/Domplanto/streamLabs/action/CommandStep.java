@@ -6,7 +6,6 @@ import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.BracketResolver;
-import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Set;
 
 @ReflectUtil.ClassId("command")
-public class CommandStep extends AbstractStep<String> implements YamlPropertyObject {
+public class CommandStep extends AbstractStep<String> {
     private String command;
     @Nullable
     private String executionAmountExpression;

@@ -4,20 +4,24 @@ import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
+import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
 import me.Domplanto.streamLabs.util.ReflectUtil;
+import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ConfigPathSegment(id = "step")
-public abstract class AbstractStep<T> {
+public abstract class AbstractStep<T> implements YamlPropertyObject {
     @SuppressWarnings("rawtypes")
     private final static Map<String, Class<? extends AbstractStep>> ACTIONS = ReflectUtil.loadClassesWithIds(AbstractStep.class);
     private final @NotNull Class<?> expectedDataType;
@@ -27,18 +31,18 @@ public abstract class AbstractStep<T> {
         this.expectedDataType = expectedDataType;
     }
 
-    public static List<? extends AbstractStep<?>> parseAll(List<Map<String, Object>> sections, ConfigIssueHelper issueHelper) {
+    public static List<? extends AbstractStep<?>> parseAll(List<Map<String, Object>> sections, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
         return sections.stream()
                 .map(section -> {
                     issueHelper.push(AbstractStep.class, String.valueOf(sections.indexOf(section)));
-                    AbstractStep<?> instance = deserialize(section, issueHelper);
+                    AbstractStep<?> instance = deserialize(section, issueHelper, parent);
                     issueHelper.pop();
                     return instance;
                 }).filter(Objects::nonNull).toList();
     }
 
     @SuppressWarnings("rawtypes")
-    private static AbstractStep<?> deserialize(Map<String, Object> section, ConfigIssueHelper issueHelper) {
+    private static AbstractStep<?> deserialize(Map<String, Object> section, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
         if (section == null) return null;
 
         try {
@@ -67,6 +71,12 @@ public abstract class AbstractStep<T> {
                 return null;
             }
 
+
+            // "Hacky" solution to get a ConfigurationSection instance from the given map
+            String id = "step-%s".formatted(UUID.randomUUID());
+            step.acceptYamlProperties(parent.createSection(id, section), issueHelper);
+            ConfigPathStack stack = issueHelper.stack();
+            stack.get(stack.size() - 3).process(id);
             step.load(stepData.getKey(), issueHelper);
             return step;
         } catch (Exception e) {
