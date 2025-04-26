@@ -29,6 +29,7 @@ public class Issues {
     public static ConfigIssue WI1 = new ConfigIssue("WI1", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WA0 = action -> new ConfigIssue("WA0", ConfigIssue.Level.WARNING, text(action));
     public static ConfigIssue WA1 = new ConfigIssue("WA1", ConfigIssue.Level.WARNING);
+    public static Function<String, ConfigIssue> WA2 = type -> new ConfigIssue("WA2", ConfigIssue.Level.WARNING, text(type));
     public static Function<String, ConfigIssue> WR0 = type -> new ConfigIssue("WR0", ConfigIssue.Level.WARNING, text(type));
     public static BiFunction<String, String, ConfigIssue> WM0 = (type, def) -> new ConfigIssue("WM0", ConfigIssue.Level.WARNING, text(type), text(def));
     public static ConfigIssue WM1 = new ConfigIssue("WM1", ConfigIssue.Level.WARNING, Translations.MINIMESSAGE_LINK);
@@ -37,6 +38,7 @@ public class Issues {
     public static ConfigIssue WC2 = new ConfigIssue("WC2", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WS0 = stepId -> new ConfigIssue("WS0", ConfigIssue.Level.WARNING, text(stepId));
     public static ConfigIssue WS1 = new ConfigIssue("WS1", ConfigIssue.Level.WARNING);
+    public static BiFunction<Integer, Integer, ConfigIssue> WD0 = (value, defaultVal) -> new ConfigIssue("WD0", ConfigIssue.Level.WARNING, text(value), text(defaultVal));
     public static Function<String, ConfigIssue> WY0 = yamlKey -> new ConfigIssue("WY0", ConfigIssue.Level.WARNING, text(yamlKey));
 
     public static ConfigIssue HR0 = new ConfigIssue("HR0", ConfigIssue.Level.HINT);

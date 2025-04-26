@@ -5,23 +5,33 @@ import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.AbstractStep;
 import me.Domplanto.streamLabs.config.PluginConfig;
+import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
 import me.Domplanto.streamLabs.statistics.EventHistory;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.components.Translations;
+import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+
+import static me.Domplanto.streamLabs.config.issue.Issues.WA2;
 
 public class ActionExecutor {
     private final PluginConfig pluginConfig;
     private final EventHistory eventHistory;
     private final StreamLabs plugin;
+    private final ConcurrentMap<String, Set<UUID>> runningActions;
     @Nullable
     private DonationGoal activeGoal;
 
@@ -29,6 +39,7 @@ public class ActionExecutor {
         this.pluginConfig = pluginConfig;
         this.plugin = plugin;
         this.eventHistory = new EventHistory();
+        this.runningActions = new ConcurrentHashMap<>();
     }
 
     public void parseAndExecute(JsonElement data) throws SocketSerializerException {
@@ -70,7 +81,7 @@ public class ActionExecutor {
                 if (!action.enabled) continue;
 
                 ActionExecutionContext context = new ActionExecutionContext(event, this, this.pluginConfig, action, baseObject);
-                if (event.checkConditions(context)) if (!executeAction(context)) successful = false;
+                if (event.checkConditions(context)) executeAction(context);
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing action %s for %s:".formatted(action.id, event.getId()), e);
                 successful = false;
@@ -81,18 +92,30 @@ public class ActionExecutor {
         return successful;
     }
 
-    private boolean executeAction(ActionExecutionContext ctx) {
-        boolean successful = true;
-        for (AbstractStep<?> step : ctx.action().steps) {
-            try {
-                step.execute(ctx, this.plugin);
-            } catch (AbstractStep.ActionFailureException e) {
-                plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing step %s for action %s:".formatted(ctx.action().id, ctx.event().getId()), e);
-                successful = false;
-            }
-        }
+    private void executeAction(ActionExecutionContext ctx) {
+        String actionId = ctx.action().id;
+        Set<UUID> instances = runningActions.containsKey(actionId) ? this.runningActions.get(actionId) : new HashSet<>();
+        if (!instances.isEmpty() && ctx.action().instancingBehaviour == ActionInstancingBehaviour.CANCEL_PREVIOUS)
+            instances.clear();
 
-        return successful;
+        UUID taskUUID = UUID.randomUUID();
+        instances.add(taskUUID);
+        this.runningActions.put(actionId, instances);
+        Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+            int id = 0;
+            for (AbstractStep<?> step : ctx.action().steps) {
+                if (!runningActions.get(actionId).contains(taskUUID)) return;
+                try {
+                    step.execute(ctx, this.plugin);
+                } catch (AbstractStep.ActionFailureException e) {
+                    plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing step %s in action %s for event %s:".formatted(id, actionId, ctx.event().getId()), e);
+                }
+                id++;
+            }
+            Set<UUID> instanceSet = this.runningActions.get(actionId);
+            instanceSet.remove(taskUUID);
+            if (instanceSet.isEmpty()) this.runningActions.remove(actionId);
+        });
     }
 
     public void updateGoal(ActionExecutionContext ctx) {
@@ -135,5 +158,19 @@ public class ActionExecutor {
 
     public EventHistory getEventHistory() {
         return eventHistory;
+    }
+
+    public enum ActionInstancingBehaviour {
+        CANCEL_PREVIOUS,
+        RUN_IN_PARALLEL;
+
+        public static @NotNull ActionExecutor.ActionInstancingBehaviour fromString(@NotNull String s, ConfigIssueHelper issueHelper) {
+            try {
+                return valueOf(s);
+            } catch (IllegalArgumentException e) {
+                issueHelper.appendAtPath(WA2.apply(s));
+                return CANCEL_PREVIOUS;
+            }
+        }
     }
 }
