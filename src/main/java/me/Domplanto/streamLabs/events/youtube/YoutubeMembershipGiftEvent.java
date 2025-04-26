@@ -1,8 +1,8 @@
 package me.Domplanto.streamLabs.events.youtube;
 
 import com.google.gson.JsonObject;
-import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.action.ActionExecutor;
+import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
+import me.Domplanto.streamLabs.action.execution.ActionExecutor;
 import me.Domplanto.streamLabs.events.StreamlabsPlatform;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
 import org.jetbrains.annotations.NotNull;

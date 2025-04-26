@@ -1,7 +1,7 @@
 package me.Domplanto.streamLabs.papi;
 
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.action.ActionExecutor;
+import me.Domplanto.streamLabs.action.execution.ActionExecutor;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;

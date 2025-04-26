@@ -2,8 +2,8 @@ package me.Domplanto.streamLabs.events;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.action.ActionExecutor;
+import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
+import me.Domplanto.streamLabs.action.execution.ActionExecutor;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;

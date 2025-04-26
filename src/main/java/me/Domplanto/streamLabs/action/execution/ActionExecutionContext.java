@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.action;
+package me.Domplanto.streamLabs.action.execution;
 
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;

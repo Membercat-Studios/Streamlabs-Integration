@@ -5,7 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import me.Domplanto.streamLabs.action.ActionExecutor;
+import me.Domplanto.streamLabs.action.execution.ActionExecutor;
 import me.Domplanto.streamLabs.command.SubCommand;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;

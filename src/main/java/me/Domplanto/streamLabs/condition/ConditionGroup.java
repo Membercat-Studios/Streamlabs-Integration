@@ -1,6 +1,6 @@
 package me.Domplanto.streamLabs.condition;
 
-import me.Domplanto.streamLabs.action.ActionExecutionContext;
+import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
