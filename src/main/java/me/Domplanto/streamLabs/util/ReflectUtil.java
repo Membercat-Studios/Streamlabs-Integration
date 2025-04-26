@@ -36,7 +36,7 @@ public class ReflectUtil {
         }
     }
 
-    public static <T> Map<String, Class<T>> loadClassesWithIds(Class<T> superType) {
+    public static <T> Map<String, Class<? extends T>> loadClassesWithIds(Class<T> superType) {
         return loadClasses(superType)
                 .stream().filter(cls -> {
                     boolean hasAnnotation = cls.isAnnotationPresent(ClassId.class);

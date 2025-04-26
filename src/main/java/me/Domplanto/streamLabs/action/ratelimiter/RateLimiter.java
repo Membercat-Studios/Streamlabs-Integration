@@ -18,17 +18,9 @@ import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ConfigPathSegment(id = "rate_limiter")
 public abstract class RateLimiter implements YamlPropertyObject {
-    private static final Map<String, Class<RateLimiter>> RATE_LIMITER_CLASSES = RateLimiter.findRateLimiterClasses();
+    private static final Map<String, Class<? extends RateLimiter>> RATE_LIMITER_CLASSES = RateLimiter.findRateLimiterClasses();
     @YamlProperty("value")
     private String value = "";
-
-    public abstract boolean check(ActionExecutionContext ctx);
-
-    public abstract void reset();
-
-    public String getValue(ActionExecutionContext ctx) {
-        return ActionPlaceholder.replacePlaceholders(this.value, ctx);
-    }
 
     @Nullable
     @YamlPropertyCustomDeserializer
@@ -55,13 +47,21 @@ public abstract class RateLimiter implements YamlPropertyObject {
         return instance;
     }
 
+    private static Map<String, Class<? extends RateLimiter>> findRateLimiterClasses() {
+        return ReflectUtil.loadClassesWithIds(RateLimiter.class);
+    }
+
+    public abstract boolean check(ActionExecutionContext ctx);
+
+    public abstract void reset();
+
+    public String getValue(ActionExecutionContext ctx) {
+        return ActionPlaceholder.replacePlaceholders(this.value, ctx);
+    }
+
     @YamlPropertyIssueAssigner(propertyName = "value")
     public void assignToValue(ConfigIssueHelper issueHelper, boolean actuallySet) {
         if (this.value.isBlank() && !actuallySet)
             issueHelper.appendAtPath(HR0);
-    }
-
-    private static Map<String, Class<RateLimiter>> findRateLimiterClasses() {
-        return ReflectUtil.loadClassesWithIds(RateLimiter.class);
     }
 }

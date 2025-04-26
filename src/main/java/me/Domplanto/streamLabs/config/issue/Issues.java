@@ -3,8 +3,11 @@ package me.Domplanto.streamLabs.config.issue;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.util.components.Translations;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -32,6 +35,8 @@ public class Issues {
     public static BiFunction<String, ConditionGroup.Mode, ConfigIssue> WC0 = (modeString, groupMode) -> new ConfigIssue("WC0", ConfigIssue.Level.WARNING, text(modeString), text(groupMode.name()));
     public static ConfigIssue WC1 = new ConfigIssue("WC1", ConfigIssue.Level.WARNING);
     public static ConfigIssue WC2 = new ConfigIssue("WC2", ConfigIssue.Level.WARNING);
+    public static Function<String, ConfigIssue> WS0 = stepId -> new ConfigIssue("WS0", ConfigIssue.Level.WARNING, text(stepId));
+    public static ConfigIssue WS1 = new ConfigIssue("WS1", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WY0 = yamlKey -> new ConfigIssue("WY0", ConfigIssue.Level.WARNING, text(yamlKey));
 
     public static ConfigIssue HR0 = new ConfigIssue("HR0", ConfigIssue.Level.HINT);
@@ -43,5 +48,10 @@ public class Issues {
 
     public static ConfigIssue WI2(Field field, Object value, YamlPropertyObject object) throws ReflectiveOperationException {
         return new ConfigIssue("WI2", ConfigIssue.Level.WARNING, text(field.getType().getSimpleName()), text(value != null ? value.getClass().getSimpleName() : "null"), text(field.get(object).toString()));
+    }
+
+    public static ConfigIssue WS2(@NotNull Class<?> expectedType, @Nullable Class<?> actualType) {
+        String actualTypeName = Optional.ofNullable(actualType).map(Class::getSimpleName).orElse("null");
+        return new ConfigIssue("WS2", ConfigIssue.Level.WARNING, text(expectedType.getSimpleName()), text(actualTypeName));
     }
 }

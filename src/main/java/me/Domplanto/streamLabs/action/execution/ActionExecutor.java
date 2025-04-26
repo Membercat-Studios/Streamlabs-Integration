@@ -3,6 +3,7 @@ package me.Domplanto.streamLabs.action.execution;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.StreamLabs;
+import me.Domplanto.streamLabs.action.AbstractStep;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
@@ -10,8 +11,6 @@ import me.Domplanto.streamLabs.statistics.EventHistory;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.components.Translations;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -22,11 +21,11 @@ import java.util.stream.Collectors;
 public class ActionExecutor {
     private final PluginConfig pluginConfig;
     private final EventHistory eventHistory;
+    private final StreamLabs plugin;
     @Nullable
     private DonationGoal activeGoal;
-    private final JavaPlugin plugin;
 
-    public ActionExecutor(PluginConfig pluginConfig, JavaPlugin plugin) {
+    public ActionExecutor(PluginConfig pluginConfig, StreamLabs plugin) {
         this.pluginConfig = pluginConfig;
         this.plugin = plugin;
         this.eventHistory = new EventHistory();
@@ -71,8 +70,7 @@ public class ActionExecutor {
                 if (!action.enabled) continue;
 
                 ActionExecutionContext context = new ActionExecutionContext(event, this, this.pluginConfig, action, baseObject);
-                if (event.checkConditions(context))
-                    executeAction(context);
+                if (event.checkConditions(context)) if (!executeAction(context)) successful = false;
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing action %s for %s:".formatted(action.id, event.getId()), e);
                 successful = false;
@@ -83,14 +81,18 @@ public class ActionExecutor {
         return successful;
     }
 
-    private void executeAction(ActionExecutionContext ctx) {
-        ctx.action().messages
-                .stream().map(message -> message.replacePlaceholders(ctx))
-                .forEach(message -> ctx.config().getAffectedPlayers().stream()
-                        .map(playerName -> plugin.getServer().getPlayerExact(playerName))
-                        .forEach(message::send));
+    private boolean executeAction(ActionExecutionContext ctx) {
+        boolean successful = true;
+        for (AbstractStep<?> step : ctx.action().steps) {
+            try {
+                step.execute(ctx, this.plugin);
+            } catch (AbstractStep.ActionFailureException e) {
+                plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing step %s for action %s:".formatted(ctx.action().id, ctx.event().getId()), e);
+                successful = false;
+            }
+        }
 
-        ctx.action().commands.forEach(cmd -> cmd.run(Bukkit.getConsoleSender(), this.plugin, ctx));
+        return successful;
     }
 
     public void updateGoal(ActionExecutionContext ctx) {

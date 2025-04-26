@@ -1,8 +1,7 @@
 package me.Domplanto.streamLabs.config;
 
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.action.command.ActionCommand;
-import me.Domplanto.streamLabs.action.message.Message;
+import me.Domplanto.streamLabs.action.AbstractStep;
 import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
@@ -86,22 +85,15 @@ public class PluginConfig extends ConfigRoot {
         @YamlProperty("!SECTION")
         @NotNull
         public String id;
-        @YamlProperty("messages")
-        public List<Message> messages = List.of();
-        @YamlProperty("commands")
-        public List<ActionCommand> commands = List.of();
+        @YamlProperty("steps")
+        public List<? extends AbstractStep<?>> steps = List.of();
         @Nullable
         @YamlProperty("rate_limiter")
         public RateLimiter rateLimiter;
 
-        @YamlPropertyCustomDeserializer(propertyName = "messages")
-        private List<Message> deserializeMessages(@NotNull List<String> messageStrings, ConfigIssueHelper issueHelper) {
-            return Message.parseAll(messageStrings, issueHelper);
-        }
-
-        @YamlPropertyCustomDeserializer(propertyName = "commands")
-        private List<ActionCommand> deserializeCommands(@NotNull List<String> rawCommands, ConfigIssueHelper issueHelper) {
-            return ActionCommand.parseAll(rawCommands, issueHelper);
+        @YamlPropertyCustomDeserializer(propertyName = "steps")
+        private List<? extends AbstractStep<?>> deserializeSteps(@NotNull List<Map<String, Object>> sections, ConfigIssueHelper issueHelper) {
+            return AbstractStep.parseAll(sections, issueHelper);
         }
     }
 

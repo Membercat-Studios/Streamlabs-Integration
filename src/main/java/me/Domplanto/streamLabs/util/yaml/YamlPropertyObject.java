@@ -8,7 +8,10 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,6 +19,91 @@ import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 public interface YamlPropertyObject {
     String SUPPRESS_KEY = "__suppress";
+
+    @Nullable
+    static String getString(ConfigurationSection section, String key) {
+        return section.getKeys(true).contains(key) ? section.getString(key) : null;
+    }
+
+    @NotNull
+    static Set<String> getSectionKeys(@Nullable ConfigurationSection section, boolean recursive) {
+        if (section == null) return new HashSet<>();
+        return section.getKeys(recursive);
+    }
+
+    private static <T extends YamlPropertyObject> Map<String, T> loadSection(ConfigurationSection section, Class<T> cls, ConfigIssueHelper issueHelper) {
+        //noinspection unchecked
+        return getSectionKeys(section, false).stream()
+                .map(key -> {
+                    assert section != null;
+                    issueHelper.push(cls, key);
+                    try {
+                        ConfigurationSection subSection = section.getConfigurationSection(key);
+                        if (subSection == null) {
+                            issueHelper.pop();
+                            return new Object[0];
+                        }
+
+                        T element = YamlPropertyObject.createInstance(cls, subSection, issueHelper);
+                        issueHelper.pop();
+                        return new Object[]{key, element};
+                    } catch (Exception e) {
+                        issueHelper.appendAtPathAndLog(EI0, e);
+                    }
+                    issueHelper.pop();
+                    return new Object[0];
+                })
+                .filter(o -> o.length > 0)
+                .collect(Collectors.toMap(o -> (String) o[0], o -> (T) o[1]));
+    }
+
+    private static void suppressForSection(ConfigurationSection section, ConfigIssueHelper issueHelper) {
+        if (getSectionKeys(section, false).contains(SUPPRESS_KEY)) {
+            issueHelper.process(SUPPRESS_KEY);
+            issueHelper.suppress(section.getStringList(SUPPRESS_KEY));
+        }
+    }
+
+    private static Set<Class<? extends YamlPropertyObject>> tracePropertySuperclasses(Class<?> cls, Set<Class<? extends YamlPropertyObject>> collection) {
+        if (!YamlPropertyObject.class.isAssignableFrom(cls.getSuperclass())) return collection;
+        //noinspection unchecked
+        collection.add((Class<? extends YamlPropertyObject>) cls.getSuperclass());
+        return tracePropertySuperclasses(cls.getSuperclass(), collection);
+    }
+
+    @Nullable
+    static <T extends YamlPropertyObject> T createInstance(Class<T> type,
+                                                           ConfigurationSection section, ConfigIssueHelper issueHelper) {
+        try {
+            suppressForSection(section, issueHelper);
+            Method staticDeserializer = YamlPropertyObject.getOtherCustomDeserializer(type);
+            T instance;
+            if (staticDeserializer != null) {
+                staticDeserializer.setAccessible(true);
+                //noinspection unchecked
+                instance = (T) staticDeserializer.invoke(null, section, issueHelper);
+            } else
+                instance = type.getConstructor().newInstance();
+
+            if (instance != null)
+                instance.acceptYamlProperties(section, issueHelper);
+            return instance;
+        } catch (ReflectiveOperationException ignore) {
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private static Method getOtherCustomDeserializer(Class<?> otherPropertyCls) {
+        return Arrays.stream(otherPropertyCls.getDeclaredMethods())
+                .filter(method -> Modifier.isStatic(method.getModifiers()))
+                .filter(method -> method.isAnnotationPresent(YamlPropertyCustomDeserializer.class))
+                .filter(method -> method.getReturnType() == otherPropertyCls)
+                .filter(method -> method.getParameterCount() == 2)
+                .filter(method -> method.getParameterTypes()[0] == ConfigurationSection.class && method.getParameterTypes()[1] == ConfigIssueHelper.class)
+                .findAny().orElse(null);
+    }
 
     @Nullable
     default String getPrefix() {
@@ -93,50 +181,6 @@ public interface YamlPropertyObject {
         }
     }
 
-    @Nullable
-    static String getString(ConfigurationSection section, String key) {
-        return section.getKeys(true).contains(key) ? section.getString(key) : null;
-    }
-
-    @NotNull
-    static Set<String> getSectionKeys(@Nullable ConfigurationSection section, boolean recursive) {
-        if (section == null) return new HashSet<>();
-        return section.getKeys(recursive);
-    }
-
-    private static <T extends YamlPropertyObject> Map<String, T> loadSection(ConfigurationSection section, Class<T> cls, ConfigIssueHelper issueHelper) {
-        //noinspection unchecked
-        return getSectionKeys(section, false).stream()
-                .map(key -> {
-                    assert section != null;
-                    issueHelper.push(cls, key);
-                    try {
-                        ConfigurationSection subSection = section.getConfigurationSection(key);
-                        if (subSection == null) {
-                            issueHelper.pop();
-                            return new Object[0];
-                        }
-
-                        T element = YamlPropertyObject.createInstance(cls, subSection, issueHelper);
-                        issueHelper.pop();
-                        return new Object[]{key, element};
-                    } catch (Exception e) {
-                        issueHelper.appendAtPathAndLog(EI0, e);
-                    }
-                    issueHelper.pop();
-                    return new Object[0];
-                })
-                .filter(o -> o.length > 0)
-                .collect(Collectors.toMap(o -> (String) o[0], o -> (T) o[1]));
-    }
-
-    private static void suppressForSection(ConfigurationSection section, ConfigIssueHelper issueHelper) {
-        if (getSectionKeys(section, false).contains(SUPPRESS_KEY)) {
-            issueHelper.process(SUPPRESS_KEY);
-            issueHelper.suppress(section.getStringList(SUPPRESS_KEY));
-        }
-    }
-
     private Set<Field> getYamlPropertyFields() {
         return tracePropertySuperclasses(getClass())
                 .flatMap(cls -> Arrays.stream(cls.getDeclaredFields()))
@@ -169,46 +213,5 @@ public interface YamlPropertyObject {
         Set<Class<? extends YamlPropertyObject>> classes = tracePropertySuperclasses(cls, new HashSet<>());
         classes.add(getClass());
         return classes.stream();
-    }
-
-    private static Set<Class<? extends YamlPropertyObject>> tracePropertySuperclasses(Class<?> cls, Set<Class<? extends YamlPropertyObject>> collection) {
-        if (!YamlPropertyObject.class.isAssignableFrom(cls.getSuperclass())) return collection;
-        //noinspection unchecked
-        collection.add((Class<? extends YamlPropertyObject>) cls.getSuperclass());
-        return tracePropertySuperclasses(cls.getSuperclass(), collection);
-    }
-
-    @Nullable
-    static <T extends YamlPropertyObject> T createInstance(Class<T> type,
-                                                           ConfigurationSection section, ConfigIssueHelper issueHelper) {
-        try {
-            suppressForSection(section, issueHelper);
-            Method staticDeserializer = YamlPropertyObject.getOtherCustomDeserializer(type);
-            T instance;
-            if (staticDeserializer != null) {
-                staticDeserializer.setAccessible(true);
-                //noinspection unchecked
-                instance = (T) staticDeserializer.invoke(null, section, issueHelper);
-            } else
-                instance = type.getConstructor().newInstance();
-
-            if (instance != null)
-                instance.acceptYamlProperties(section, issueHelper);
-            return instance;
-        } catch (ReflectiveOperationException ignore) {
-        }
-
-        return null;
-    }
-
-    @Nullable
-    private static Method getOtherCustomDeserializer(Class<?> otherPropertyCls) {
-        return Arrays.stream(otherPropertyCls.getDeclaredMethods())
-                .filter(method -> Modifier.isStatic(method.getModifiers()))
-                .filter(method -> method.isAnnotationPresent(YamlPropertyCustomDeserializer.class))
-                .filter(method -> method.getReturnType() == otherPropertyCls)
-                .filter(method -> method.getParameterCount() == 2)
-                .filter(method -> method.getParameterTypes()[0] == ConfigurationSection.class && method.getParameterTypes()[1] == ConfigIssueHelper.class)
-                .findAny().orElse(null);
     }
 }
