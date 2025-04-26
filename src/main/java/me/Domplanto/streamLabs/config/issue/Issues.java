@@ -38,7 +38,7 @@ public class Issues {
     public static ConfigIssue WC2 = new ConfigIssue("WC2", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WS0 = stepId -> new ConfigIssue("WS0", ConfigIssue.Level.WARNING, text(stepId));
     public static ConfigIssue WS1 = new ConfigIssue("WS1", ConfigIssue.Level.WARNING);
-    public static BiFunction<Integer, Integer, ConfigIssue> WD0 = (value, defaultVal) -> new ConfigIssue("WD0", ConfigIssue.Level.WARNING, text(value), text(defaultVal));
+    public static BiFunction<String, String, ConfigIssue> WD0 = (value, defaultVal) -> new ConfigIssue("WD0", ConfigIssue.Level.WARNING, text(value), text(defaultVal));
     public static Function<String, ConfigIssue> WY0 = yamlKey -> new ConfigIssue("WY0", ConfigIssue.Level.WARNING, text(yamlKey));
 
     public static ConfigIssue HR0 = new ConfigIssue("HR0", ConfigIssue.Level.HINT);
@@ -52,8 +52,8 @@ public class Issues {
         return new ConfigIssue("WI2", ConfigIssue.Level.WARNING, text(field.getType().getSimpleName()), text(value != null ? value.getClass().getSimpleName() : "null"), text(field.get(object).toString()));
     }
 
-    public static ConfigIssue WS2(@NotNull Class<?> expectedType, @Nullable Class<?> actualType) {
-        String actualTypeName = Optional.ofNullable(actualType).map(Class::getSimpleName).orElse("null");
+    public static ConfigIssue WS2(@NotNull Class<?> expectedType, @Nullable Object actualObject) {
+        String actualTypeName = Optional.ofNullable(actualObject).map(o -> o.getClass().getSimpleName()).orElse("null");
         return new ConfigIssue("WS2", ConfigIssue.Level.WARNING, text(expectedType.getSimpleName()), text(actualTypeName));
     }
 }

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
@@ -70,23 +71,30 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
             if (step == null)
                 throw new RuntimeException("Failed to instantiate step instance, check the error mentioned above!");
 
-            if (stepData.getKey() == null || !step.getExpectedDataType().isAssignableFrom(stepData.getKey().getClass())) {
-                issueHelper.appendAtPath(WS2(step.getExpectedDataType(), stepData.getKey().getClass()));
+            Object value = stepData.getKey();
+            if (value != null && step.getOptionalDataSerializer() != null
+                    && step.getOptionalDataSerializer().from().isAssignableFrom(value.getClass()))
+                value = step.getOptionalDataSerializer().serializeObject(stepData.getKey());
+            if (value == null || !step.getExpectedDataType().isAssignableFrom(value.getClass())) {
+                issueHelper.appendAtPath(WS2(step.getExpectedDataType(), value));
                 return null;
             }
-
 
             // "Hacky" solution to get a ConfigurationSection instance from the given map
             String id = "step-%s".formatted(UUID.randomUUID());
             step.acceptYamlProperties(parent.createSection(id, section), issueHelper);
             ConfigPathStack stack = issueHelper.stack();
             stack.get(stack.size() - 3).process(id);
-            step.load(stepData.getKey(), issueHelper);
+            step.load(value, issueHelper);
             return step;
         } catch (Exception e) {
             issueHelper.appendAtPathAndLog(EI0, e);
             return null;
         }
+    }
+
+    public @Nullable Serializer<?, T> getOptionalDataSerializer() {
+        return null;
     }
 
     public abstract void load(@NotNull T data, @NotNull ConfigIssueHelper issueHelper);
@@ -114,6 +122,22 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
 
     public @NotNull Class<?> getExpectedDataType() {
         return expectedDataType;
+    }
+
+    public record Serializer<F, T>(
+            @NotNull Class<F> from,
+            @NotNull Class<T> to,
+            @NotNull Function<F, T> serializerFunc
+    ) {
+        public @Nullable T serializeObject(@Nullable Object input) {
+            if (input == null || !from.isAssignableFrom(input.getClass())) return null;
+            //noinspection unchecked
+            return serialize((F) input);
+        }
+
+        public @Nullable T serialize(@NotNull F input) {
+            return serializerFunc.apply(input);
+        }
     }
 
     public static class ActionFailureException extends Exception {

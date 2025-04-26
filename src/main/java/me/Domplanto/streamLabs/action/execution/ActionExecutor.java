@@ -108,7 +108,7 @@ public class ActionExecutor {
                 try {
                     step.execute(ctx, this.plugin);
                 } catch (AbstractStep.ActionFailureException e) {
-                    plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing step %s in action %s for event %s:".formatted(id, actionId, ctx.event().getId()), e);
+                    plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing step %s in action %s for event %s: %s".formatted(id, actionId, ctx.event().getId(), e.getMessage()), e.getCause());
                 }
                 id++;
             }
