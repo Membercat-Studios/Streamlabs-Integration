@@ -48,7 +48,10 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
         try {
             Map<Object, Class<? extends AbstractStep>> steps = ACTIONS.entrySet().stream()
                     .filter(entry -> section.containsKey(entry.getKey()))
-                    .collect(Collectors.toMap(entry -> section.get(entry.getKey()), Map.Entry::getValue));
+                    .collect(Collectors.toMap(entry -> {
+                        issueHelper.process(entry.getKey());
+                        return section.get(entry.getKey());
+                    }, Map.Entry::getValue));
             if (steps.size() > 1) {
                 issueHelper.appendAtPath(WS1);
                 return null;
@@ -57,6 +60,7 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
             Map.Entry<Object, Class<? extends AbstractStep>> stepData = steps.entrySet().stream().findFirst().orElse(null);
             if (stepData == null) {
                 String key = section.keySet().stream().findFirst().orElse("");
+                issueHelper.process(key);
                 issueHelper.appendAtPath(WS0.apply(key));
                 return null;
             }

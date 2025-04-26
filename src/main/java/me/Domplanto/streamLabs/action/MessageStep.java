@@ -79,8 +79,9 @@ public class MessageStep extends AbstractStep<String> {
         }
 
         Component finalMessage = message;
+        StreamLabs plugin = getPlugin();
         runOnServerThread(() -> ctx.config().getAffectedPlayers().stream()
-                .map(playerName -> getPlugin().getServer().getPlayerExact(playerName))
+                .map(playerName -> plugin.getServer().getPlayerExact(playerName))
                 .forEach(player -> this.type.sendMessage(player, finalMessage)));
     }
 
