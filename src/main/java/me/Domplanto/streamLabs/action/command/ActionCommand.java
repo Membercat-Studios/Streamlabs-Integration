@@ -25,29 +25,6 @@ public class ActionCommand {
         this.executionAmountExpression = executionAmountExpression;
     }
 
-    public void run(CommandSender commandSender, JavaPlugin plugin, ActionExecutionContext ctx) {
-        String command = ActionPlaceholder.replacePlaceholders(this.command, ctx);
-        Set<String> players = command.contains("{player}") ? ctx.config().getAffectedPlayers() : Set.of();
-        for (int i = 0; i < calculateExecutionCount(ctx); i++) {
-            for (String player : players) {
-                String finalCommand = command.replace("{player}", player);
-                Bukkit.getScheduler().runTask(plugin, () ->
-                        Bukkit.dispatchCommand(commandSender, finalCommand));
-            }
-        }
-    }
-
-    public int calculateExecutionCount(ActionExecutionContext ctx) {
-        if (this.executionAmountExpression == null) return 1;
-
-        try {
-            String fullExpression = ActionPlaceholder.replacePlaceholders(executionAmountExpression, ctx);
-            return new DoubleEvaluator().evaluate(fullExpression).intValue();
-        } catch (IllegalArgumentException e) {
-            return 0;
-        }
-    }
-
     public static List<ActionCommand> parseAll(List<String> rawCommands, ConfigIssueHelper issueHelper) {
         return rawCommands.stream()
                 .map(str -> {
@@ -62,5 +39,37 @@ public class ActionCommand {
     private static ActionCommand deserialize(String input, ConfigIssueHelper issueHelper) {
         BracketResolver resolver = new BracketResolver(input).resolve(issueHelper);
         return new ActionCommand(resolver.getContent(), resolver.getBracketContents().orElse(null));
+    }
+
+    public void run(CommandSender commandSender, JavaPlugin plugin, ActionExecutionContext ctx) {
+        String command = ActionPlaceholder.replacePlaceholders(this.command, ctx);
+        Set<String> players = command.contains("{player}") ? ctx.config().getAffectedPlayers() : Set.of();
+        for (int i = 0; i < calculateExecutionCount(ctx); i++) {
+            if (players.isEmpty()) {
+                this.executeCommand(plugin, commandSender, command);
+                continue;
+            }
+
+            for (String player : players) {
+                String finalCommand = command.replace("{player}", player);
+                this.executeCommand(plugin, commandSender, finalCommand);
+            }
+        }
+    }
+
+    private void executeCommand(JavaPlugin plugin, CommandSender sender, @NotNull String command) {
+        Bukkit.getScheduler().runTask(plugin, () ->
+                Bukkit.dispatchCommand(sender, command));
+    }
+
+    public int calculateExecutionCount(ActionExecutionContext ctx) {
+        if (this.executionAmountExpression == null) return 1;
+
+        try {
+            String fullExpression = ActionPlaceholder.replacePlaceholders(executionAmountExpression, ctx);
+            return new DoubleEvaluator().evaluate(fullExpression).intValue();
+        } catch (IllegalArgumentException e) {
+            return 0;
+        }
     }
 }
