@@ -8,10 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -128,7 +125,6 @@ public interface YamlPropertyObject {
                 else
                     issueHelper.pushProperty(value);
                 field.setAccessible(true);
-                Method customDeserializer = this.getCustomDeserializer(value, field.getType());
                 Object sectionVal = actuallySet ? section.get(id) : null;
                 if (value.equalsIgnoreCase("!section") && field.getType() == String.class) {
                     sectionVal = section.getName();
@@ -143,6 +139,8 @@ public interface YamlPropertyObject {
                     //noinspection unchecked
                     sectionVal = YamlPropertyObject.createInstance((Class<? extends YamlPropertyObject>) field.getType(), subSection, issueHelper);
                 }
+
+                Method customDeserializer = Optional.ofNullable(sectionVal).map(val -> this.getCustomDeserializer(value, field.getType(), val.getClass())).orElse(null);
                 if (customDeserializer != null && (actuallySet || !customDeserializer.getAnnotation(YamlPropertyCustomDeserializer.class).onlyUseWhenActuallySet())) {
                     customDeserializer.setAccessible(true);
                     try {
@@ -199,13 +197,14 @@ public interface YamlPropertyObject {
     }
 
     @Nullable
-    private Method getCustomDeserializer(String propertyName, Class<?> propertyCls) {
+    private Method getCustomDeserializer(String propertyName, Class<?> propertyCls, Class<?> inputCls) {
         return tracePropertySuperclasses(getClass())
                 .flatMap(cls -> Arrays.stream(cls.getDeclaredMethods()))
                 .filter(method -> method.isAnnotationPresent(YamlPropertyCustomDeserializer.class))
                 .filter(method -> method.getAnnotation(YamlPropertyCustomDeserializer.class).propertyName().equals(propertyName))
                 .filter(method -> method.getParameterCount() == 3)
-                .filter(method -> method.getReturnType() == propertyCls && method.getParameterTypes()[1] == ConfigIssueHelper.class && method.getParameterTypes()[2] == ConfigurationSection.class)
+                .filter(method -> method.getReturnType().isAssignableFrom(propertyCls) && method.getParameterTypes()[0].isAssignableFrom(inputCls)
+                        && method.getParameterTypes()[1] == ConfigIssueHelper.class && method.getParameterTypes()[2] == ConfigurationSection.class)
                 .findAny().orElse(null);
     }
 

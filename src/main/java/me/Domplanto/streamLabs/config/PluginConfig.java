@@ -96,7 +96,7 @@ public class PluginConfig extends ConfigRoot {
         public RateLimiter rateLimiter;
 
         @YamlPropertyCustomDeserializer(propertyName = "steps")
-        private List<? extends AbstractStep<?>> deserializeSteps(@NotNull List<Map<String, Object>> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        private List<? extends AbstractStep<?>> deserializeSteps(@NotNull List<Object> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
             return AbstractStep.parseAll(sections, parent, issueHelper);
         }
 

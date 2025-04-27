@@ -32,8 +32,19 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
         this.expectedDataType = expectedDataType;
     }
 
-    public static List<? extends AbstractStep<?>> parseAll(List<Map<String, Object>> sections, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
+    public static List<? extends AbstractStep<?>> parseAll(List<Object> sections, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
+        //noinspection unchecked
         return sections.stream()
+                .filter(obj -> {
+                    boolean isMap = obj instanceof Map<?, ?>;
+                    if (!isMap) {
+                        issueHelper.push(AbstractStep.class, String.valueOf(sections.indexOf(obj)));
+                        issueHelper.appendAtPath(WS3.apply(obj.toString()));
+                        issueHelper.pop();
+                    }
+                    return isMap;
+                })
+                .map(map -> (Map<String, Object>) map)
                 .map(section -> {
                     issueHelper.push(AbstractStep.class, String.valueOf(sections.indexOf(section)));
                     AbstractStep<?> instance = deserialize(section, issueHelper, parent);
