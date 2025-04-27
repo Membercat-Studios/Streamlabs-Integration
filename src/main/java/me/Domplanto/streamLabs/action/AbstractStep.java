@@ -108,6 +108,7 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
             value = step.getOptionalDataSerializer().serializeObject(value);
         if (value == null || !step.getExpectedDataType().isAssignableFrom(value.getClass())) {
             issueHelper.appendAtPath(WS2(step.getExpectedDataType(), value));
+            if (key != null) issueHelper.pop();
             return null;
         }
         if (key != null) issueHelper.pop();
@@ -140,7 +141,7 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
         this.configLocation = issueHelper.stackCopy();
     }
 
-    public abstract void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException;
+    protected abstract void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException;
 
     public final void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws ActionFailureException {
         this.plugin = plugin;

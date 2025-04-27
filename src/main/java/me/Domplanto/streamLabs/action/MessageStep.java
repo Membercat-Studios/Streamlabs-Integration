@@ -92,8 +92,10 @@ public class MessageStep extends AbstractStep<String> {
                 .map(playerName -> plugin.getServer().getPlayerExact(playerName))
                 .filter(Objects::nonNull)
                 .forEach(player -> {
-                    if (this.type == MessageType.TITLE)
+                    if (this.type == MessageType.TITLE) {
+                        player.clearTitle();
                         player.sendTitlePart(TitlePart.TIMES, Title.Times.times(titleFadeIn, titleStay, titleFadeOut));
+                    }
                     this.type.sendMessage(player, finalMessage);
                 }));
     }
