@@ -40,6 +40,7 @@ public class Issues {
     public static Function<String, ConfigIssue> WS0 = stepId -> new ConfigIssue("WS0", ConfigIssue.Level.WARNING, text(stepId));
     public static ConfigIssue WS1 = new ConfigIssue("WS1", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WS3 = instead -> new ConfigIssue("WS3", ConfigIssue.Level.WARNING, text(instead));
+    public static ConfigIssue WRP0 = new ConfigIssue("WRP0", ConfigIssue.Level.WARNING);
     public static BiFunction<String, String, ConfigIssue> WD0 = (value, defaultVal) -> new ConfigIssue("WD0", ConfigIssue.Level.WARNING, text(value), text(defaultVal));
     public static Function<String, ConfigIssue> WY0 = yamlKey -> new ConfigIssue("WY0", ConfigIssue.Level.WARNING, text(yamlKey));
 
