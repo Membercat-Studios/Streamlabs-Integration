@@ -4,7 +4,6 @@ import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
-import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,7 +13,6 @@ import static me.Domplanto.streamLabs.config.issue.Issues.WD0;
 @ReflectUtil.ClassId("delay")
 public class DelayStep extends AbstractStep<String> {
     private String delay;
-    private ConfigPathStack location;
 
     public DelayStep() {
         super(String.class);
@@ -27,7 +25,7 @@ public class DelayStep extends AbstractStep<String> {
 
     @Override
     public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper) {
-        this.location = issueHelper.stackCopy();
+        super.load(data, issueHelper);
         try {
             long input = Long.parseLong(data);
             if (input < 1) {
@@ -48,11 +46,11 @@ public class DelayStep extends AbstractStep<String> {
         try {
             delay = Long.parseLong(parsed);
             if (delay < 1) {
-                StreamLabs.LOGGER.warning("Zero or negative delay %sms (resolved from \"%s\") detected at %s, skipping!".formatted(delay, this.delay, location.toFormattedString()));
+                StreamLabs.LOGGER.warning("Zero or negative delay %sms (resolved from \"%s\") detected at %s, skipping!".formatted(delay, this.delay, getLocation().toFormattedString()));
                 return;
             }
         } catch (NumberFormatException e) {
-            StreamLabs.LOGGER.warning("Failed to parse delay \"%s\" (resolved from \"%s\") at %s, skipping!".formatted(parsed, this.delay, location.toFormattedString()));
+            StreamLabs.LOGGER.warning("Failed to parse delay \"%s\" (resolved from \"%s\") at %s, skipping!".formatted(parsed, this.delay, getLocation().toFormattedString()));
             return;
         }
 

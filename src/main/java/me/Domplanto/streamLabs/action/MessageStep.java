@@ -4,7 +4,6 @@ import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
-import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.font.DefaultFontInfo;
@@ -30,7 +29,6 @@ import static net.kyori.adventure.text.Component.translatable;
 
 @ReflectUtil.ClassId("message")
 public class MessageStep extends AbstractStep<String> {
-    private ConfigPathStack location;
     private String content;
     private MessageType type;
 
@@ -40,6 +38,7 @@ public class MessageStep extends AbstractStep<String> {
 
     @Override
     public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper) {
+        super.load(data, issueHelper);
         MessageType type = MessageType.MESSAGE;
         BracketResolver resolver = new BracketResolver(data).resolve(issueHelper);
         this.content = resolver.getContent();
@@ -54,8 +53,6 @@ public class MessageStep extends AbstractStep<String> {
         //noinspection deprecation
         if (!ChatColor.stripColor(resolver.getContent()).equals(resolver.getContent()))
             issueHelper.appendAtPath(WM1);
-
-        this.location = issueHelper.stackCopy();
     }
 
     @Override
@@ -86,7 +83,7 @@ public class MessageStep extends AbstractStep<String> {
     }
 
     private Component parsingError(Exception e) {
-        String location = this.location.toFormattedString();
+        String location = this.getLocation().toFormattedString();
         StreamLabs.LOGGER.log(Level.WARNING, "Failed to parse message at %s: ".formatted(location), e);
         return translatable()
                 .key("streamlabs.error.message.parse_failed")

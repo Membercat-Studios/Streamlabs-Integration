@@ -25,6 +25,7 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
     private final static Map<String, Class<? extends AbstractStep>> ACTIONS = ReflectUtil.loadClassesWithIds(AbstractStep.class);
     private final @NotNull Class<?> expectedDataType;
     private @Nullable StreamLabs plugin;
+    private @Nullable ConfigPathStack configLocation;
 
     public AbstractStep(@NotNull Class<T> expectedDataType) {
         this.expectedDataType = expectedDataType;
@@ -122,7 +123,9 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
         return null;
     }
 
-    public abstract void load(@NotNull T data, @NotNull ConfigIssueHelper issueHelper);
+    public void load(@NotNull T data, @NotNull ConfigIssueHelper issueHelper) {
+        this.configLocation = issueHelper.stackCopy();
+    }
 
     public abstract void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException;
 
@@ -143,6 +146,12 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
     protected @NotNull StreamLabs getPlugin() {
         if (plugin == null) throw new IllegalStateException("Tried to access plugin outside of executor function");
         return this.plugin;
+    }
+
+    protected @NotNull ConfigPathStack getLocation() {
+        if (configLocation == null)
+            throw new IllegalStateException("Tried to access config location outside of executor function");
+        return this.configLocation;
     }
 
     public @NotNull Class<?> getExpectedDataType() {

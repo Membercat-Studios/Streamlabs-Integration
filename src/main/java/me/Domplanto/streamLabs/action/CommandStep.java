@@ -1,15 +1,21 @@
 package me.Domplanto.streamLabs.action;
 
 import com.fathzer.soft.javaluator.DoubleEvaluator;
+import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
+import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.BracketResolver;
+import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Set;
 
 @ReflectUtil.ClassId("command")
@@ -39,6 +45,7 @@ public class CommandStep extends AbstractStep<String> {
 
     @Override
     public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper) {
+        super.load(data, issueHelper);
         BracketResolver resolver = new BracketResolver(data).resolve(issueHelper);
         this.command = resolver.getContent();
         this.executionAmountExpression = resolver.getBracketContents().orElse(null);
