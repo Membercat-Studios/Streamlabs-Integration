@@ -23,13 +23,13 @@ public class CommandStep extends AbstractStep<String> {
     private String command;
     @Nullable
     private String executionAmountExpression;
+    @YamlProperty("context")
+    private String context = "console";
+    @YamlProperty("cancel_on_missing_context")
+    private boolean cancelOnMissingContext = false;
 
     public CommandStep() {
         super(String.class);
-    }
-
-    private void executeCommand(@NotNull String command) {
-        runOnServerThread(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
     }
 
     public int calculateExecutionCount(ActionExecutionContext ctx) {
@@ -43,6 +43,26 @@ public class CommandStep extends AbstractStep<String> {
         }
     }
 
+    private @Nullable CommandSender getSender(@NotNull ActionExecutionContext ctx, StreamLabs plugin, ConfigPathStack location) {
+        if ("console".equals(this.context)) return Bukkit.getConsoleSender();
+
+        String selector = ActionPlaceholder.replacePlaceholders(this.context, ctx);
+        List<Entity> selected = plugin.getServer().selectEntities(Bukkit.getConsoleSender(), selector);
+        if (selected.isEmpty()) {
+            if (cancelOnMissingContext) return null;
+            StreamLabs.LOGGER.warning("No entity found for context %s at %s, defaulting to console context!".formatted(this.context, location.toFormattedString()));
+            return Bukkit.getConsoleSender();
+        }
+
+        if (!(selected.getFirst() instanceof CommandSender sender)) {
+            if (cancelOnMissingContext) return null;
+            StreamLabs.LOGGER.warning("Selected entity for context %s is not a valid command sender, at %s, defaulting to console context!".formatted(this.context, location.toFormattedString()));
+            return Bukkit.getConsoleSender();
+        }
+
+        return sender;
+    }
+
     @Override
     public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper) {
         super.load(data, issueHelper);
@@ -53,18 +73,24 @@ public class CommandStep extends AbstractStep<String> {
 
     @Override
     public void execute(@NotNull ActionExecutionContext ctx) {
-        String command = ActionPlaceholder.replacePlaceholders(this.command, ctx);
-        Set<String> players = command.contains("{player}") ? ctx.config().getAffectedPlayers() : Set.of();
-        for (int i = 0; i < calculateExecutionCount(ctx); i++) {
-            if (players.isEmpty()) {
-                this.executeCommand(command);
-                continue;
-            }
+        StreamLabs plugin = getPlugin();
+        ConfigPathStack location = getLocation();
+        runOnServerThread(() -> {
+            CommandSender sender = getSender(ctx, plugin, location);
+            if (sender == null) return;
+            String command = ActionPlaceholder.replacePlaceholders(this.command, ctx);
+            Set<String> players = command.contains("{player}") ? ctx.config().getAffectedPlayers() : Set.of();
+            for (int i = 0; i < calculateExecutionCount(ctx); i++) {
+                if (players.isEmpty()) {
+                    Bukkit.dispatchCommand(sender, command);
+                    continue;
+                }
 
-            for (String player : players) {
-                String finalCommand = command.replace("{player}", player);
-                this.executeCommand(finalCommand);
+                for (String player : players) {
+                    String finalCommand = command.replace("{player}", player);
+                    Bukkit.dispatchCommand(sender, finalCommand);
+                }
             }
-        }
+        });
     }
 }

@@ -8,22 +8,27 @@ import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.font.DefaultFontInfo;
 import me.Domplanto.streamLabs.util.yaml.BracketResolver;
+import me.Domplanto.streamLabs.util.yaml.YamlProperty;
+import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.ParsingException;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.TitlePart;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
 
-import static me.Domplanto.streamLabs.config.issue.Issues.WM0;
-import static me.Domplanto.streamLabs.config.issue.Issues.WM1;
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
@@ -31,6 +36,12 @@ import static net.kyori.adventure.text.Component.translatable;
 public class MessageStep extends AbstractStep<String> {
     private String content;
     private MessageType type;
+    @YamlProperty("title_fade_in")
+    private Duration titleFadeIn = Title.DEFAULT_TIMES.fadeIn();
+    @YamlProperty("title_stay")
+    private Duration titleStay = Title.DEFAULT_TIMES.stay();
+    @YamlProperty("title_fade_out")
+    private Duration titleFadeOut = Title.DEFAULT_TIMES.fadeOut();
 
     public MessageStep() {
         super(String.class);
@@ -79,7 +90,12 @@ public class MessageStep extends AbstractStep<String> {
         StreamLabs plugin = getPlugin();
         runOnServerThread(() -> ctx.config().getAffectedPlayers().stream()
                 .map(playerName -> plugin.getServer().getPlayerExact(playerName))
-                .forEach(player -> this.type.sendMessage(player, finalMessage)));
+                .filter(Objects::nonNull)
+                .forEach(player -> {
+                    if (this.type == MessageType.TITLE)
+                        player.sendTitlePart(TitlePart.TIMES, Title.Times.times(titleFadeIn, titleStay, titleFadeOut));
+                    this.type.sendMessage(player, finalMessage);
+                }));
     }
 
     private Component parsingError(Exception e) {
@@ -90,6 +106,33 @@ public class MessageStep extends AbstractStep<String> {
                 .arguments(text(location))
                 .style(Style.style(ColorScheme.INVALID, TextDecoration.ITALIC))
                 .build();
+    }
+
+    @YamlPropertyCustomDeserializer(propertyName = "title_fade_in")
+    public Duration serializeFadeIn(Integer input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        if (input < 0) {
+            issueHelper.appendAtPath(WM2);
+            return titleFadeIn;
+        }
+        return Duration.ofMillis(input);
+    }
+
+    @YamlPropertyCustomDeserializer(propertyName = "title_stay")
+    public Duration serializeStay(Integer input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        if (input < 0) {
+            issueHelper.appendAtPath(WM2);
+            return titleStay;
+        }
+        return Duration.ofMillis(input);
+    }
+
+    @YamlPropertyCustomDeserializer(propertyName = "title_fade_out")
+    public Duration serializeFadeOut(Integer input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        if (input < 0) {
+            issueHelper.appendAtPath(WM2);
+            return titleFadeOut;
+        }
+        return Duration.ofMillis(input);
     }
 
     public enum MessageType {

@@ -33,6 +33,7 @@ public class Issues {
     public static Function<String, ConfigIssue> WR0 = type -> new ConfigIssue("WR0", ConfigIssue.Level.WARNING, text(type));
     public static BiFunction<String, String, ConfigIssue> WM0 = (type, def) -> new ConfigIssue("WM0", ConfigIssue.Level.WARNING, text(type), text(def));
     public static ConfigIssue WM1 = new ConfigIssue("WM1", ConfigIssue.Level.WARNING, Translations.MINIMESSAGE_LINK);
+    public static ConfigIssue WM2 = new ConfigIssue("WM2", ConfigIssue.Level.WARNING);
     public static BiFunction<String, ConditionGroup.Mode, ConfigIssue> WC0 = (modeString, groupMode) -> new ConfigIssue("WC0", ConfigIssue.Level.WARNING, text(modeString), text(groupMode.name()));
     public static ConfigIssue WC1 = new ConfigIssue("WC1", ConfigIssue.Level.WARNING);
     public static ConfigIssue WC2 = new ConfigIssue("WC2", ConfigIssue.Level.WARNING);
