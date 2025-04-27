@@ -12,12 +12,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
@@ -45,31 +43,29 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
                     return isMap;
                 })
                 .map(map -> (Map<String, Object>) map)
-                .map(section -> {
+                .flatMap(section -> {
                     issueHelper.push(AbstractStep.class, String.valueOf(sections.indexOf(section)));
-                    AbstractStep<?> instance = deserialize(section, issueHelper, parent);
+                    Stream<? extends AbstractStep<?>> instance = Optional.ofNullable(deserialize(section, issueHelper, parent))
+                            .map(Collection::stream).orElseGet(Stream::of);
                     issueHelper.pop();
                     return instance;
                 }).filter(Objects::nonNull).toList();
     }
 
     @SuppressWarnings("rawtypes")
-    private static AbstractStep<?> deserialize(Map<String, Object> section, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+    private static List<? extends AbstractStep<?>> deserialize(Map<String, Object> section, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
         if (section == null) return null;
 
         try {
-            Map<Object, Class<? extends AbstractStep>> steps = ACTIONS.entrySet().stream()
+            Map<String, Class<? extends AbstractStep>> steps = ACTIONS.entrySet().stream()
                     .filter(entry -> section.containsKey(entry.getKey()))
-                    .collect(Collectors.toMap(entry -> {
-                        issueHelper.process(entry.getKey());
-                        return section.get(entry.getKey());
-                    }, Map.Entry::getValue));
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             if (steps.size() > 1) {
                 issueHelper.appendAtPath(WS1);
                 return null;
             }
 
-            Map.Entry<Object, Class<? extends AbstractStep>> stepData = steps.entrySet().stream().findFirst().orElse(null);
+            Map.Entry<String, Class<? extends AbstractStep>> stepData = steps.entrySet().stream().findFirst().orElse(null);
             if (stepData == null) {
                 String key = section.keySet().stream().findFirst().orElse("");
                 issueHelper.process(key);
@@ -77,31 +73,49 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
                 return null;
             }
 
-            //noinspection unchecked
-            AbstractStep<Object> step = ReflectUtil.instantiate(stepData.getValue(), AbstractStep.class);
-            if (step == null)
-                throw new RuntimeException("Failed to instantiate step instance, check the error mentioned above!");
-
-            Object value = stepData.getKey();
-            if (value != null && step.getOptionalDataSerializer() != null
-                    && step.getOptionalDataSerializer().from().isAssignableFrom(value.getClass()))
-                value = step.getOptionalDataSerializer().serializeObject(stepData.getKey());
-            if (value == null || !step.getExpectedDataType().isAssignableFrom(value.getClass())) {
-                issueHelper.appendAtPath(WS2(step.getExpectedDataType(), value));
-                return null;
+            Object dataVal = section.get(stepData.getKey());
+            issueHelper.process(stepData.getKey());
+            if (dataVal instanceof List<?> list) {
+                return list.stream().map(obj -> {
+                    issueHelper.push(AbstractStep.class, String.valueOf(list.indexOf(obj)));
+                    Map<String, Object> map = new HashMap<>(section);
+                    map.remove(stepData.getKey());
+                    AbstractStep<?> step = initializeSingle(stepData.getValue(), 1, map, obj, parent, issueHelper);
+                    issueHelper.pop();
+                    return step;
+                }).toList();
             }
 
-            // "Hacky" solution to get a ConfigurationSection instance from the given map
-            String id = "step-%s".formatted(UUID.randomUUID());
-            step.acceptYamlProperties(parent.createSection(id, section), issueHelper);
-            ConfigPathStack stack = issueHelper.stack();
-            stack.get(stack.size() - 3).process(id);
-            step.load(value, issueHelper);
-            return step;
+            List<AbstractStep<?>> stepList = new ArrayList<>();
+            stepList.add(initializeSingle(stepData.getValue(), 0, section, dataVal, parent, issueHelper));
+            return stepList;
         } catch (Exception e) {
             issueHelper.appendAtPathAndLog(EI0, e);
             return null;
         }
+    }
+
+    private static AbstractStep<?> initializeSingle(@SuppressWarnings("rawtypes") Class<? extends AbstractStep> stepCls, int stackOffset, Map<String, Object> section, Object value, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
+        //noinspection unchecked
+        AbstractStep<Object> step = ReflectUtil.instantiate(stepCls, AbstractStep.class);
+        if (step == null)
+            throw new RuntimeException("Failed to instantiate step instance, check the error mentioned above!");
+
+        if (value != null && step.getOptionalDataSerializer() != null
+                && step.getOptionalDataSerializer().from().isAssignableFrom(value.getClass()))
+            value = step.getOptionalDataSerializer().serializeObject(value);
+        if (value == null || !step.getExpectedDataType().isAssignableFrom(value.getClass())) {
+            issueHelper.appendAtPath(WS2(step.getExpectedDataType(), value));
+            return null;
+        }
+
+        // "Hacky" solution to get a ConfigurationSection instance from the given map
+        String id = "step-%s".formatted(UUID.randomUUID());
+        step.acceptYamlProperties(parent.createSection(id, section), issueHelper);
+        ConfigPathStack stack = issueHelper.stack();
+        stack.get(stack.size() - (3 + stackOffset)).process(id);
+        step.load(value, issueHelper);
+        return step;
     }
 
     public @Nullable Serializer<?, T> getOptionalDataSerializer() {
