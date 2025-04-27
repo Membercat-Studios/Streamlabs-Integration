@@ -5,6 +5,7 @@ import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,8 +25,8 @@ public class DelayStep extends AbstractStep<String> {
     }
 
     @Override
-    public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper) {
-        super.load(data, issueHelper);
+    public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+        super.load(data, issueHelper, parent);
         try {
             long input = Long.parseLong(data);
             if (input < 1) {

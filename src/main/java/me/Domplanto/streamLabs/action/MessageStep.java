@@ -48,8 +48,8 @@ public class MessageStep extends AbstractStep<String> {
     }
 
     @Override
-    public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper) {
-        super.load(data, issueHelper);
+    public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+        super.load(data, issueHelper, parent);
         MessageType type = MessageType.MESSAGE;
         BracketResolver resolver = new BracketResolver(data).resolve(issueHelper);
         this.content = resolver.getContent();

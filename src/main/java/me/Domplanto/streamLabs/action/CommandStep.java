@@ -11,6 +11,7 @@ import me.Domplanto.streamLabs.util.yaml.BracketResolver;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,8 +65,8 @@ public class CommandStep extends AbstractStep<String> {
     }
 
     @Override
-    public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper) {
-        super.load(data, issueHelper);
+    public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+        super.load(data, issueHelper, parent);
         BracketResolver resolver = new BracketResolver(data).resolve(issueHelper);
         this.command = resolver.getContent();
         this.executionAmountExpression = resolver.getBracketContents().orElse(null);

@@ -76,19 +76,23 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
 
             Object dataVal = section.get(stepData.getKey());
             issueHelper.process(stepData.getKey());
-            if (dataVal instanceof List<?> list) {
-                return list.stream().map(obj -> {
+            AbstractStep<Object> step = instantiate(stepData.getValue());
+            if (!List.class.isAssignableFrom(step.getExpectedDataType()) && dataVal instanceof List<?> list) {
+                issueHelper.pushProperty(stepData.getKey());
+                List<AbstractStep<Object>> stepList = list.stream().map(obj -> {
                     issueHelper.push(AbstractStep.class, String.valueOf(list.indexOf(obj)));
                     Map<String, Object> map = new HashMap<>(section);
                     map.remove(stepData.getKey());
-                    AbstractStep<?> step = initializeSingle(stepData.getValue(), 1, map, obj, parent, issueHelper);
+                    AbstractStep<Object> newStep = initializeSingle(stepData.getValue(), 2, map, null, obj, parent, issueHelper);
                     issueHelper.pop();
-                    return step;
+                    return newStep;
                 }).toList();
+                issueHelper.pop();
+                return stepList;
             }
 
             List<AbstractStep<?>> stepList = new ArrayList<>();
-            stepList.add(initializeSingle(stepData.getValue(), 0, section, dataVal, parent, issueHelper));
+            stepList.add(initializeSingle(stepData.getValue(), 0, section, stepData.getKey(), dataVal, parent, issueHelper));
             return stepList;
         } catch (Exception e) {
             issueHelper.appendAtPathAndLog(EI0, e);
@@ -96,12 +100,9 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
         }
     }
 
-    private static AbstractStep<?> initializeSingle(@SuppressWarnings("rawtypes") Class<? extends AbstractStep> stepCls, int stackOffset, Map<String, Object> section, Object value, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
-        //noinspection unchecked
-        AbstractStep<Object> step = ReflectUtil.instantiate(stepCls, AbstractStep.class);
-        if (step == null)
-            throw new RuntimeException("Failed to instantiate step instance, check the error mentioned above!");
-
+    private static AbstractStep<Object> initializeSingle(@SuppressWarnings("rawtypes") Class<? extends AbstractStep> stepCls, int stackOffset, Map<String, Object> section, @Nullable String key, Object value, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
+        AbstractStep<Object> step = instantiate(stepCls);
+        if (key != null) issueHelper.pushProperty(key);
         if (value != null && step.getOptionalDataSerializer() != null
                 && step.getOptionalDataSerializer().from().isAssignableFrom(value.getClass()))
             value = step.getOptionalDataSerializer().serializeObject(value);
@@ -109,13 +110,25 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
             issueHelper.appendAtPath(WS2(step.getExpectedDataType(), value));
             return null;
         }
+        if (key != null) issueHelper.pop();
 
         // "Hacky" solution to get a ConfigurationSection instance from the given map
         String id = "step-%s".formatted(UUID.randomUUID());
-        step.acceptYamlProperties(parent.createSection(id, section), issueHelper);
+        ConfigurationSection newSection = parent.createSection(id, section);
+        step.acceptYamlProperties(newSection, issueHelper);
         ConfigPathStack stack = issueHelper.stack();
         stack.get(stack.size() - (3 + stackOffset)).process(id);
-        step.load(value, issueHelper);
+        if (key != null) issueHelper.pushProperty(key);
+        step.load(value, issueHelper, newSection);
+        if (key != null) issueHelper.pop();
+        return step;
+    }
+
+    private static AbstractStep<Object> instantiate(@SuppressWarnings("rawtypes") Class<? extends AbstractStep> stepCls) {
+        //noinspection unchecked
+        AbstractStep<Object> step = ReflectUtil.instantiate(stepCls, AbstractStep.class);
+        if (step == null)
+            throw new RuntimeException("Failed to instantiate step instance, check the error mentioned above!");
         return step;
     }
 
@@ -123,7 +136,7 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
         return null;
     }
 
-    public void load(@NotNull T data, @NotNull ConfigIssueHelper issueHelper) {
+    public void load(@NotNull T data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         this.configLocation = issueHelper.stackCopy();
     }
 
