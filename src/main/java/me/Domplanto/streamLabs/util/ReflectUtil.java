@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +56,8 @@ public class ReflectUtil {
                 .acceptPackages(packageName)
                 .scan()) {
             return (superType.isInterface() ? result.getClassesImplementing(superType) : result.getSubclasses(superType))
-                    .loadClasses(superType, false);
+                    .loadClasses(superType, false).stream()
+                    .filter(cls -> !Modifier.isAbstract(cls.getModifiers())).toList();
         } catch (Exception e) {
             BASE_LOGGER.log(Level.SEVERE, "Failed to load classes of supertype %s, please report this error to the developers at %s"
                     .formatted(superType.getName(), Translations.ISSUES_URL), e);
