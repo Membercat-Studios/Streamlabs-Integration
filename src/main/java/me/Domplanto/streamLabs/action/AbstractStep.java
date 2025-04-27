@@ -6,7 +6,6 @@ import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
 import me.Domplanto.streamLabs.util.ReflectUtil;
-import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -20,10 +19,10 @@ import java.util.stream.Stream;
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ConfigPathSegment(id = "step")
-public abstract class AbstractStep<T> implements YamlPropertyObject {
+public abstract class AbstractStep<T> implements StepBase<T> {
     @SuppressWarnings("rawtypes")
-    private final static Map<String, Class<? extends AbstractStep>> ACTIONS = ReflectUtil.loadClassesWithIds(AbstractStep.class);
-    private final @NotNull Class<?> expectedDataType;
+    private final static Map<String, Class<? extends StepBase>> ACTIONS = ReflectUtil.loadClassesWithIds(StepBase.class);
+    private final @NotNull Class<T> expectedDataType;
     private @Nullable StreamLabs plugin;
     private @Nullable ConfigPathStack configLocation;
 
@@ -31,7 +30,7 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
         this.expectedDataType = expectedDataType;
     }
 
-    public static List<? extends AbstractStep<?>> parseAll(List<Object> sections, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
+    public static List<? extends StepBase<?>> parseAll(List<Object> sections, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
         //noinspection unchecked
         return sections.stream()
                 .filter(obj -> {
@@ -46,7 +45,7 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
                 .map(map -> (Map<String, Object>) map)
                 .flatMap(section -> {
                     issueHelper.push(AbstractStep.class, String.valueOf(sections.indexOf(section)));
-                    Stream<? extends AbstractStep<?>> instance = Optional.ofNullable(deserialize(section, issueHelper, parent))
+                    Stream<? extends StepBase<?>> instance = Optional.ofNullable(deserialize(section, issueHelper, parent))
                             .map(Collection::stream).orElseGet(Stream::of);
                     issueHelper.pop();
                     return instance;
@@ -54,11 +53,11 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
     }
 
     @SuppressWarnings("rawtypes")
-    private static List<? extends AbstractStep<?>> deserialize(Map<String, Object> section, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+    private static List<? extends StepBase<?>> deserialize(Map<String, Object> section, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
         if (section == null) return null;
 
         try {
-            Map<String, Class<? extends AbstractStep>> steps = ACTIONS.entrySet().stream()
+            Map<String, Class<? extends StepBase>> steps = ACTIONS.entrySet().stream()
                     .filter(entry -> section.containsKey(entry.getKey()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             if (steps.size() > 1) {
@@ -66,7 +65,7 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
                 return null;
             }
 
-            Map.Entry<String, Class<? extends AbstractStep>> stepData = steps.entrySet().stream().findFirst().orElse(null);
+            Map.Entry<String, Class<? extends StepBase>> stepData = steps.entrySet().stream().findFirst().orElse(null);
             if (stepData == null) {
                 String key = section.keySet().stream().findFirst().orElse("");
                 issueHelper.process(key);
@@ -76,14 +75,14 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
 
             Object dataVal = section.get(stepData.getKey());
             issueHelper.process(stepData.getKey());
-            AbstractStep<Object> step = instantiate(stepData.getValue());
+            StepBase<Object> step = instantiate(stepData.getValue());
             if (!List.class.isAssignableFrom(step.getExpectedDataType()) && dataVal instanceof List<?> list) {
                 issueHelper.pushProperty(stepData.getKey());
-                List<AbstractStep<Object>> stepList = list.stream().map(obj -> {
+                List<StepBase<Object>> stepList = list.stream().map(obj -> {
                     issueHelper.push(AbstractStep.class, String.valueOf(list.indexOf(obj)));
                     Map<String, Object> map = new HashMap<>(section);
                     map.remove(stepData.getKey());
-                    AbstractStep<Object> newStep = initializeSingle(stepData.getValue(), 2, map, null, obj, parent, issueHelper);
+                    StepBase<Object> newStep = initializeSingle(stepData.getValue(), 2, map, null, obj, parent, issueHelper);
                     issueHelper.pop();
                     return newStep;
                 }).toList();
@@ -91,7 +90,7 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
                 return stepList;
             }
 
-            List<AbstractStep<?>> stepList = new ArrayList<>();
+            List<StepBase<?>> stepList = new ArrayList<>();
             stepList.add(initializeSingle(stepData.getValue(), 0, section, stepData.getKey(), dataVal, parent, issueHelper));
             return stepList;
         } catch (Exception e) {
@@ -100,8 +99,8 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
         }
     }
 
-    private static AbstractStep<Object> initializeSingle(@SuppressWarnings("rawtypes") Class<? extends AbstractStep> stepCls, int stackOffset, Map<String, Object> section, @Nullable String key, Object value, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
-        AbstractStep<Object> step = instantiate(stepCls);
+    private static StepBase<Object> initializeSingle(@SuppressWarnings("rawtypes") Class<? extends StepBase> stepCls, int stackOffset, Map<String, Object> section, @Nullable String key, Object value, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
+        StepBase<Object> step = instantiate(stepCls);
         if (key != null) issueHelper.pushProperty(key);
         if (value != null && step.getOptionalDataSerializer() != null
                 && step.getOptionalDataSerializer().from().isAssignableFrom(value.getClass()))
@@ -125,24 +124,22 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
         return step;
     }
 
-    private static AbstractStep<Object> instantiate(@SuppressWarnings("rawtypes") Class<? extends AbstractStep> stepCls) {
+    private static StepBase<Object> instantiate(@SuppressWarnings("rawtypes") Class<? extends StepBase> stepCls) {
         //noinspection unchecked
-        AbstractStep<Object> step = ReflectUtil.instantiate(stepCls, AbstractStep.class);
+        StepBase<Object> step = ReflectUtil.instantiate(stepCls, StepBase.class);
         if (step == null)
             throw new RuntimeException("Failed to instantiate step instance, check the error mentioned above!");
         return step;
     }
 
-    public @Nullable Serializer<?, T> getOptionalDataSerializer() {
-        return null;
-    }
-
+    @Override
     public void load(@NotNull T data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         this.configLocation = issueHelper.stackCopy();
     }
 
     protected abstract void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException;
 
+    @Override
     public final void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws ActionFailureException {
         this.plugin = plugin;
         try {
@@ -168,8 +165,9 @@ public abstract class AbstractStep<T> implements YamlPropertyObject {
         return this.configLocation;
     }
 
-    public @NotNull Class<?> getExpectedDataType() {
-        return expectedDataType;
+    @Override
+    public @NotNull Class<T> getExpectedDataType() {
+        return this.expectedDataType;
     }
 
     public record Serializer<F, T>(

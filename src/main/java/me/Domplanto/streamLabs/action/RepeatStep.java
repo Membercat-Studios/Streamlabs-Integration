@@ -33,7 +33,7 @@ public class RepeatStep extends AbstractLogicStep {
         }
 
         for (int i = 0; i < amount; i++) {
-            for (AbstractStep<?> step : steps()) step.execute(ctx, getPlugin());
+            for (StepBase<?> step : steps()) step.execute(ctx, getPlugin());
         }
     }
 

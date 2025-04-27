@@ -11,25 +11,29 @@ import static me.Domplanto.streamLabs.config.issue.Issues.WS2;
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractLogicStep extends AbstractStep<List> {
-    private List<? extends AbstractStep<?>> steps = new ArrayList<>();
+    private List<? extends StepBase<?>> steps = new ArrayList<>();
 
     public AbstractLogicStep() {
         super(List.class);
     }
 
-    @Override
-    public void load(@NotNull List data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
-        super.load(data, issueHelper, parent);
+    protected static List<? extends StepBase<?>> loadSteps(@NotNull List<?> data, Class<?> expected, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         try {
             //noinspection unchecked
-            this.steps = AbstractStep.parseAll((List<Object>) data, parent, issueHelper);
+            return AbstractStep.parseAll((List<Object>) data, parent, issueHelper);
         } catch (ClassCastException e) {
-            this.steps = new ArrayList<>();
-            issueHelper.appendAtPath(WS2(getExpectedDataType(), data));
+            issueHelper.appendAtPath(WS2(expected, data));
+            return new ArrayList<>();
         }
     }
 
-    public List<? extends AbstractStep<?>> steps() {
+    @Override
+    public void load(@NotNull List data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+        super.load(data, issueHelper, parent);
+        this.steps = loadSteps(data, getExpectedDataType(), issueHelper, parent);
+    }
+
+    public List<? extends StepBase<?>> steps() {
         return this.steps;
     }
 }

@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.AbstractStep;
+import me.Domplanto.streamLabs.action.StepBase;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
@@ -103,7 +104,7 @@ public class ActionExecutor {
         this.runningActions.put(actionId, instances);
         Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
             int id = 0;
-            for (AbstractStep<?> step : ctx.action().steps) {
+            for (StepBase<?> step : ctx.action().steps) {
                 if (!runningActions.get(actionId).contains(taskUUID)) return;
                 try {
                     step.execute(ctx, this.plugin);

@@ -2,6 +2,7 @@ package me.Domplanto.streamLabs.config;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.AbstractStep;
+import me.Domplanto.streamLabs.action.StepBase;
 import me.Domplanto.streamLabs.action.execution.ActionExecutor;
 import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
@@ -88,7 +89,7 @@ public class PluginConfig extends ConfigRoot {
         @NotNull
         public String id;
         @YamlProperty("steps")
-        public List<? extends AbstractStep<?>> steps = List.of();
+        public List<? extends StepBase<?>> steps = List.of();
         @YamlProperty("instancing_behavior")
         public ActionExecutor.ActionInstancingBehaviour instancingBehaviour = ActionExecutor.ActionInstancingBehaviour.CANCEL_PREVIOUS;
         @Nullable
@@ -96,7 +97,7 @@ public class PluginConfig extends ConfigRoot {
         public RateLimiter rateLimiter;
 
         @YamlPropertyCustomDeserializer(propertyName = "steps")
-        private List<? extends AbstractStep<?>> deserializeSteps(@NotNull List<Object> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        private List<? extends StepBase<?>> deserializeSteps(@NotNull List<Object> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
             return AbstractStep.parseAll(sections, parent, issueHelper);
         }
 
