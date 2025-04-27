@@ -106,6 +106,7 @@ public class ActionExecutor {
             int id = 0;
             for (StepBase<?> step : ctx.action().steps) {
                 if (!runningActions.get(actionId).contains(taskUUID)) return;
+                if (!ctx.shouldExecute().get()) break;
                 try {
                     step.execute(ctx, this.plugin);
                 } catch (AbstractStep.ActionFailureException e) {

@@ -33,7 +33,7 @@ public class CheckStep extends ConditionGroup implements StepBase<List> {
     @Override
     public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws AbstractStep.ActionFailureException {
         List<? extends StepBase<?>> steps = this.check(ctx) ? this.steps : this.elseSteps;
-        for (StepBase<?> step : steps) step.execute(ctx, plugin);
+        ctx.runSteps(steps, plugin);
     }
 
     @YamlPropertyCustomDeserializer(propertyName = "else")
