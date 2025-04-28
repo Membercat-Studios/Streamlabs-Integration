@@ -50,6 +50,11 @@ public final class CustomPlaceholder extends ActionPlaceholder implements YamlPr
         return new CustomPlaceholder(section.getName(), YamlPropertyObject.getString(section, "default_value"), values);
     }
 
+    @Override
+    public @NotNull String getFormat() {
+        return "{!%s}".formatted(name());
+    }
+
     @ConfigPathSegment(id = "state_based_value")
     public static final class StateBasedValue extends ConditionGroup {
         @YamlProperty("!SECTION")

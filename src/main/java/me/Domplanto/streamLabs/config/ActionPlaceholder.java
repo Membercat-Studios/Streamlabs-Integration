@@ -29,11 +29,11 @@ public class ActionPlaceholder {
     public static String replacePlaceholders(String originalString, ActionExecutionContext ctx, int plExecutionCount) {
         boolean containsPlaceholders = false;
         for (ActionPlaceholder placeholder : ctx.getPlaceholders()) {
-            String ph = String.format("{%s}", placeholder.name());
-            if (!originalString.contains(ph)) continue;
+            String format = placeholder.getFormat();
+            if (!originalString.contains(format)) continue;
 
             containsPlaceholders = true;
-            originalString = originalString.replace(ph, placeholder.function().execute(ctx.baseObject(), ctx));
+            originalString = originalString.replace(format, placeholder.function().execute(ctx.baseObject(), ctx));
         }
 
         if (StreamLabs.isPapiInstalled())
@@ -45,6 +45,10 @@ public class ActionPlaceholder {
             originalString = replacePlaceholders(originalString, ctx, plExecutionCount);
 
         return originalString;
+    }
+
+    public @NotNull String getFormat() {
+        return "{%s}".formatted(name());
     }
 
     public @NotNull String name() {
