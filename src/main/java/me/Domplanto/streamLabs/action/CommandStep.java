@@ -36,10 +36,12 @@ public class CommandStep extends AbstractStep<String> {
     public int calculateExecutionCount(ActionExecutionContext ctx) {
         if (this.executionAmountExpression == null) return 1;
 
+        String fullExpression = ActionPlaceholder.replacePlaceholders(executionAmountExpression, ctx);
         try {
-            String fullExpression = ActionPlaceholder.replacePlaceholders(executionAmountExpression, ctx);
             return new DoubleEvaluator().evaluate(fullExpression).intValue();
         } catch (IllegalArgumentException e) {
+            StreamLabs.LOGGER.warning("Failed to evaluate execution count expression \"%s\" (resolved from \"%s\") at %s, skipping command!"
+                    .formatted(fullExpression, this.executionAmountExpression, getLocation().toFormattedString()));
             return 0;
         }
     }
