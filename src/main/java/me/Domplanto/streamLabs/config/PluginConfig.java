@@ -4,6 +4,7 @@ import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.AbstractStep;
 import me.Domplanto.streamLabs.action.StepBase;
 import me.Domplanto.streamLabs.action.execution.ActionExecutor;
+import me.Domplanto.streamLabs.action.query.AbstractQuery;
 import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
@@ -89,13 +90,20 @@ public class PluginConfig extends ConfigRoot {
         @YamlProperty("!SECTION")
         @NotNull
         public String id;
+        @YamlProperty("queries")
+        private List<? extends AbstractQuery> queries = List.of();
         @YamlProperty("steps")
-        public List<? extends StepBase> steps = List.of();
+        private List<? extends StepBase> steps = List.of();
         @YamlProperty("instancing_behavior")
         public ActionExecutor.ActionInstancingBehaviour instancingBehaviour = ActionExecutor.ActionInstancingBehaviour.CANCEL_PREVIOUS;
         @Nullable
         @YamlProperty("rate_limiter")
         public RateLimiter rateLimiter;
+
+        @YamlPropertyCustomDeserializer(propertyName = "queries")
+        private List<? extends AbstractQuery> deserializeQueries(@NotNull List<Object> queries, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+            return AbstractQuery.INITIALIZER.parseAll(queries, parent, issueHelper);
+        }
 
         @YamlPropertyCustomDeserializer(propertyName = "steps")
         private List<? extends StepBase> deserializeSteps(@NotNull List<Object> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
@@ -105,6 +113,12 @@ public class PluginConfig extends ConfigRoot {
         @YamlPropertyCustomDeserializer(propertyName = "instancing_behavior")
         private ActionExecutor.ActionInstancingBehaviour deserializeBehavior(@NotNull String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
             return ActionExecutor.ActionInstancingBehaviour.fromString(input, issueHelper);
+        }
+
+        public List<? extends StepBase> getSteps() {
+            List<StepBase> list = new ArrayList<>(this.queries);
+            list.addAll(this.steps);
+            return list;
         }
     }
 

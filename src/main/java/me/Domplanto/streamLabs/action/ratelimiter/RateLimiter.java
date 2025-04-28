@@ -48,7 +48,7 @@ public abstract class RateLimiter implements YamlPropertyObject {
     }
 
     private static Map<String, Class<? extends RateLimiter>> findRateLimiterClasses() {
-        return ReflectUtil.loadClassesWithIds(RateLimiter.class);
+        return ReflectUtil.loadClassesWithIds(RateLimiter.class, true);
     }
 
     public abstract boolean check(ActionExecutionContext ctx);

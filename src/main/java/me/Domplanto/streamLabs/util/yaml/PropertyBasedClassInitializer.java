@@ -21,7 +21,7 @@ public class PropertyBasedClassInitializer<T extends PropertyLoadable> {
 
     public PropertyBasedClassInitializer(Class<T> baseClass, String nameId, @Nullable Set<CustomSerializer<T>> customSerializers) {
         this.baseClass = baseClass;
-        this.classMap = ReflectUtil.loadClassesWithIds(baseClass);
+        this.classMap = ReflectUtil.loadClassesWithIds(baseClass, false);
         this.nameTranslationKey = "streamlabs.property_type.%s".formatted(nameId);
         this.customSerializers = Objects.requireNonNullElseGet(customSerializers, Set::of);
     }

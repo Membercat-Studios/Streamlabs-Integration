@@ -37,8 +37,8 @@ public class ReflectUtil {
         }
     }
 
-    public static <T> Map<String, Class<? extends T>> loadClassesWithIds(Class<T> superType) {
-        return loadClasses(superType)
+    public static <T> Map<String, Class<? extends T>> loadClassesWithIds(Class<T> superType, boolean recursive) {
+        return loadClasses(superType, recursive)
                 .stream().filter(cls -> {
                     boolean hasAnnotation = cls.isAnnotationPresent(ClassId.class);
                     if (!hasAnnotation)
@@ -50,11 +50,16 @@ public class ReflectUtil {
     }
 
     public static <T> List<Class<T>> loadClasses(Class<T> superType) {
+        return loadClasses(superType, true);
+    }
+
+    public static <T> List<Class<T>> loadClasses(Class<T> superType, boolean recursive) {
         String packageName = superType.getPackageName();
-        try (ScanResult result = new ClassGraph()
-                .enableAllInfo()
-                .acceptPackages(packageName)
-                .scan()) {
+        ClassGraph graph = new ClassGraph().enableAllInfo();
+        if (recursive) graph.acceptPackages(packageName);
+        else graph.acceptPackagesNonRecursive(packageName);
+
+        try (ScanResult result = graph.scan()) {
             return (superType.isInterface() ? result.getClassesImplementing(superType) : result.getSubclasses(superType))
                     .loadClasses(superType, false).stream()
                     .filter(cls -> !Modifier.isAbstract(cls.getModifiers())).toList();

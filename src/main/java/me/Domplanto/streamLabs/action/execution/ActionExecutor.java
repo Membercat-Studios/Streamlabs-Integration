@@ -104,7 +104,9 @@ public class ActionExecutor {
         this.runningActions.put(actionId, instances);
         Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
             int id = 0;
-            for (StepBase<?> step : ctx.action().steps) {
+            //noinspection rawtypes
+            List<? extends StepBase> steps = ctx.action().getSteps();
+            for (StepBase<?> step : steps) {
                 if (!runningActions.get(actionId).contains(taskUUID)) return;
                 if (!ctx.shouldExecute().get()) break;
                 try {
