@@ -8,9 +8,11 @@ import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public record ActionExecutionContext(
@@ -18,19 +20,24 @@ public record ActionExecutionContext(
         ActionExecutor executor,
         PluginConfig config,
         PluginConfig.AbstractAction action,
+        Set<ActionPlaceholder> actionSpecificPlaceholders,
         JsonObject baseObject,
         AtomicBoolean shouldExecute
 ) {
-
     public ActionExecutionContext(StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, JsonObject jsonObject) {
-        this(event, executor, config, action, jsonObject, new AtomicBoolean(true));
+        this(event, executor, config, action, new HashSet<>(), jsonObject, new AtomicBoolean(true));
     }
 
     public Collection<ActionPlaceholder> getPlaceholders() {
         Collection<ActionPlaceholder> placeholders = new HashSet<>(config().getCustomPlaceholders());
-        if (event() != null)
-            placeholders.addAll(event().getPlaceholders());
+        if (event() != null) placeholders.addAll(event().getPlaceholders());
+        placeholders.addAll(this.actionSpecificPlaceholders);
         return placeholders;
+    }
+
+    public void addSpecificPlaceholder(@NotNull ActionPlaceholder placeholder) {
+        this.actionSpecificPlaceholders.removeIf(pl -> pl.name().equals(placeholder.name()));
+        this.actionSpecificPlaceholders.add(placeholder);
     }
 
     @SuppressWarnings("rawtypes")
