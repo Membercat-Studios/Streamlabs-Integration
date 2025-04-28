@@ -51,7 +51,7 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
         if (output == null) issueHelper.appendAtPath(WQ0);
     }
 
-    private static class QueryPlaceholder extends ActionPlaceholder {
+    public static class QueryPlaceholder extends ActionPlaceholder {
         public QueryPlaceholder(@NotNull String name, @NotNull String value) {
             super(name, PlaceholderFunction.of(value));
         }

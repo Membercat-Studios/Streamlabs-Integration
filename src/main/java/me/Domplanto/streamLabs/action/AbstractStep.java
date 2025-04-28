@@ -3,7 +3,6 @@ package me.Domplanto.streamLabs.action;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
-import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
 import me.Domplanto.streamLabs.util.yaml.PropertyBasedClassInitializer;
 import org.bukkit.Bukkit;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@ConfigPathSegment(id = "step")
 public abstract class AbstractStep<T> implements StepBase<T> {
     @SuppressWarnings("rawtypes")
     public final static PropertyBasedClassInitializer<StepBase> INITIALIZER;
