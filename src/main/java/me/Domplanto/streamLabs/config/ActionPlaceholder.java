@@ -18,7 +18,7 @@ public class ActionPlaceholder {
     private final PlaceholderFunction function;
 
     public ActionPlaceholder(@NotNull String name, PlaceholderFunction function) {
-        this.name = name;
+        this.name = Objects.requireNonNull(name);
         this.function = function;
     }
 

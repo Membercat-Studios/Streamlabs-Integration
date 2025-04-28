@@ -6,9 +6,11 @@ import me.Domplanto.streamLabs.action.StepBase;
 import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
+import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
 import me.Domplanto.streamLabs.util.yaml.PropertyBasedClassInitializer;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
+import me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +18,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.logging.Level;
 
+import static me.Domplanto.streamLabs.config.issue.Issues.WQ0;
+
+@ConfigPathSegment(id = "query")
 public abstract class AbstractQuery<T> implements StepBase<T> {
     @SuppressWarnings("rawtypes")
     public static final PropertyBasedClassInitializer<AbstractQuery> INITIALIZER = new PropertyBasedClassInitializer<>(AbstractQuery.class, "query", null);
@@ -30,6 +35,7 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
 
     @Override
     public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws AbstractStep.ActionFailureException {
+        if (output == null) return;
         try {
             String data = Objects.requireNonNullElse(this.runQuery(ctx, plugin), "");
             ctx.addSpecificPlaceholder(new QueryPlaceholder(this.output, data));
@@ -39,6 +45,11 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
     }
 
     protected abstract @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin);
+
+    @YamlPropertyIssueAssigner(propertyName = "output")
+    public void assignToOutput(ConfigIssueHelper issueHelper, boolean actuallySet) {
+        if (output == null) issueHelper.appendAtPath(WQ0);
+    }
 
     private static class QueryPlaceholder extends ActionPlaceholder {
         public QueryPlaceholder(@NotNull String name, @NotNull String value) {
