@@ -84,12 +84,13 @@ public class PluginConfig extends ConfigRoot {
         plugin.reloadConfig();
     }
 
+    @SuppressWarnings("rawtypes")
     public static abstract class AbstractAction extends ConditionGroup {
         @YamlProperty("!SECTION")
         @NotNull
         public String id;
         @YamlProperty("steps")
-        public List<? extends StepBase<?>> steps = List.of();
+        public List<? extends StepBase> steps = List.of();
         @YamlProperty("instancing_behavior")
         public ActionExecutor.ActionInstancingBehaviour instancingBehaviour = ActionExecutor.ActionInstancingBehaviour.CANCEL_PREVIOUS;
         @Nullable
@@ -97,8 +98,8 @@ public class PluginConfig extends ConfigRoot {
         public RateLimiter rateLimiter;
 
         @YamlPropertyCustomDeserializer(propertyName = "steps")
-        private List<? extends StepBase<?>> deserializeSteps(@NotNull List<Object> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
-            return AbstractStep.parseAll(sections, parent, issueHelper);
+        private List<? extends StepBase> deserializeSteps(@NotNull List<Object> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+            return AbstractStep.INITIALIZER.parseAll(sections, parent, issueHelper);
         }
 
         @YamlPropertyCustomDeserializer(propertyName = "instancing_behavior")

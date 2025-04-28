@@ -33,8 +33,9 @@ public record ActionExecutionContext(
         return placeholders;
     }
 
-    public void runSteps(Collection<? extends StepBase<?>> steps, StreamLabs plugin) throws AbstractStep.ActionFailureException {
-        for (StepBase<?> step : steps) {
+    @SuppressWarnings("rawtypes")
+    public void runSteps(Collection<? extends StepBase> steps, StreamLabs plugin) throws AbstractStep.ActionFailureException {
+        for (StepBase step : steps) {
             if (!shouldExecute().get()) return;
             step.execute(this, plugin);
         }

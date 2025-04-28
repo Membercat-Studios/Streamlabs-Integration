@@ -16,9 +16,9 @@ import java.util.List;
 @SuppressWarnings("rawtypes")
 @ReflectUtil.ClassId("check")
 public class CheckStep extends ConditionGroup implements StepBase<List> {
-    private List<? extends StepBase<?>> steps = new ArrayList<>();
+    private List<? extends StepBase> steps = new ArrayList<>();
     @YamlProperty("else")
-    private List<? extends StepBase<?>> elseSteps = new ArrayList<>();
+    private List<? extends StepBase> elseSteps = new ArrayList<>();
 
     @Override
     public @NotNull Class<List> getExpectedDataType() {
@@ -32,12 +32,12 @@ public class CheckStep extends ConditionGroup implements StepBase<List> {
 
     @Override
     public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws AbstractStep.ActionFailureException {
-        List<? extends StepBase<?>> steps = this.check(ctx) ? this.steps : this.elseSteps;
+        List<? extends StepBase> steps = this.check(ctx) ? this.steps : this.elseSteps;
         ctx.runSteps(steps, plugin);
     }
 
     @YamlPropertyCustomDeserializer(propertyName = "else")
-    public List<? extends StepBase<?>> deserializeElseSteps(List<?> list, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+    public List<? extends StepBase> deserializeElseSteps(List<?> list, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
         return AbstractLogicStep.loadSteps(list, getExpectedDataType(), issueHelper, parent);
     }
 }

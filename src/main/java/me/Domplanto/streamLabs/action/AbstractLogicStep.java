@@ -7,22 +7,23 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.Domplanto.streamLabs.config.issue.Issues.WS2;
+import static me.Domplanto.streamLabs.config.issue.Issues.WPI2;
+
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractLogicStep extends AbstractStep<List> {
-    private List<? extends StepBase<?>> steps = new ArrayList<>();
+    private List<? extends StepBase> steps = new ArrayList<>();
 
     public AbstractLogicStep() {
         super(List.class);
     }
 
-    protected static List<? extends StepBase<?>> loadSteps(@NotNull List<?> data, Class<?> expected, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+    protected static List<? extends StepBase> loadSteps(@NotNull List<?> data, Class<?> expected, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         try {
             //noinspection unchecked
-            return AbstractStep.parseAll((List<Object>) data, parent, issueHelper);
+            return AbstractStep.INITIALIZER.parseAll((List<Object>) data, parent, issueHelper);
         } catch (ClassCastException e) {
-            issueHelper.appendAtPath(WS2(expected, data));
+            issueHelper.appendAtPath(WPI2(AbstractStep.NAME_ID, expected, data));
             return new ArrayList<>();
         }
     }
@@ -33,7 +34,7 @@ public abstract class AbstractLogicStep extends AbstractStep<List> {
         this.steps = loadSteps(data, getExpectedDataType(), issueHelper, parent);
     }
 
-    public List<? extends StepBase<?>> steps() {
+    public List<? extends StepBase> steps() {
         return this.steps;
     }
 }

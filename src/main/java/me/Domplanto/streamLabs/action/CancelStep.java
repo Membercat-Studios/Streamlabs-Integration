@@ -6,7 +6,8 @@ import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.Set;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.HCS0;
 
@@ -19,8 +20,8 @@ public class CancelStep extends AbstractStep<String> {
     }
 
     @Override
-    public @Nullable Serializer<?, String> getOptionalDataSerializer() {
-        return new Serializer<>(Boolean.class, String.class, Object::toString);
+    public @NotNull Set<Serializer<?, String>> getOptionalDataSerializers() {
+        return Set.of(new Serializer<>(Boolean.class, String.class, Object::toString));
     }
 
     @Override

@@ -11,8 +11,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static net.kyori.adventure.text.Component.newline;
-import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.*;
 
 public class Issues {
     public static ConfigIssue EL0 = new ConfigIssue("EL0", ConfigIssue.Level.WARNING);
@@ -37,9 +36,9 @@ public class Issues {
     public static BiFunction<String, ConditionGroup.Mode, ConfigIssue> WC0 = (modeString, groupMode) -> new ConfigIssue("WC0", ConfigIssue.Level.WARNING, text(modeString), text(groupMode.name()));
     public static ConfigIssue WC1 = new ConfigIssue("WC1", ConfigIssue.Level.WARNING);
     public static ConfigIssue WC2 = new ConfigIssue("WC2", ConfigIssue.Level.WARNING);
-    public static Function<String, ConfigIssue> WS0 = stepId -> new ConfigIssue("WS0", ConfigIssue.Level.WARNING, text(stepId));
-    public static ConfigIssue WS1 = new ConfigIssue("WS1", ConfigIssue.Level.WARNING);
-    public static Function<String, ConfigIssue> WS3 = instead -> new ConfigIssue("WS3", ConfigIssue.Level.WARNING, text(instead));
+    public static BiFunction<String, String, ConfigIssue> WPI0 = (nameKey, stepId) -> new ConfigIssue("WPI0", ConfigIssue.Level.WARNING, translatable(nameKey), text(stepId));
+    public static Function<String, ConfigIssue> WPI1 = nameKey -> new ConfigIssue("WPI1", ConfigIssue.Level.WARNING, translatable(nameKey));
+    public static BiFunction<String, String, ConfigIssue> WPI3 = (nameKey, instead) -> new ConfigIssue("WPI3", ConfigIssue.Level.WARNING, translatable(nameKey), text(instead));
     public static ConfigIssue WRP0 = new ConfigIssue("WRP0", ConfigIssue.Level.WARNING);
     public static BiFunction<String, String, ConfigIssue> WD0 = (value, defaultVal) -> new ConfigIssue("WD0", ConfigIssue.Level.WARNING, text(value), text(defaultVal));
     public static Function<String, ConfigIssue> WY0 = yamlKey -> new ConfigIssue("WY0", ConfigIssue.Level.WARNING, text(yamlKey));
@@ -56,8 +55,8 @@ public class Issues {
         return new ConfigIssue("WI2", ConfigIssue.Level.WARNING, text(field.getType().getSimpleName()), text(value != null ? value.getClass().getSimpleName() : "null"), text(field.get(object).toString()));
     }
 
-    public static ConfigIssue WS2(@NotNull Class<?> expectedType, @Nullable Object actualObject) {
+    public static ConfigIssue WPI2(String nameKey, @NotNull Class<?> expectedType, @Nullable Object actualObject) {
         String actualTypeName = Optional.ofNullable(actualObject).map(o -> o.getClass().getSimpleName()).orElse("null");
-        return new ConfigIssue("WS2", ConfigIssue.Level.WARNING, text(expectedType.getSimpleName()), text(actualTypeName));
+        return new ConfigIssue("WPI2", ConfigIssue.Level.WARNING, translatable(nameKey), text(expectedType.getSimpleName()), text(actualTypeName));
     }
 }
