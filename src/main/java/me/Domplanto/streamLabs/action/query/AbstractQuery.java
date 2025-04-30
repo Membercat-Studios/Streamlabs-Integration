@@ -58,7 +58,7 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
 
         @Override
         public @NotNull String getFormat() {
-            return "{>%s}".formatted(name());
+            return "{$%s}".formatted(name());
         }
     }
 }
