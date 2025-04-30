@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.action;
+package me.Domplanto.streamLabs.step;
 
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import org.bukkit.configuration.ConfigurationSection;

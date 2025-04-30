@@ -1,6 +1,6 @@
-package me.Domplanto.streamLabs.action;
+package me.Domplanto.streamLabs.step;
 
-import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
+import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;

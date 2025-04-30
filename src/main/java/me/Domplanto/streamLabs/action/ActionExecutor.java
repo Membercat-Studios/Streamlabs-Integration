@@ -1,10 +1,10 @@
-package me.Domplanto.streamLabs.action.execution;
+package me.Domplanto.streamLabs.action;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.action.AbstractStep;
-import me.Domplanto.streamLabs.action.StepBase;
+import me.Domplanto.streamLabs.step.AbstractStep;
+import me.Domplanto.streamLabs.step.StepBase;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;

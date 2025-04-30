@@ -1,8 +1,8 @@
-package me.Domplanto.streamLabs.action;
+package me.Domplanto.streamLabs.step;
 
 import com.fathzer.soft.javaluator.DoubleEvaluator;
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.action.execution.ActionExecutionContext;
+import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
