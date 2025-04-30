@@ -10,32 +10,16 @@ import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import static me.Domplanto.streamLabs.config.issue.Issues.WRP0;
 
 @ReflectUtil.ClassId("repeat")
 public class RepeatStep extends AbstractLogicStep {
     @YamlProperty("amount")
     private String amount = String.valueOf(2);
-
-    @Override
-    protected void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
-        String parsed = ActionPlaceholder.replacePlaceholders(this.amount, ctx);
-        int amount;
-        try {
-            amount = Integer.parseInt(parsed);
-            if (amount < 0) {
-                StreamLabs.LOGGER.warning("Negative repeat amount found (%s, resolved from \"%s\") at %s, skipping!".formatted(amount, this.amount, getLocation().toFormattedString()));
-                return;
-            }
-        } catch (NumberFormatException e) {
-            StreamLabs.LOGGER.warning("Failed to repeat amount \"%s\" (resolved from \"%s\") at %s, skipping!".formatted(parsed, this.amount, getLocation().toFormattedString()));
-            return;
-        }
-
-        for (int i = 0; i < amount; i++) {
-            ctx.runSteps(steps(), getPlugin());
-        }
-    }
 
     @YamlPropertyCustomDeserializer(propertyName = "amount")
     public String deserializeAmount(Integer input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
@@ -44,5 +28,27 @@ public class RepeatStep extends AbstractLogicStep {
             issueHelper.appendAtPath(WRP0);
         }
         return input.toString();
+    }
+
+    @Override
+    public @NotNull Collection<? extends StepBase<?>> getSteps(ActionExecutionContext ctx) {
+        String parsed = ActionPlaceholder.replacePlaceholders(this.amount, ctx);
+        int amount;
+        try {
+            amount = Integer.parseInt(parsed);
+            if (amount < 0) {
+                StreamLabs.LOGGER.warning("Negative repeat amount found (%s, resolved from \"%s\") at %s, skipping!".formatted(amount, this.amount, getLocation().toFormattedString()));
+                return List.of();
+            }
+        } catch (NumberFormatException e) {
+            StreamLabs.LOGGER.warning("Failed to parse repeat amount \"%s\" (resolved from \"%s\") at %s, skipping!".formatted(parsed, this.amount, getLocation().toFormattedString()));
+            return List.of();
+        }
+
+        List<StepBase<?>> steps = new ArrayList<>();
+        for (int i = 0; i < amount; i++) {
+            steps.addAll(steps());
+        }
+        return steps;
     }
 }

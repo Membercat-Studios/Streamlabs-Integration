@@ -7,6 +7,7 @@ import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -23,9 +24,9 @@ public class RandomStep extends AbstractLogicStep {
     }
 
     @Override
-    public void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
-        if (steps().isEmpty()) return;
+    public @NotNull Collection<? extends StepBase<?>> getSteps(ActionExecutionContext ctx) {
+        if (steps().isEmpty()) return List.of();
         int step = this.random.nextInt(0, steps().size());
-        steps().get(step).execute(ctx, getPlugin());
+        return List.of(steps().get(step));
     }
 }

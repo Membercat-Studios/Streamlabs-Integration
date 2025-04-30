@@ -1,27 +1,32 @@
 package me.Domplanto.streamLabs.step;
 
+import me.Domplanto.streamLabs.action.ActionExecutionContext;
+import me.Domplanto.streamLabs.action.StepExecutor;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.WPI2;
 
 
 @SuppressWarnings("rawtypes")
-public abstract class AbstractLogicStep extends AbstractStep<List> {
-    private List<? extends StepBase> steps = new ArrayList<>();
+public abstract class AbstractLogicStep extends AbstractStep<List> implements StepExecutor {
+    private List<? extends StepBase<?>> steps = new ArrayList<>();
+    private String name;
 
     public AbstractLogicStep() {
         super(List.class);
     }
 
-    protected static List<? extends StepBase> loadSteps(@NotNull List<?> data, Class<?> expected, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+    protected static List<? extends StepBase<?>> loadSteps(@NotNull List<?> data, Class<?> expected, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         try {
             //noinspection unchecked
-            return AbstractStep.INITIALIZER.parseAll((List<Object>) data, parent, issueHelper);
+            return AbstractStep.INITIALIZER.parseAll((List<Object>) data, parent, issueHelper)
+                    .stream().map(step -> (StepBase<?>) step).toList();
         } catch (ClassCastException e) {
             issueHelper.appendAtPath(WPI2(AbstractStep.NAME_ID, expected, data));
             return new ArrayList<>();
@@ -31,10 +36,26 @@ public abstract class AbstractLogicStep extends AbstractStep<List> {
     @Override
     public void load(@NotNull List data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         super.load(data, issueHelper, parent);
+        this.name = "%s step at %s".formatted(getStepId(), getLocation().toFormattedString());
         this.steps = loadSteps(data, getExpectedDataType(), issueHelper, parent);
     }
 
-    public List<? extends StepBase> steps() {
+    @Override
+    protected void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
+        ctx.runSteps(this, getPlugin());
+    }
+
+    public List<? extends StepBase<?>> steps() {
         return this.steps;
+    }
+
+    @Override
+    public @NotNull String getName() {
+        return this.name;
+    }
+
+    @Override
+    public @NotNull Collection<? extends StepBase<?>> getSteps(ActionExecutionContext ctx) {
+        return this.steps();
     }
 }

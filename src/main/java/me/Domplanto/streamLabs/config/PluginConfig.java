@@ -1,9 +1,9 @@
 package me.Domplanto.streamLabs.config;
 
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.step.AbstractStep;
-import me.Domplanto.streamLabs.step.StepBase;
+import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.action.ActionExecutor;
+import me.Domplanto.streamLabs.action.StepExecutor;
 import me.Domplanto.streamLabs.action.query.AbstractQuery;
 import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
@@ -11,6 +11,8 @@ import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
+import me.Domplanto.streamLabs.step.AbstractStep;
+import me.Domplanto.streamLabs.step.StepBase;
 import me.Domplanto.streamLabs.util.yaml.*;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.bukkit.configuration.ConfigurationSection;
@@ -86,19 +88,19 @@ public class PluginConfig extends ConfigRoot {
     }
 
     @SuppressWarnings("rawtypes")
-    public static abstract class AbstractAction extends ConditionGroup {
+    public static abstract class AbstractAction extends ConditionGroup implements StepExecutor {
         @YamlProperty("!SECTION")
         @NotNull
         public String id;
-        @YamlProperty("queries")
-        private List<? extends AbstractQuery> queries = List.of();
-        @YamlProperty("steps")
-        private List<? extends StepBase> steps = List.of();
         @YamlProperty("instancing_behavior")
         public ActionExecutor.ActionInstancingBehaviour instancingBehaviour = ActionExecutor.ActionInstancingBehaviour.CANCEL_PREVIOUS;
         @Nullable
         @YamlProperty("rate_limiter")
         public RateLimiter rateLimiter;
+        @YamlProperty("queries")
+        private List<? extends AbstractQuery> queries = List.of();
+        @YamlProperty("steps")
+        private List<? extends StepBase> steps = List.of();
 
         @YamlPropertyCustomDeserializer(propertyName = "queries")
         private List<? extends AbstractQuery> deserializeQueries(@NotNull List<Object> queries, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
@@ -115,7 +117,13 @@ public class PluginConfig extends ConfigRoot {
             return ActionExecutor.ActionInstancingBehaviour.fromString(input, issueHelper);
         }
 
-        public List<? extends StepBase> getSteps() {
+        @Override
+        public @NotNull String getName() {
+            return "action %s".formatted(this.id);
+        }
+
+        @Override
+        public @NotNull Collection<? extends StepBase> getSteps(ActionExecutionContext ctx) {
             List<StepBase> list = new ArrayList<>(this.queries);
             list.addAll(this.steps);
             return list;

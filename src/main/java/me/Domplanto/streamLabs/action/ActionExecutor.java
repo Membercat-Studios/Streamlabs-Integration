@@ -3,8 +3,6 @@ package me.Domplanto.streamLabs.action;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.step.AbstractStep;
-import me.Domplanto.streamLabs.step.StepBase;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
@@ -102,20 +100,9 @@ public class ActionExecutor {
         UUID taskUUID = UUID.randomUUID();
         instances.add(taskUUID);
         this.runningActions.put(actionId, instances);
+        ctx.setKeepExecutingCheck(context -> runningActions.get(actionId).contains(taskUUID) && context.shouldExecute().get());
         Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-            int id = 0;
-            //noinspection rawtypes
-            List<? extends StepBase> steps = ctx.action().getSteps();
-            for (StepBase<?> step : steps) {
-                if (!runningActions.get(actionId).contains(taskUUID)) return;
-                if (!ctx.shouldExecute().get()) break;
-                try {
-                    step.execute(ctx, this.plugin);
-                } catch (AbstractStep.ActionFailureException e) {
-                    plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing step %s in action %s for event %s: %s".formatted(id, actionId, ctx.event().getId(), e.getMessage()), e.getCause());
-                }
-                id++;
-            }
+            ctx.runSteps(ctx.action(), plugin);
             Set<UUID> instanceSet = this.runningActions.get(actionId);
             instanceSet.remove(taskUUID);
             if (instanceSet.isEmpty()) this.runningActions.remove(actionId);
