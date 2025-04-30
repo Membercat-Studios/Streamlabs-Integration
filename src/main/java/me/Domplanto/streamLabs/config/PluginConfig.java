@@ -31,12 +31,14 @@ public class PluginConfig extends ConfigRoot {
     private PluginOptions options = new PluginOptions();
     @YamlProperty("affected_players")
     private List<String> affectedPlayers = new ArrayList<>();
+    @YamlPropertySection(value = "goal_types", elementClass = DonationGoal.class)
+    private Map<String, DonationGoal> goals = new HashMap<>();
     @YamlPropertySection(value = "actions", elementClass = Action.class)
     private Map<String, Action> actions = new HashMap<>();
     @YamlPropertySection(value = "custom_placeholders", elementClass = CustomPlaceholder.class)
     private Map<String, CustomPlaceholder> customPlaceholders = new HashMap<>();
-    @YamlPropertySection(value = "goal_types", elementClass = DonationGoal.class)
-    private Map<String, DonationGoal> goals = new HashMap<>();
+    @YamlPropertySection(value = "functions", elementClass = Function.class)
+    private Map<String, Function> functions = new HashMap<>();
 
     public PluginConfig(ComponentLogger logger) {
         super(logger);
@@ -59,8 +61,7 @@ public class PluginConfig extends ConfigRoot {
                 .collect(Collectors.toSet());
     }
 
-    @Nullable
-    public DonationGoal getGoal(String id) {
+    public @Nullable DonationGoal getGoal(@NotNull String id) {
         return this.goals.get(id);
     }
 
@@ -74,6 +75,10 @@ public class PluginConfig extends ConfigRoot {
 
     public PluginOptions getOptions() {
         return this.options;
+    }
+
+    public @Nullable Function getFunction(@NotNull String id) {
+        return this.functions.get(id);
     }
 
     public Set<String> getAffectedPlayers() {
@@ -148,6 +153,31 @@ public class PluginConfig extends ConfigRoot {
 
             if (!ACTION_IDS.contains(eventType))
                 issueHelper.appendAtPath(WA0.apply(eventType));
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    @ConfigPathSegment(id = "function")
+    public static class Function implements StepExecutor, YamlPropertyObject {
+        @YamlProperty("!SECTION")
+        @NotNull
+        public String id;
+        @YamlProperty("steps")
+        private List<? extends StepBase> steps = List.of();
+
+        @YamlPropertyCustomDeserializer(propertyName = "steps")
+        private List<? extends StepBase> deserializeSteps(@NotNull List<Object> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+            return AbstractStep.INITIALIZER.parseAll(sections, parent, issueHelper);
+        }
+
+        @Override
+        public @NotNull String getName() {
+            return "function %s".formatted(this.id);
+        }
+
+        @Override
+        public @NotNull Collection<? extends StepBase> getSteps(ActionExecutionContext ctx) {
+            return this.steps;
         }
     }
 
