@@ -1,0 +1,52 @@
+package me.Domplanto.streamLabs.config.versioning;
+
+import me.Domplanto.streamLabs.StreamLabs;
+import org.apache.commons.lang3.ArrayUtils;
+import org.bukkit.configuration.file.YamlConfiguration;
+
+import java.io.File;
+import java.io.IOException;
+
+public class ConfigMigrationManager {
+    private static final long[] VERSIONS = {0, 100};
+    private static final long CONFIG_VERSION = VERSIONS[VERSIONS.length - 1];
+    private final YamlConfiguration config;
+
+    public ConfigMigrationManager(YamlConfiguration config) {
+        this.config = config;
+    }
+
+    public void checkAndMigrate(File file) throws RuntimeException, IOException {
+        long version = this.getVersion();
+        if (version == CONFIG_VERSION) return;
+        if (version > CONFIG_VERSION)
+            throw new IllegalArgumentException("The configuration file given has a newer version than this version of the plugin, make sure the plugin is up-to-date!");
+        if (!ArrayUtils.contains(VERSIONS, version))
+            throw new IllegalArgumentException("The configuration file given has an invalid version (current version: %s)".formatted(CONFIG_VERSION));
+
+        StreamLabs.LOGGER.warning("Your configuration file was last used in a lower version of this plugin and will have to be migrated!");
+        int i = ArrayUtils.indexOf(VERSIONS, version) + 1;
+        try {
+            while (i < VERSIONS.length) {
+                this.runMigrators(VERSIONS[i]);
+                i++;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to run migrators", e);
+        }
+
+        this.config.save(file);
+        StreamLabs.LOGGER.info("Configuration file successfully migrated!");
+    }
+
+    private void runMigrators(long targetVersion) {
+        StreamLabs.LOGGER.info("Attempting to migrate config from version %s to %s...".formatted(getVersion(), targetVersion));
+        ConfigMigrator.MIGRATORS.stream()
+                .filter(migrator -> migrator.shouldUse(targetVersion))
+                .forEach(migrator -> migrator.apply(this.config, targetVersion));
+    }
+
+    public long getVersion() {
+        return config.getLong("version", VERSIONS[0]);
+    }
+}

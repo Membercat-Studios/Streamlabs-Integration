@@ -2,6 +2,7 @@ package me.Domplanto.streamLabs.util.yaml;
 
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
+import me.Domplanto.streamLabs.config.versioning.ConfigMigrationManager;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -29,6 +30,7 @@ public abstract class ConfigRoot implements YamlPropertyObject {
             config.load(configFile);
             loadSucceeded = true;
             this.loaded = true;
+            new ConfigMigrationManager(config).checkAndMigrate(configFile);
             this.acceptYamlProperties(config, this.issueHelper);
             this.customLoad(config);
         } catch (IOException e) {
