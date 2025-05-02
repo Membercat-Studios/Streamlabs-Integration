@@ -25,20 +25,25 @@ public class FunctionStep extends AbstractStep<String> {
     }
 
     @Override
+    public void earlyLoad(@NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+        String stepId = this.getStepId();
+        this.paramPlaceholders = new HashMap<>();
+        ConfigurationSection paramsSection = parent.getConfigurationSection(PARAMS_SECTION);
+        if (paramsSection != null) {
+            issueHelper.process(PARAMS_SECTION);
+            for (String key : paramsSection.getKeys(false)) {
+                if (key.equals(stepId)) continue;
+                String content = Objects.requireNonNullElse(paramsSection.get(key), "").toString();
+                this.paramPlaceholders.put(key, content);
+            }
+        }
+        super.earlyLoad(issueHelper, parent);
+    }
+
+    @Override
     public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         super.load(data, issueHelper, parent);
         this.functionId = data;
-        this.paramPlaceholders = new HashMap<>();
-        String stepId = this.getStepId();
-        ConfigurationSection paramsSection = parent.getConfigurationSection(PARAMS_SECTION);
-        if (paramsSection == null) return;
-
-        issueHelper.stack().get(issueHelper.stack().size() - 2).process(PARAMS_SECTION);
-        for (String key : paramsSection.getKeys(false)) {
-            if (key.equals(stepId)) continue;
-            String content = Objects.requireNonNullElse(paramsSection.get(key), "").toString();
-            this.paramPlaceholders.put(key, content);
-        }
     }
 
     @Override

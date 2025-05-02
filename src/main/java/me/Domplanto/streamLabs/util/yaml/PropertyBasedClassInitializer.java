@@ -109,7 +109,7 @@ public class PropertyBasedClassInitializer<T extends PropertyLoadable> {
         // "Hacky" solution to get a ConfigurationSection instance from the given map
         String id = UUID.randomUUID().toString();
         ConfigurationSection newSection = parent.createSection(id, section);
-        instance.acceptYamlProperties(newSection, issueHelper);
+        instance.earlyLoad(issueHelper, newSection);
         ConfigPathStack stack = issueHelper.stack();
         stack.get(stack.size() - (3 + stackOffset)).process(id);
         if (key != null) issueHelper.pushProperty(key);

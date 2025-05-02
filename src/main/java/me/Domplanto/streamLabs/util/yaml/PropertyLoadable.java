@@ -15,6 +15,10 @@ public interface PropertyLoadable<T> extends YamlPropertyObject {
         return Set.of();
     }
 
+    default void earlyLoad(@NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+        this.acceptYamlProperties(parent, issueHelper);
+    }
+
     void load(@NotNull T data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent);
 
     record Serializer<F, T>(
