@@ -2,17 +2,13 @@ package me.Domplanto.streamLabs.action;
 
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.PlaceholderScopeStack;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
@@ -22,25 +18,16 @@ public record ActionExecutionContext(
         ActionExecutor executor,
         PluginConfig config,
         PluginConfig.AbstractAction action,
-        Set<ActionPlaceholder> actionSpecificPlaceholders,
+        PlaceholderScopeStack scopeStack,
         AtomicReference<Predicate<ActionExecutionContext>> keepExecutingCheck,
         JsonObject baseObject,
         AtomicBoolean shouldExecute
 ) {
-    public ActionExecutionContext(StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, JsonObject jsonObject) {
-        this(event, executor, config, action, new HashSet<>(), new AtomicReference<>(), jsonObject, new AtomicBoolean(true));
-    }
-
-    public Collection<ActionPlaceholder> getPlaceholders() {
-        Collection<ActionPlaceholder> placeholders = new HashSet<>(config().getCustomPlaceholders());
-        if (event() != null) placeholders.addAll(event().getPlaceholders());
-        placeholders.addAll(this.actionSpecificPlaceholders);
-        return placeholders;
-    }
-
-    public void addSpecificPlaceholder(@NotNull ActionPlaceholder placeholder) {
-        this.actionSpecificPlaceholders.removeIf(pl -> pl.name().equals(placeholder.name()));
-        this.actionSpecificPlaceholders.add(placeholder);
+    public ActionExecutionContext(@Nullable StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, JsonObject jsonObject) {
+        this(event, executor, config, action, new PlaceholderScopeStack(), new AtomicReference<>(), jsonObject, new AtomicBoolean(true));
+        if (event != null) event.getPlaceholders().forEach(scopeStack::addPlaceholder);
+        config.getCustomPlaceholders().forEach(scopeStack::addPlaceholder);
+        scopeStack.push("action");
     }
 
     public boolean shouldKeepExecuting() {

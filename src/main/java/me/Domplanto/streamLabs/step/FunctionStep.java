@@ -50,10 +50,12 @@ public class FunctionStep extends AbstractStep<String> {
             return;
         }
 
+        ctx.scopeStack().push("function %s".formatted(function));
         this.paramPlaceholders.entrySet()
                 .stream().map(entry -> new FunctionParameterPlaceholder(entry.getKey(), ActionPlaceholder.replacePlaceholders(entry.getValue(), ctx)))
-                .forEach(ctx::addSpecificPlaceholder);
+                .forEach(pl -> ctx.scopeStack().addPlaceholder(pl));
         ctx.runSteps(function, getPlugin());
+        ctx.scopeStack().pop();
     }
 
     public static class FunctionParameterPlaceholder extends AbstractQuery.QueryPlaceholder {

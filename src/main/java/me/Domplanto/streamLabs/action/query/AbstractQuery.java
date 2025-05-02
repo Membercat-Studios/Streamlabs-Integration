@@ -38,7 +38,7 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
         if (output == null) return;
         try {
             String data = Objects.requireNonNullElse(this.runQuery(ctx, plugin), "");
-            ctx.addSpecificPlaceholder(new QueryPlaceholder(this.output, data));
+            ctx.scopeStack().addPlaceholder(new QueryPlaceholder(this.output, data));
         } catch (Exception e) {
             StreamLabs.LOGGER.log(Level.WARNING, "Failed to run query for placeholder {>%s} at %s:".formatted(this.output, this.path.toFormattedString()), e);
         }

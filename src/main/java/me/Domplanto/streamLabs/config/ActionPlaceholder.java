@@ -28,7 +28,7 @@ public class ActionPlaceholder {
 
     public static String replacePlaceholders(String originalString, ActionExecutionContext ctx, int plExecutionCount) {
         boolean containsPlaceholders = false;
-        for (ActionPlaceholder placeholder : ctx.getPlaceholders()) {
+        for (ActionPlaceholder placeholder : ctx.scopeStack().getPlaceholders()) {
             String format = placeholder.getFormat();
             if (!originalString.contains(format)) continue;
 
@@ -45,6 +45,13 @@ public class ActionPlaceholder {
             originalString = replacePlaceholders(originalString, ctx, plExecutionCount);
 
         return originalString;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ActionPlaceholder placeholder)) return false;
+        return this.name().equals(placeholder.name())
+                && this.getFormat().equals(placeholder.getFormat());
     }
 
     public @NotNull String getFormat() {

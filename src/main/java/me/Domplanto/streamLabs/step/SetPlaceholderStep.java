@@ -43,7 +43,7 @@ public class SetPlaceholderStep extends AbstractStep<BracketResolver> {
             content = new DoubleEvaluator().evaluate(content).toString();
         } catch (Exception ignore) {
         }
-        ctx.addSpecificPlaceholder(new VariablePlaceholder(this.placeholderName, content));
+        ctx.scopeStack().addPlaceholder(new VariablePlaceholder(this.placeholderName, content));
     }
 
     @Override

@@ -38,7 +38,7 @@ public abstract class StreamlabsEvent {
         this.addContextPlaceholder("_action", ctx -> ctx.action().id);
         this.addPlaceholder("_platform", obj -> this.getPlatform().name().toLowerCase());
         this.addPlaceholder("_api_platform", obj -> this.getPlatform().getId());
-        this.addContextPlaceholder("_pl_count", ctx -> String.valueOf(ctx.getPlaceholders().size()));
+        this.addContextPlaceholder("_pl_count", ctx -> String.valueOf(ctx.scopeStack().getPlaceholders().size()));
         this.addPlaceholder("_pl_count_event", obj -> String.valueOf(this.getPlaceholders().size()));
     }
 
