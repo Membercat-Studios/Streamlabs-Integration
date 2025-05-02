@@ -18,6 +18,9 @@ public class Issues {
     public static ConfigIssue EL1 = new ConfigIssue("EL1", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> EL2 = errorMsg -> new ConfigIssue("EL2", ConfigIssue.Level.ERROR, newline().append(text(errorMsg)));
     public static ConfigIssue EL3 = new ConfigIssue("EL3", ConfigIssue.Level.ERROR);
+    public static ConfigIssue EM0 = new ConfigIssue("EM0", ConfigIssue.Level.ERROR);
+    public static BiFunction<Long, Long, ConfigIssue> EM1 = (config, current) -> new ConfigIssue("EM1", ConfigIssue.Level.ERROR, text(config), text(current));
+    public static BiFunction<Long, Long, ConfigIssue> EM2 = (config, current) -> new ConfigIssue("EM2", ConfigIssue.Level.ERROR, text(config), text(current));
 
     public static ConfigIssue EI0 = new ConfigIssue("EI0", ConfigIssue.Level.ERROR);
     public static ConfigIssue EI1 = new ConfigIssue("EI1", ConfigIssue.Level.ERROR);
@@ -47,6 +50,7 @@ public class Issues {
     public static ConfigIssue WV0 = new ConfigIssue("WV0", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WY0 = yamlKey -> new ConfigIssue("WY0", ConfigIssue.Level.WARNING, text(yamlKey));
 
+    public static ConfigIssue HCM0 = new ConfigIssue("HCM0", ConfigIssue.Level.HINT);
     public static ConfigIssue HR0 = new ConfigIssue("HR0", ConfigIssue.Level.HINT);
     public static ConfigIssue HB0 = new ConfigIssue("HB0", ConfigIssue.Level.HINT);
     public static ConfigIssue HC0 = new ConfigIssue("HC0", ConfigIssue.Level.HINT);

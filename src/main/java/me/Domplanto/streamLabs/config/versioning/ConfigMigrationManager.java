@@ -17,12 +17,18 @@ public class ConfigMigrationManager {
     }
 
     public void checkAndMigrate(File file) throws RuntimeException, IOException {
+    public void checkAndMigrate(File file, ConfigIssueHelper issueHelper) throws RuntimeException, IOException {
         long version = this.getVersion();
         if (version == CONFIG_VERSION) return;
-        if (version > CONFIG_VERSION)
-            throw new IllegalArgumentException("The configuration file given has a newer version than this version of the plugin, make sure the plugin is up-to-date!");
-        if (!ArrayUtils.contains(VERSIONS, version))
-            throw new IllegalArgumentException("The configuration file given has an invalid version (current version: %s)".formatted(CONFIG_VERSION));
+        if (version > CONFIG_VERSION) {
+            issueHelper.appendAtPath(EM1.apply(version, CONFIG_VERSION));
+            throw new MigrationFailureException();
+        }
+
+        if (!ArrayUtils.contains(VERSIONS, version)) {
+            issueHelper.appendAtPath(EM2.apply(version, CONFIG_VERSION));
+            throw new MigrationFailureException();
+        }
 
         StreamLabs.LOGGER.warning("Your configuration file was last used in a lower version of this plugin and will have to be migrated!");
         int i = ArrayUtils.indexOf(VERSIONS, version) + 1;
@@ -37,6 +43,7 @@ public class ConfigMigrationManager {
 
         this.config.save(file);
         StreamLabs.LOGGER.info("Configuration file successfully migrated!");
+        issueHelper.appendAtPath(HCM0);
     }
 
     private void runMigrators(long targetVersion) {
@@ -48,5 +55,8 @@ public class ConfigMigrationManager {
 
     public long getVersion() {
         return config.getLong("version", VERSIONS[0]);
+    }
+
+    public static class MigrationFailureException extends RuntimeException {
     }
 }

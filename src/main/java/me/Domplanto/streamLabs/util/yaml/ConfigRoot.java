@@ -28,11 +28,16 @@ public abstract class ConfigRoot implements YamlPropertyObject {
         boolean loadSucceeded = false;
         try {
             config.load(configFile);
-            loadSucceeded = true;
-            this.loaded = true;
-            new ConfigMigrationManager(config).checkAndMigrate(configFile);
-            this.acceptYamlProperties(config, this.issueHelper);
-            this.customLoad(config);
+            try {
+                new ConfigMigrationManager(config).checkAndMigrate(configFile, issueHelper);
+                loadSucceeded = true;
+                this.loaded = true;
+                this.acceptYamlProperties(config, this.issueHelper);
+                this.customLoad(config);
+            } catch (ConfigMigrationManager.MigrationFailureException ignore) {
+            } catch (Exception e) {
+                this.issueHelper.appendAtPathAndLog(EM0, e);
+            }
         } catch (IOException e) {
             this.issueHelper.appendAtPathAndLog(EL3, e);
         } catch (InvalidConfigurationException e) {
