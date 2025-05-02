@@ -8,6 +8,11 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class VersionAttributeMigrator implements ConfigMigrator {
     @Override
+    public int getPriority() {
+        return -1;
+    }
+
+    @Override
     public long getVersion() {
         return -1;
     }

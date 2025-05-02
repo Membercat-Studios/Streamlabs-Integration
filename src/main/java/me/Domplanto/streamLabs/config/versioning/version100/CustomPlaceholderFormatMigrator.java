@@ -18,6 +18,11 @@ public class CustomPlaceholderFormatMigrator implements ConfigMigrator {
     private Map<String, String> replacements;
 
     @Override
+    public int getPriority() {
+        return 0;
+    }
+
+    @Override
     public long getVersion() {
         return 100;
     }

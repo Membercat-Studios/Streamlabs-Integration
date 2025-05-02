@@ -11,6 +11,8 @@ public interface ConfigMigrator {
 
     long getVersion();
 
+    int getPriority();
+
     void apply(@NotNull ConfigurationSection root, long targetVersion);
 
     default boolean shouldUse(long targetVersion) {

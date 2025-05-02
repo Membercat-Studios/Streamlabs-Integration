@@ -19,6 +19,11 @@ public class StepsMigrator implements ConfigMigrator {
     }
 
     @Override
+    public int getPriority() {
+        return 1;
+    }
+
+    @Override
     public long getVersion() {
         return 100;
     }

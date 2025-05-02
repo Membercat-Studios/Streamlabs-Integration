@@ -1,11 +1,15 @@
 package me.Domplanto.streamLabs.config.versioning;
 
 import me.Domplanto.streamLabs.StreamLabs;
+import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
+
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 public class ConfigMigrationManager {
     private static final long[] VERSIONS = {0, 100};
@@ -16,8 +20,8 @@ public class ConfigMigrationManager {
         this.config = config;
     }
 
-    public void checkAndMigrate(File file) throws RuntimeException, IOException {
     public void checkAndMigrate(File file, ConfigIssueHelper issueHelper) throws RuntimeException, IOException {
+        issueHelper.process("version");
         long version = this.getVersion();
         if (version == CONFIG_VERSION) return;
         if (version > CONFIG_VERSION) {
@@ -31,6 +35,13 @@ public class ConfigMigrationManager {
         }
 
         StreamLabs.LOGGER.warning("Your configuration file was last used in a lower version of this plugin and will have to be migrated!");
+        try {
+            File newFile = getBackupFile(file.getParentFile());
+            this.config.save(newFile);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create a backup of the current config, exiting!");
+        }
+
         int i = ArrayUtils.indexOf(VERSIONS, version) + 1;
         try {
             while (i < VERSIONS.length) {
@@ -50,11 +61,16 @@ public class ConfigMigrationManager {
         StreamLabs.LOGGER.info("Attempting to migrate config from version %s to %s...".formatted(getVersion(), targetVersion));
         ConfigMigrator.MIGRATORS.stream()
                 .filter(migrator -> migrator.shouldUse(targetVersion))
+                .sorted(Comparator.comparing(ConfigMigrator::getPriority))
                 .forEach(migrator -> migrator.apply(this.config, targetVersion));
     }
 
     public long getVersion() {
         return config.getLong("version", VERSIONS[0]);
+    }
+
+    private File getBackupFile(File directory) {
+        return directory.toPath().resolve("config-v%s.backup.yml".formatted(getVersion())).toFile();
     }
 
     public static class MigrationFailureException extends RuntimeException {
