@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'com.gradleup.shadow' as String version '9.0.0-beta13'
+    id 'com.gradleup.shadow' version '9.0.0-beta13'
 }
 
 repositories {
@@ -35,6 +35,14 @@ publishing {
             from(components.java)
         }
     }
+}
+
+tasks.named("build") {
+    dependsOn("shadowJar")
+}
+
+tasks.withType(ShadowJar).configureEach {
+    archiveClassifier.set("")
 }
 
 tasks.withType(JavaCompile) {
