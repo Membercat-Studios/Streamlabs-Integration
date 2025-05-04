@@ -1,12 +1,15 @@
+import xyz.jpenilla.resourcefactory.paper.PaperPluginYaml
+
 plugins {
     id 'java-library'
     id 'maven-publish'
     id 'com.gradleup.shadow' version '9.0.0-beta13'
+    id 'xyz.jpenilla.resource-factory-paper-convention' version '1.2.1'
 }
 
 group = 'me.Domplanto'
 version = '0.2.0'
-description = 'StreamlabsIntegration'
+description = 'A Minecraft plugin that allows Youtube/Twitch donations to trigger events in your Minecraft world using the Streamlabs API!'
 
 java.sourceCompatibility = JavaVersion.VERSION_21
 def runDir = "run/plugins"
@@ -30,6 +33,19 @@ dependencies {
     implementation("io.github.classgraph:classgraph:4.8.179")
     implementation("org.java-websocket:Java-WebSocket:1.5.4")
     implementation("org.jetbrains:annotations:24.1.0")
+}
+
+paperPluginYaml {
+    main.set "me.Domplanto.streamLabs.StreamLabs"
+    apiVersion.set "1.21.4"
+    authors.addAll("Membercat Studios", "Domplanto", "codingcat")
+    website.set "https://github.com/Membercat-Studios/Streamlabs-Integration/wiki"
+
+    dependencies.server.register("PlaceholderAPI") {
+        load.set PaperPluginYaml.Load.BEFORE
+        required.set false
+        joinClasspath.set true
+    }
 }
 
 tasks.register('copyBuiltFileToRunDir') {
