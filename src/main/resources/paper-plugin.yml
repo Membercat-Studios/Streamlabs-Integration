@@ -1,4 +1,4 @@
-name: '${project.name}'
+name: 'StreamlabsIntegration'
 version: '${project.version}'
 description: A Minecraft plugin that allows Youtube/Twitch donations to trigger events in your Minecraft world using the Streamlabs API!
 authors:
