@@ -1,7 +1,10 @@
 .idea
 run
-target
-dependency-reduced-pom.xml
+
+# Gradle specifics
+.gradle
+build
+
 /plugins/.paper-remapped/remap-classpath/2C6AB97F550526F9E7C363EC5352500AFA558525BEDA078A5A3F9673CBEC9CFD.jar
 /plugins/.paper-remapped/mappings/reversed/2C6AB97F550526F9E7C363EC5352500AFA558525BEDA078A5A3F9673CBEC9CFD.tiny
 /logs/2024-11-24-1.log.gz

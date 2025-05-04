@@ -1,0 +1,46 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'com.gradleup.shadow' as String version '9.0.0-beta13'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://oss.sonatype.org/content/groups/public/' }
+    maven { url = 'https://repo.extendedclip.com/releases/' }
+    maven { url = 'https://repo.maven.apache.org/maven2' }
+}
+
+dependencies {
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("me.clip:placeholderapi:2.11.6")
+
+    implementation("com.fathzer:javaluator:3.0.3")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("io.github.classgraph:classgraph:4.8.179")
+    implementation("org.java-websocket:Java-WebSocket:1.5.4")
+    implementation("org.jetbrains:annotations:24.1.0")
+}
+
+group = 'me.Domplanto'
+version = '0.1.0'
+description = 'StreamlabsIntegration'
+java.sourceCompatibility = JavaVersion.VERSION_21
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}
