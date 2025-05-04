@@ -4,6 +4,14 @@ plugins {
     id 'com.gradleup.shadow' version '9.0.0-beta13'
 }
 
+group = 'me.Domplanto'
+version = '0.2.0'
+description = 'StreamlabsIntegration'
+
+java.sourceCompatibility = JavaVersion.VERSION_21
+def runDir = "run/plugins"
+def runFileName = "%s-testbuild.jar".formatted(name)
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -24,16 +32,16 @@ dependencies {
     implementation("org.jetbrains:annotations:24.1.0")
 }
 
-group = 'me.Domplanto'
-version = '0.1.0'
-description = 'StreamlabsIntegration'
-java.sourceCompatibility = JavaVersion.VERSION_21
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from(components.java)
-        }
+tasks.register('copyBuiltFileToRunDir') {
+    def outputFileName = "%s-%s.jar".formatted(project.name, version)
+    //noinspection GrDeprecatedAPIUsage
+    def outputFile = file(project.buildDir.toPath().resolve("libs").resolve(outputFileName))
+    println outputFileName
+    println outputFile
+    copy {
+        from(outputFile)
+        into(runDir)
+        rename(outputFileName, runFileName)
     }
 }
 
@@ -41,14 +49,14 @@ tasks.named("build") {
     dependsOn("shadowJar")
 }
 
-tasks.withType(ShadowJar).configureEach {
+tasks.named("shadowJar") {
     archiveClassifier.set("")
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-tasks.withType(Javadoc) {
+tasks.withType(Javadoc).configureEach {
     options.encoding = 'UTF-8'
 }
