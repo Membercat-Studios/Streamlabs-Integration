@@ -48,7 +48,7 @@ public class SetPlaceholderStep extends AbstractStep<BracketResolver> {
 
     @Override
     public @NotNull Set<Serializer<?, BracketResolver>> getOptionalDataSerializers() {
-        return Set.of(new Serializer<>(String.class, BracketResolver.class, BracketResolver::new));
+        return Set.of(new Serializer<>(String.class, BracketResolver.class, (s, helper) -> new BracketResolver(s)));
     }
 
     public static class VariablePlaceholder extends AbstractQuery.QueryPlaceholder {

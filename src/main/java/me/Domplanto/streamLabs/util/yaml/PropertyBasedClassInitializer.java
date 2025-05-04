@@ -96,7 +96,7 @@ public class PropertyBasedClassInitializer<T extends PropertyLoadable> {
         if (key != null) issueHelper.pushProperty(key);
         for (PropertyLoadable.Serializer<?, ?> serializer : loadable.getOptionalDataSerializers()) {
             if (value == null || !serializer.from().isAssignableFrom(value.getClass())) continue;
-            value = serializer.serializeObject(value);
+            value = serializer.serializeObject(value, issueHelper);
         }
 
         if (value == null || !loadable.getExpectedDataType().isAssignableFrom(value.getClass())) {

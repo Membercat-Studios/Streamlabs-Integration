@@ -22,7 +22,7 @@ public class DelayStep extends AbstractStep<String> {
 
     @Override
     public @NotNull Set<Serializer<?, String>> getOptionalDataSerializers() {
-        return Set.of(new Serializer<>(Integer.class, String.class, Object::toString));
+        return Set.of(new Serializer<>(Integer.class, String.class, (i, helper) -> i.toString()));
     }
 
     @Override
