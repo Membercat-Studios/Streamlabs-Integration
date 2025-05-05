@@ -8,8 +8,8 @@ import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.bukkit.Server;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
@@ -25,13 +25,12 @@ public class ExtractQuery extends TransformationQuery<NamedCollection> {
     }
 
     @Override
-    protected String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
         try {
-            String result = runOnServerThread(plugin, TIMEOUT, () -> this.extract(input, plugin.getServer()));
-            return Optional.ofNullable(result).orElse("");
+            return runOnServerThread(plugin, TIMEOUT, () -> this.extract(input, plugin.getServer()));
         } catch (TimeoutException e) {
             StreamLabs.LOGGER.warning("Extract query for type %s couldn't extract the correct value in time, action took >10000ms (tried to extract from: \"%s\")!".formatted(this.extractCollection, input));
-            return "";
+            return null;
         }
     }
 

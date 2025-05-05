@@ -27,5 +27,5 @@ public abstract class TransformationQuery<T> extends AbstractQuery<T> {
         return this.runQuery(input, ctx, plugin);
     }
 
-    protected abstract String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin);
+    protected abstract @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin);
 }
