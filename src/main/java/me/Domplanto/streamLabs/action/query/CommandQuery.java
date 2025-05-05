@@ -2,6 +2,7 @@ package me.Domplanto.streamLabs.action.query;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
+import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
@@ -37,14 +38,16 @@ public class CommandQuery extends AbstractQuery<String> {
 
     @Override
     protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+        String command = ActionPlaceholder.replacePlaceholders(this.command, ctx);
+
         AtomicReference<Component> result = new AtomicReference<>();
         CommandSender sender = Bukkit.createCommandSender(result::set);
-
-        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(sender, this.command));
+        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(sender, command));
         long time = System.currentTimeMillis();
         while (result.get() == null) {
             if ((time + this.timeout) < System.currentTimeMillis()) return null;
         }
+
         return outputSerializer.serialize(result.get()).toString();
     }
 

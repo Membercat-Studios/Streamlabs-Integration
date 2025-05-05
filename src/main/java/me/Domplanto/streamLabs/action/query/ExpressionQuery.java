@@ -19,11 +19,9 @@ import static me.Domplanto.streamLabs.config.issue.Issues.WE0;
 import static me.Domplanto.streamLabs.config.issue.Issues.WE1;
 
 @ReflectUtil.ClassId("expression")
-public class ExpressionQuery extends AbstractQuery<String> {
+public class ExpressionQuery extends TransformationQuery<String> {
     private String pattern;
     private @Nullable Pattern compiledPattern;
-    @YamlProperty("input")
-    private String input = "";
     @YamlProperty("action")
     private Action action = Action.MATCH;
     @YamlProperty("use_placeholders")
@@ -45,12 +43,11 @@ public class ExpressionQuery extends AbstractQuery<String> {
     }
 
     @Override
-    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
         Pattern matchingPattern = this.compiledPattern;
         if (matchingPattern == null)
             matchingPattern = Pattern.compile(ActionPlaceholder.replacePlaceholders(pattern, ctx));
 
-        String input = ActionPlaceholder.replacePlaceholders(this.input, ctx);
         Matcher matcher = matchingPattern.matcher(input);
         return switch (this.action) {
             case REPLACE -> matcher.replaceAll(this.replacement);
