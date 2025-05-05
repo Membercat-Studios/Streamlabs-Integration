@@ -1,21 +1,28 @@
 package me.Domplanto.streamLabs.action.query;
 
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.step.AbstractStep;
-import me.Domplanto.streamLabs.step.StepBase;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
+import me.Domplanto.streamLabs.step.AbstractStep;
+import me.Domplanto.streamLabs.step.StepBase;
 import me.Domplanto.streamLabs.util.yaml.PropertyBasedClassInitializer;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.WQ0;
@@ -40,7 +47,26 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
             String data = Objects.requireNonNullElse(this.runQuery(ctx, plugin), "");
             ctx.scopeStack().addPlaceholder(new QueryPlaceholder(this.output, data));
         } catch (Exception e) {
-            StreamLabs.LOGGER.log(Level.WARNING, "Failed to run query for placeholder {>%s} at %s:".formatted(this.output, this.path.toFormattedString()), e);
+            StreamLabs.LOGGER.log(Level.WARNING, "Failed to run query for placeholder {$%s} at %s:".formatted(this.output, this.path.toFormattedString()), e);
+        }
+    }
+
+    public static <T> T runOnServerThread(@NotNull JavaPlugin plugin, long timeout, Supplier<T> action) throws TimeoutException {
+        CompletableFuture<T> future = new CompletableFuture<>();
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            try {
+                T result = action.get();
+                future.complete(result);
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+        });
+        try {
+            return future.get(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Server thread action interrupted");
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
         }
     }
 
