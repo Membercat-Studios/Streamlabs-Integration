@@ -4,7 +4,6 @@ import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.action.ActionExecutor;
 import me.Domplanto.streamLabs.action.StepExecutor;
-import me.Domplanto.streamLabs.action.query.AbstractQuery;
 import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
@@ -102,15 +101,8 @@ public class PluginConfig extends ConfigRoot {
         @Nullable
         @YamlProperty("rate_limiter")
         public RateLimiter rateLimiter;
-        @YamlProperty("queries")
-        private List<? extends AbstractQuery> queries = List.of();
         @YamlProperty("steps")
         private List<? extends StepBase> steps = List.of();
-
-        @YamlPropertyCustomDeserializer(propertyName = "queries")
-        private List<? extends AbstractQuery> deserializeQueries(@NotNull List<Object> queries, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
-            return AbstractQuery.INITIALIZER.parseAll(queries, parent, issueHelper);
-        }
 
         @YamlPropertyCustomDeserializer(propertyName = "steps")
         private List<? extends StepBase> deserializeSteps(@NotNull List<Object> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
@@ -129,9 +121,7 @@ public class PluginConfig extends ConfigRoot {
 
         @Override
         public @NotNull Collection<? extends StepBase> getSteps(ActionExecutionContext ctx) {
-            List<StepBase> list = new ArrayList<>(this.queries);
-            list.addAll(this.steps);
-            return list;
+            return this.steps;
         }
     }
 

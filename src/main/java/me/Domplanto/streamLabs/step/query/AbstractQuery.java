@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.action.query;
+package me.Domplanto.streamLabs.step.query;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
@@ -8,7 +8,6 @@ import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
 import me.Domplanto.streamLabs.step.AbstractStep;
 import me.Domplanto.streamLabs.step.StepBase;
-import me.Domplanto.streamLabs.util.yaml.PropertyBasedClassInitializer;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner;
 import org.bukkit.Bukkit;
@@ -29,8 +28,6 @@ import static me.Domplanto.streamLabs.config.issue.Issues.WQ0;
 
 @ConfigPathSegment(id = "query")
 public abstract class AbstractQuery<T> implements StepBase<T> {
-    @SuppressWarnings("rawtypes")
-    public static final PropertyBasedClassInitializer<AbstractQuery> INITIALIZER = new PropertyBasedClassInitializer<>(AbstractQuery.class, "query", null);
     @YamlProperty("output")
     private String output;
     private ConfigPathStack path;

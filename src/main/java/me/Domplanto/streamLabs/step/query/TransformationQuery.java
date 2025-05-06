@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.action.query;
+package me.Domplanto.streamLabs.step.query;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;

@@ -22,7 +22,7 @@ public abstract class AbstractStep<T> implements StepBase<T> {
 
     static {
         MultiPropertyListSerializer serializer = new MultiPropertyListSerializer();
-        INITIALIZER = new PropertyBasedClassInitializer<>(StepBase.class, NAME_ID, Set.of(serializer));
+        INITIALIZER = new PropertyBasedClassInitializer<>(StepBase.class, true, NAME_ID, Set.of(serializer));
     }
 
     private final @NotNull Class<T> expectedDataType;
