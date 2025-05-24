@@ -39,10 +39,10 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
 
     @Override
     public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws AbstractStep.ActionFailureException {
-        if (output == null) return;
+        if (invalid()) return;
         try {
             String data = Objects.requireNonNullElse(this.runQuery(ctx, plugin), "");
-            ctx.scopeStack().addPlaceholder(new QueryPlaceholder(this.output, data));
+            if (hasOutput()) ctx.scopeStack().addPlaceholder(new QueryPlaceholder(this.output, data));
         } catch (Exception e) {
             StreamLabs.LOGGER.log(Level.WARNING, "Failed to run query for placeholder {$%s} at %s:".formatted(this.output, this.path.toFormattedString()), e);
         }
@@ -69,9 +69,25 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
 
     protected abstract @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin);
 
+    protected ConfigPathStack location() {
+        return this.path;
+    }
+
+    protected boolean hasOutput() {
+        return this.output != null;
+    }
+
+    private boolean invalid() {
+        return !hasOutput() && !isOptional();
+    }
+
+    protected boolean isOptional() {
+        return false;
+    }
+
     @YamlPropertyIssueAssigner(propertyName = "output")
     public void assignToOutput(ConfigIssueHelper issueHelper, boolean actuallySet) {
-        if (output == null) issueHelper.appendAtPath(WQ0);
+        if (invalid()) issueHelper.appendAtPath(WQ0);
     }
 
     public static class QueryPlaceholder extends ActionPlaceholder {
