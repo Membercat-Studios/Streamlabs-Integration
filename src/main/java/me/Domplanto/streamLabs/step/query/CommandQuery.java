@@ -108,6 +108,12 @@ public class CommandQuery extends AbstractQuery<String> {
     private @Nullable CommandSender getSender(@NotNull ActionExecutionContext ctx, StreamLabs plugin) {
         if (this.context == null) return null;
         String selector = ActionPlaceholder.replacePlaceholders(this.context, ctx);
+        Set<String> affectedPlayers = ctx.config().getAffectedPlayers();
+        if (!affectedPlayers.isEmpty()) {
+            String firstPlayer = affectedPlayers.stream().findFirst().orElseThrow();
+            selector = selector.replaceAll(PLAYER_PLACEHOLDER, firstPlayer);
+        }
+
         List<Entity> selected = plugin.getServer().selectEntities(Bukkit.getConsoleSender(), selector);
         if (selected.isEmpty()) {
             if (cancelOnInvalidContext) return null;
