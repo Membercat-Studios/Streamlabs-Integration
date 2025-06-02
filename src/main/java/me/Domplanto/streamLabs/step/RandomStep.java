@@ -14,7 +14,7 @@ import java.util.Random;
 @ReflectUtil.ClassId("random")
 public class RandomStep extends AbstractLogicStep {
     @YamlProperty("seed")
-    private int seed;
+    private long seed;
     private Random random;
 
     @Override
