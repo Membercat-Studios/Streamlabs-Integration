@@ -81,16 +81,15 @@ public class PropertyBasedClassInitializer<T extends PropertyLoadable> {
                 }
             }
 
-            List<T> instanceList = new ArrayList<>();
-            instanceList.add(initializeSingle(propertyData.getValue(), 0, section, propertyData.getKey(), dataVal, parent, issueHelper));
-            return instanceList;
+            T instance = initializeSingle(propertyData.getValue(), 0, section, propertyData.getKey(), dataVal, parent, issueHelper);
+            return Optional.ofNullable(instance).map(List::of).orElse(null);
         } catch (Exception e) {
-            issueHelper.appendAtPathAndLog(EI0, e);
+            issueHelper.appendAtPathAndLog(EI1, e);
             return null;
         }
     }
 
-    public T initializeSingle(Class<? extends T> stepCls, int stackOffset, Map<String, Object> section, @Nullable String key, Object value, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
+    public @Nullable T initializeSingle(Class<? extends T> stepCls, int stackOffset, Map<String, Object> section, @Nullable String key, Object value, ConfigurationSection parent, ConfigIssueHelper issueHelper) {
         T instance = instantiate(stepCls);
         PropertyLoadable<?> loadable = ((PropertyLoadable<?>) instance);
         if (key != null) issueHelper.pushProperty(key);
@@ -109,12 +108,22 @@ public class PropertyBasedClassInitializer<T extends PropertyLoadable> {
         // "Hacky" solution to get a ConfigurationSection instance from the given map
         String id = UUID.randomUUID().toString();
         ConfigurationSection newSection = parent.createSection(id, section);
-        instance.earlyLoad(issueHelper, newSection);
+        try {
+            instance.earlyLoad(issueHelper, newSection);
+        } catch (Exception e) {
+            issueHelper.appendAtPathAndLog(EI0, e);
+            return null;
+        }
         ConfigPathStack stack = issueHelper.stack();
         stack.get(stack.size() - (3 + stackOffset)).process(id);
         if (key != null) issueHelper.pushProperty(key);
-        //noinspection unchecked
-        instance.load(value, issueHelper, newSection);
+        try {
+            //noinspection unchecked
+            instance.load(value, issueHelper, newSection);
+        } catch (Exception e) {
+            issueHelper.appendAtPathAndLog(EI0, e);
+            instance = null;
+        }
         if (key != null) issueHelper.pop();
         return instance;
     }
