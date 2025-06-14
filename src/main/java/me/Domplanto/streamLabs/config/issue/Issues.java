@@ -44,8 +44,10 @@ public class Issues {
     public static BiFunction<String, String, ConfigIssue> WPI3 = (nameKey, instead) -> new ConfigIssue("WPI3", ConfigIssue.Level.WARNING, translatable(nameKey), text(instead));
     public static ConfigIssue WRP0 = new ConfigIssue("WRP0", ConfigIssue.Level.WARNING);
     public static BiFunction<String, String, ConfigIssue> WD0 = (value, defaultVal) -> new ConfigIssue("WD0", ConfigIssue.Level.WARNING, text(value), text(defaultVal));
-    public static Function<String, ConfigIssue> WE0 = message -> new ConfigIssue("WE0", ConfigIssue.Level.WARNING, text(message));
+    public static Function<String, ConfigIssue> WE0 = expression -> new ConfigIssue("WE0", ConfigIssue.Level.WARNING, text(expression));
     public static Function<String, ConfigIssue> WE1 = action -> new ConfigIssue("WE1", ConfigIssue.Level.WARNING, text(action));
+    public static Function<String, ConfigIssue> WE2 = group -> new ConfigIssue("WE2", ConfigIssue.Level.WARNING, text(group));
+    public static ConfigIssue WE3 = new ConfigIssue("WE3", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WNC0 = extraction -> new ConfigIssue("WNC0", ConfigIssue.Level.WARNING, text(extraction));
     public static ConfigIssue WQ0 = new ConfigIssue("WQ0", ConfigIssue.Level.WARNING);
     public static ConfigIssue WNR0 = new ConfigIssue("WNR0", ConfigIssue.Level.WARNING);

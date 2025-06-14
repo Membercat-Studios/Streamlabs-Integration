@@ -15,8 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static me.Domplanto.streamLabs.config.issue.Issues.WE0;
-import static me.Domplanto.streamLabs.config.issue.Issues.WE1;
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ReflectUtil.ClassId("expression")
 public class ExpressionQuery extends TransformationQuery<String> {
@@ -28,6 +27,8 @@ public class ExpressionQuery extends TransformationQuery<String> {
     private boolean usePlaceholders;
     @YamlProperty("replacement")
     private String replacement = "";
+    @YamlProperty("group")
+    private String group;
 
     @Override
     public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
@@ -36,6 +37,15 @@ public class ExpressionQuery extends TransformationQuery<String> {
         if (this.usePlaceholders) return;
         try {
             this.compiledPattern = Pattern.compile(this.pattern);
+            if (this.action != Action.GROUP) return;
+            if (this.group == null) {
+                issueHelper.appendAtPath(WE3);
+                return;
+            }
+            if (!this.compiledPattern.namedGroups().containsKey(this.group)) {
+                issueHelper.appendAtPath(WE2.apply(this.group));
+                this.group = null;
+            }
         } catch (PatternSyntaxException e) {
             this.pattern = "";
             issueHelper.appendAtPath(WE0.apply(e.getMessage()));
@@ -45,13 +55,27 @@ public class ExpressionQuery extends TransformationQuery<String> {
     @Override
     protected String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
         Pattern matchingPattern = this.compiledPattern;
-        if (matchingPattern == null)
-            matchingPattern = Pattern.compile(ActionPlaceholder.replacePlaceholders(pattern, ctx));
+        try {
+            if (matchingPattern == null)
+                matchingPattern = Pattern.compile(ActionPlaceholder.replacePlaceholders(this.pattern, ctx));
+        } catch (PatternSyntaxException e) {
+            StreamLabs.LOGGER.warning("Failed to compile expression with placeholders from \"%s\"".formatted(this.pattern));
+            return null;
+        }
 
         Matcher matcher = matchingPattern.matcher(input);
         return switch (this.action) {
             case REPLACE -> matcher.replaceAll(this.replacement);
             case MATCH -> matcher.find() ? matcher.group() : null;
+            case GROUP -> {
+                if (!matcher.find() || this.group == null) yield null;
+                try {
+                    yield matcher.group(this.group);
+                } catch (IllegalArgumentException e) {
+                    StreamLabs.LOGGER.warning("Couldn't find named group \"%s\" in expression \"%s\"".formatted(this.group, this.pattern));
+                    yield null;
+                }
+            }
         };
     }
 
@@ -73,6 +97,7 @@ public class ExpressionQuery extends TransformationQuery<String> {
 
     public enum Action {
         MATCH,
+        GROUP,
         REPLACE
     }
 }
