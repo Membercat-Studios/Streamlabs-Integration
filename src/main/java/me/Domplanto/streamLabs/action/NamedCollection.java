@@ -3,6 +3,10 @@ package me.Domplanto.streamLabs.action;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import me.Domplanto.streamLabs.util.yaml.PropertyLoadable;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.translation.GlobalTranslator;
+import net.kyori.adventure.translation.Translatable;
 import org.bukkit.Keyed;
 import org.bukkit.Server;
 import org.bukkit.block.BlockType;
@@ -11,6 +15,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -24,10 +30,10 @@ public enum NamedCollection {
     ENTITY_TYPE(server -> fromRegistry(RegistryKey.ENTITY_TYPE, EntityType::isSpawnable)),
     LIVING_ENTITY_TYPE(server -> fromRegistry(RegistryKey.ENTITY_TYPE, type -> type.isSpawnable() && type.isAlive())),
     ENCHANTMENT(server -> fromRegistry(RegistryKey.ENCHANTMENT, null)),
-    ITEM(server -> fromRegistry(RegistryKey.ITEM, null)),
-    BLOCK(server -> fromRegistry(RegistryKey.BLOCK, null)),
-    NON_AIR_BLOCK(server -> fromRegistry(RegistryKey.BLOCK, Predicate.not(BlockType::isAir))),
-    BIOME(server -> fromRegistry(RegistryKey.BIOME, null)),
+    ITEM(server -> fromRegistry(RegistryKey.ITEM, null), NamedCollection::translatable, NamedCollection::keyedId),
+    BLOCK(server -> fromRegistry(RegistryKey.BLOCK, null), NamedCollection::translatable, NamedCollection::keyedId),
+    NON_AIR_BLOCK(server -> fromRegistry(RegistryKey.BLOCK, Predicate.not(BlockType::isAir)), NamedCollection::translatable, NamedCollection::keyedId),
+    BIOME(server -> fromRegistry(RegistryKey.BIOME, null), NamedCollection::translatable, NamedCollection::keyedId),
     STRUCTURE(server -> fromRegistry(RegistryKey.STRUCTURE, null));
 
     public final static PropertyLoadable.Serializer<String, NamedCollection> SERIALIZER;
@@ -46,7 +52,7 @@ public enum NamedCollection {
     }
 
     <T extends Keyed> NamedCollection(Function<Server, Stream<T>> loadFunc) {
-        this(loadFunc, keyed -> keyed.key().value().replaceAll("_", " "), keyed -> keyed.key().asString());
+        this(loadFunc, keyed -> nameFromId(keyed, ""), NamedCollection::keyedId);
     }
 
     public Stream<?> loadCollection(Server server) {
@@ -62,13 +68,28 @@ public enum NamedCollection {
 
     @SuppressWarnings("unchecked")
     public String getName(@NotNull Object o) {
-        return ((Function<Object, String>) this.nameGetter).apply(o);
+        return Objects.requireNonNullElseGet(((Function<Object, String>) this.nameGetter).apply(o), () -> nameFromId(o, getId(o)));
+    }
+
+    private static String nameFromId(@NotNull Object o, @NotNull String id) {
+        if (!(o instanceof Keyed keyed)) return id;
+        return keyed.key().value().replaceAll("_", " ");
+    }
+
+    private static <T extends Keyed> String keyedId(@NotNull T keyed) {
+        return keyed.key().asString();
     }
 
     private static <T extends Keyed> @NotNull Stream<T> fromRegistry(RegistryKey<T> key, @Nullable Predicate<T> filter) {
         if (filter == null) filter = entry -> true;
         return RegistryAccess.registryAccess().getRegistry(key)
                 .stream().filter(filter);
+    }
+
+    private static @NotNull String translatable(@NotNull Translatable translatable) {
+        Component component = Component.translatable(translatable);
+        Component output = GlobalTranslator.render(component, Locale.getDefault());
+        return PlainTextComponentSerializer.plainText().serialize(output);
     }
 
     static {
