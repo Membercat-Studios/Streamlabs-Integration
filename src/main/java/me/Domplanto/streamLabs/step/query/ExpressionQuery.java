@@ -59,7 +59,7 @@ public class ExpressionQuery extends TransformationQuery<String> {
             if (matchingPattern == null)
                 matchingPattern = Pattern.compile(ActionPlaceholder.replacePlaceholders(this.pattern, ctx));
         } catch (PatternSyntaxException e) {
-            StreamLabs.LOGGER.warning("Failed to compile expression with placeholders from \"%s\"".formatted(this.pattern));
+            StreamLabs.LOGGER.warning("Failed to compile expression with placeholders from \"%s\": %s".formatted(this.pattern, e.getDescription()));
             return null;
         }
 

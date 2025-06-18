@@ -52,7 +52,8 @@ public abstract class AbstractStep<T> implements StepBase<T> {
     }
 
     public void runOnServerThread(@NotNull Runnable action) {
-        Bukkit.getScheduler().runTask(this.getPlugin(), action);
+        if (Bukkit.isPrimaryThread()) action.run();
+        else Bukkit.getScheduler().runTask(this.getPlugin(), action);
     }
 
     protected @NotNull StreamLabs getPlugin() {

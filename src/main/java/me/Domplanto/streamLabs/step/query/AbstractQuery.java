@@ -48,7 +48,15 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
         }
     }
 
+    public static void runOnServerThread(@NotNull JavaPlugin plugin, long timeout, Runnable action) throws TimeoutException {
+        runOnServerThread(plugin, timeout, () -> {
+            action.run();
+            return new Object();
+        });
+    }
+
     public static <T> T runOnServerThread(@NotNull JavaPlugin plugin, long timeout, Supplier<T> action) throws TimeoutException {
+        if (Bukkit.isPrimaryThread()) return action.get();
         CompletableFuture<T> future = new CompletableFuture<>();
         Bukkit.getScheduler().runTask(plugin, () -> {
             try {

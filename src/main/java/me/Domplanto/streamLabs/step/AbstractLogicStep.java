@@ -3,12 +3,15 @@ package me.Domplanto.streamLabs.step;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.action.StepExecutor;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
+import me.Domplanto.streamLabs.step.query.AbstractQuery;
+import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.WPI2;
 
@@ -17,6 +20,8 @@ import static me.Domplanto.streamLabs.config.issue.Issues.WPI2;
 public abstract class AbstractLogicStep extends AbstractStep<List> implements StepExecutor {
     private List<? extends StepBase<?>> steps = new ArrayList<>();
     private String name;
+    @YamlProperty("server_thread")
+    private boolean runOnServerThread = false;
 
     public AbstractLogicStep() {
         super(List.class);
@@ -42,7 +47,16 @@ public abstract class AbstractLogicStep extends AbstractStep<List> implements St
 
     @Override
     protected void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
-        ctx.runSteps(this, getPlugin());
+        Runnable action = () -> ctx.runSteps(this, getPlugin());
+        if (isAsync(ctx)) {
+            action.run();
+            return;
+        }
+        try {
+            AbstractQuery.runOnServerThread(getPlugin(), Long.MAX_VALUE, action);
+        } catch (TimeoutException e) {
+            throw new ActionFailureException("Timeout while running logic step", e);
+        }
     }
 
     public List<? extends StepBase<?>> steps() {
@@ -52,6 +66,10 @@ public abstract class AbstractLogicStep extends AbstractStep<List> implements St
     @Override
     public @NotNull String getName() {
         return this.name;
+    }
+
+    protected boolean isAsync(@SuppressWarnings("unused") ActionExecutionContext ctx) {
+        return !this.runOnServerThread;
     }
 
     @Override

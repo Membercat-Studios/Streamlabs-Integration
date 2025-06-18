@@ -10,6 +10,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 import static net.kyori.adventure.text.Component.*;
 
@@ -23,7 +24,7 @@ public class Translations {
             .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.more_info")))
             .build();
     private static final String REPO_URL = "https://github.com/Membercat-Studios/Streamlabs-Integration";
-    private static final String STREAMLABS_URL = "%s/wiki".formatted(REPO_URL);
+    private static final String WIKI_URL = "%s/wiki".formatted(REPO_URL);
     public static final String ISSUES_URL = "%s/issues".formatted(REPO_URL);
     public static Component UNEXPECTED_ERROR = translatable()
             .key("streamlabs.command.error.unexpected")
@@ -41,6 +42,10 @@ public class Translations {
             .decorate(TextDecoration.STRIKETHROUGH)
             .color(ColorScheme.STREAMLABS).build();
 
+    public static String wikiPage(@NotNull String url) {
+        return WIKI_URL + url;
+    }
+
     public static Component withPrefix(Component component) {
         return withPrefix(component, false);
     }
@@ -51,7 +56,7 @@ public class Translations {
                 .append(translatable()
                         .key(responsePrefix ? "streamlabs.prefix.response" : "streamlabs.prefix")
                         .color(ColorScheme.STREAMLABS)
-                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, STREAMLABS_URL))
+                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, WIKI_URL))
                         .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.more_info"))))
                 .append(text().content(responsePrefix ? " -> " : "] ").color(ColorScheme.COMMENT))
                 .append(component)

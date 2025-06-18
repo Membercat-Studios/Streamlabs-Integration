@@ -5,6 +5,8 @@ import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
+import me.Domplanto.streamLabs.util.components.Translations;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +16,8 @@ import static me.Domplanto.streamLabs.config.issue.Issues.WD0;
 
 @ReflectUtil.ClassId("delay")
 public class DelayStep extends AbstractStep<String> {
+    //TODO: Insert actual URL to server_thread explanation page, once it's one
+    private static final String THREAD_WARNING_URL = Translations.wikiPage("");
     private String delay;
 
     public DelayStep() {
@@ -56,6 +60,8 @@ public class DelayStep extends AbstractStep<String> {
             return;
         }
 
+        if (Bukkit.isPrimaryThread())
+            StreamLabs.LOGGER.warning("Delay step at %s is running on the main server thread, this will freeze your server! Read more at %s".formatted(getLocation().toFormattedString(), THREAD_WARNING_URL));
         try {
             Thread.sleep(delay);
         } catch (InterruptedException ignore) {
