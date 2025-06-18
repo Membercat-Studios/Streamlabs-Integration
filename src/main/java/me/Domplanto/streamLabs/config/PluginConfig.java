@@ -154,6 +154,8 @@ public class PluginConfig extends ConfigRoot {
         public String id;
         @YamlProperty("steps")
         private List<? extends StepBase> steps = List.of();
+        @YamlProperty("output")
+        private @Nullable String output;
 
         @YamlPropertyCustomDeserializer(propertyName = "steps")
         private List<? extends StepBase> deserializeSteps(@NotNull List<Object> sections, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
@@ -168,6 +170,10 @@ public class PluginConfig extends ConfigRoot {
         @Override
         public @NotNull Collection<? extends StepBase> getSteps(ActionExecutionContext ctx) {
             return this.steps;
+        }
+
+        public @Nullable String getOutput() {
+            return this.output;
         }
     }
 
