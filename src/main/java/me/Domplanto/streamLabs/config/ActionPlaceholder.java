@@ -26,7 +26,7 @@ public class ActionPlaceholder {
         return replacePlaceholders(originalString, ctx, 0);
     }
 
-    public static String replacePlaceholders(String originalString, ActionExecutionContext ctx, int plExecutionCount) {
+    private static String replacePlaceholders(String originalString, ActionExecutionContext ctx, int plExecutionCount) {
         boolean containsPlaceholders = false;
         for (ActionPlaceholder placeholder : ctx.scopeStack().getPlaceholders()) {
             String format = placeholder.getFormat();

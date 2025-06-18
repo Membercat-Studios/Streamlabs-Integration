@@ -40,7 +40,8 @@ public class SetPlaceholderStep extends AbstractStep<BracketResolver> {
         if (placeholderName == null) return;
         String content = ActionPlaceholder.replacePlaceholders(this.value, ctx);
         try {
-            content = new DoubleEvaluator().evaluate(content).toString();
+            double value = new DoubleEvaluator().evaluate(content);
+            content = (value == (int) value) ? String.valueOf((int) value) : String.valueOf(value);
         } catch (Exception ignore) {
         }
         ctx.scopeStack().addPlaceholder(new VariablePlaceholder(this.placeholderName, content));
