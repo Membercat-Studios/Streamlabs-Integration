@@ -16,8 +16,7 @@ import static me.Domplanto.streamLabs.config.issue.Issues.WD0;
 
 @ReflectUtil.ClassId("delay")
 public class DelayStep extends AbstractStep<String> {
-    //TODO: Insert actual URL to server_thread explanation page, once it's one
-    private static final String THREAD_WARNING_URL = Translations.wikiPage("");
+    private static final String THREAD_WARNING_URL = Translations.wikiPage("/Misc.-Features-&-Guides#when-to-use-server_thread");
     private String delay;
 
     public DelayStep() {
