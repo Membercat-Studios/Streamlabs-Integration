@@ -53,6 +53,7 @@ public class Issues {
     public static Function<String, ConfigIssue> WE2 = group -> new ConfigIssue("WE2", ConfigIssue.Level.WARNING, text(group));
     public static ConfigIssue WE3 = new ConfigIssue("WE3", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WNC0 = extraction -> new ConfigIssue("WNC0", ConfigIssue.Level.WARNING, text(extraction));
+    public static ConfigIssue WNC1 = new ConfigIssue("WNC1", ConfigIssue.Level.WARNING);
     public static ConfigIssue WQ0 = new ConfigIssue("WQ0", ConfigIssue.Level.WARNING);
     public static ConfigIssue WNR0 = new ConfigIssue("WNR0", ConfigIssue.Level.WARNING);
     public static ConfigIssue WNR1 = new ConfigIssue("WNR1", ConfigIssue.Level.WARNING);

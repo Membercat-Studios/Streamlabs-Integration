@@ -30,4 +30,19 @@ public interface StepExecutor {
             id++;
         }
     }
+
+    static @NotNull StepExecutor fromSteps(@NotNull String name, @NotNull Collection<? extends StepBase<?>> steps) {
+        return new StepExecutor() {
+            @Override
+            public @NotNull String getName() {
+                return name;
+            }
+
+            @Override
+            @SuppressWarnings("rawtypes")
+            public @NotNull Collection<? extends StepBase> getSteps(ActionExecutionContext ctx) {
+                return steps;
+            }
+        };
+    }
 }
