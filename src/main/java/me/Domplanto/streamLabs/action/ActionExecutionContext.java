@@ -21,6 +21,7 @@ public record ActionExecutionContext(
         PluginConfig.AbstractAction action,
         PlaceholderScopeStack scopeStack,
         boolean bypassRateLimiters,
+        AtomicBoolean dirty,
         AtomicReference<Predicate<ActionExecutionContext>> keepExecutingCheck,
         JsonObject baseObject,
         AtomicBoolean shouldExecute
@@ -30,7 +31,7 @@ public record ActionExecutionContext(
     }
 
     public ActionExecutionContext(@Nullable StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, boolean bypassRateLimiters, JsonObject jsonObject) {
-        this(event, executor, config, action, new PlaceholderScopeStack(), bypassRateLimiters, new AtomicReference<>(), jsonObject, new AtomicBoolean(true));
+        this(event, executor, config, action, new PlaceholderScopeStack(), bypassRateLimiters, new AtomicBoolean(), new AtomicReference<>(), jsonObject, new AtomicBoolean(true));
         if (event != null) event.getPlaceholders().forEach(scopeStack::addPlaceholder);
         config.getCustomPlaceholders().forEach(scopeStack::addPlaceholder);
         scopeStack.push("action");
@@ -38,6 +39,10 @@ public record ActionExecutionContext(
 
     boolean checkConditions() {
         return action().check(this);
+    }
+
+    public void markDirty() {
+        this.dirty().set(true);
     }
 
     public ActionExecutionContext withAction(@NotNull PluginConfig.AbstractAction action) {

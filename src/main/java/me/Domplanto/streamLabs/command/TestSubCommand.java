@@ -17,7 +17,6 @@ import me.Domplanto.streamLabs.command.argument.EventArgumentType;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.youtube.YoutubeSuperchatEvent;
-import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.components.Translations;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -78,7 +77,7 @@ public class TestSubCommand extends SubCommand {
             }
 
             if (!getPlugin().getExecutor().checkAndExecute(event, object, bypassRateLimiters) && getPlugin().showStatusMessages())
-                Translations.sendPrefixedResponse("streamlabs.error.action_failure", ColorScheme.ERROR, sender);
+                sender.sendMessage(Translations.withPrefix(Translations.ACTION_FAILURE, true));
         });
     }
 
@@ -113,7 +112,7 @@ public class TestSubCommand extends SubCommand {
         public <S> @NotNull CompletableFuture<Suggestions> listSuggestions(CommandContext<S> ctx, @NotNull SuggestionsBuilder builder) {
             ParsedCommandNode<?> lastNode = ctx.getChild().getNodes().getLast();
             String input = lastNode.getNode().getName().equals(ownName) ? lastNode.getRange().get(ctx.getInput()) : "";
-            int elementStart =  input.lastIndexOf(' ') + 1;
+            int elementStart = input.lastIndexOf(' ') + 1;
             String element = input.substring(elementStart);
             if (element.contains("=")) return builder.buildFuture();
 

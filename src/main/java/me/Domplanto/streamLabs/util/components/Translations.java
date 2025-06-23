@@ -28,26 +28,28 @@ public class Translations {
     public static final String ISSUES_URL = "%s/issues".formatted(REPO_URL);
     public static Component UNEXPECTED_ERROR = translatable()
             .key("streamlabs.command.error.unexpected")
-            .color(ColorScheme.ERROR)
-            .append(text(" "))
-            .append(translatable().key("streamlabs.command.error.unexpected.issue_report")
-                    .style(Style.style(ColorScheme.INVALID, TextDecoration.UNDERLINED))
-                    .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, ISSUES_URL))
-                    .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.report_issue"))))
-            .append(text(" "))
-            .append(translatable().key("streamlabs.command.error.unexpected2").color(ColorScheme.ERROR))
-            .build();
+            .arguments(createIssue("streamlabs.command.error.unexpected"))
+            .color(ColorScheme.ERROR).build();
+    public static Component ACTION_FAILURE = translatable()
+            .key("streamlabs.error.action_failure")
+            .arguments(createIssue("streamlabs.error.action_failure"))
+            .color(ColorScheme.ERROR).build();
     public static Component SEPARATOR_LINE = translatable()
             .key("streamlabs.chat.separator")
             .decorate(TextDecoration.STRIKETHROUGH)
             .color(ColorScheme.STREAMLABS).build();
 
-    public static String wikiPage(@NotNull String url) {
-        return WIKI_URL + url;
+    private static Component createIssue(String baseKey) {
+        return translatable()
+                .key("%s.issue_report".formatted(baseKey))
+                .style(Style.style(ColorScheme.INVALID, TextDecoration.UNDERLINED))
+                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, ISSUES_URL))
+                .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.report_issue")))
+                .build();
     }
 
-    public static Component withPrefix(Component component) {
-        return withPrefix(component, false);
+    public static String wikiPage(@NotNull String url) {
+        return WIKI_URL + url;
     }
 
     public static Component withPrefix(Component component, boolean responsePrefix) {
@@ -74,17 +76,21 @@ public class Translations {
                 .append(newline());
     }
 
-    public static void sendPrefixed(String translationKey, TextColor color, CommandSender sender, ComponentLike... args) {
-        sender.sendMessage(withPrefix(translatable(translationKey, args).color(color)));
-    }
-
     public static void sendPrefixedResponse(String translationKey, TextColor color, CommandSender sender, ComponentLike... args) {
         sender.sendMessage(withPrefix(translatable(translationKey, args).color(color), true));
     }
 
-    public static void sendPrefixedToPlayers(String translationKey, TextColor color, Server server) {
+    public static void sendPrefixedToPlayers(String translationKey, TextColor color, Server server, ComponentLike... args) {
+        sendPrefixedToPlayers(translationKey, color, server, false, args);
+    }
+
+    public static void sendPrefixedToPlayers(String translationKey, TextColor color, Server server, boolean response, ComponentLike... args) {
+        sendPrefixedToPlayers(translatable(translationKey, color, args), server, response);
+    }
+
+    public static void sendPrefixedToPlayers(Component component, Server server, boolean response) {
         server.getOnlinePlayers()
                 .stream().filter(player -> player.hasPermission(STATUS_MESSAGE_PERMISSION))
-                .forEach(player -> sendPrefixed(translationKey, color, player));
+                .forEach(player -> player.sendMessage(withPrefix(component, response)));
     }
 }

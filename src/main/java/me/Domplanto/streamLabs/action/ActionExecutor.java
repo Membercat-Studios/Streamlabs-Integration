@@ -9,7 +9,6 @@ import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
 import me.Domplanto.streamLabs.statistics.EventHistory;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
-import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.components.Translations;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
@@ -62,7 +61,7 @@ public class ActionExecutor {
             for (StreamlabsEvent event : events) {
                 JsonObject baseObject = event.getBaseObject(object);
                 if (!this.checkAndExecute(event, baseObject, false))
-                    Translations.sendPrefixedToPlayers("streamlabs.error.action_failure", ColorScheme.ERROR, plugin.getServer());
+                    Translations.sendPrefixedToPlayers(Translations.ACTION_FAILURE, plugin.getServer(), false);
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to parse JSON content of a streamlabs message:", e);
@@ -107,6 +106,8 @@ public class ActionExecutor {
         ctx.setKeepExecutingCheck(context -> runningActions.get(actionId).contains(taskUUID) && context.shouldExecute().get());
         Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
             ctx.runSteps(ctx.action(), plugin);
+            if (ctx.dirty().get())
+                Translations.sendPrefixedToPlayers(Translations.ACTION_FAILURE, plugin.getServer(), false);
             Set<UUID> instanceSet = this.runningActions.get(actionId);
             instanceSet.remove(taskUUID);
             if (instanceSet.isEmpty()) this.runningActions.remove(actionId);
