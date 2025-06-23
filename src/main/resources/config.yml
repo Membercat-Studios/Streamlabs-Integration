@@ -1,58 +1,176 @@
-# Read the documentation at https://github.com/Domplanto/StreamLabsPlugin
+# We encourage you to read the documentation at https://github.com/Membercat-Studios/Streamlabs-Integration/wiki!
+# You can do a lot with this plugin, reaching from very simple actions to really cool and large configurations,
+# but to do so, you should start reading the documentation and following along with the explained topics.
+# Trying out things as soon as you read them can help a lot of the time!
+
+# Remember to run "/streamlabs reload" to apply changes in this file!
+# If there are any issues with your configuration, the plugin will tell you in chat!
+# You can read more on how to read such issues here: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Configuration-and-Issues#configuration-issues
+
+# This configuration provides some example actions to get started, make sure to read
+# all the given comments (you can remove them afterward)!
 
 streamlabs:
   socket_token: "" # Put your Streamlabs socket token here
   show_status_messages: true # Whether the plugin will send status messages in chat (for example "Successfully connected to Streamlabs")
+  auto_connect: true # If disabled, the plugin will not try to connect at startup or when using /streamlabs reload (the latter only applies if no connection is currently established)
 
-affected_players: # Players that will be affected by the actions {player}
-  - domplanto
-  - codingcat
+# Add your player name here to ensure you'll be able to see messages sent using the "message" step (see "actions" for more info)
+affected_players: # Read more at: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Configuration-and-Issues#affected-players
+  - domplanto # Those are example player names that won't exist on your server, make sure to remove them
+  - codingcat # to avoid your commands failing with "no player could be found"
+  - YourMinecraftUsername
 
+# Actions allow you to respond to events from Streamlabs
+# You can test your actions by manually triggering the associated Streamlabs event using the /test command:
+# /streamlabs test twitch_bits amount=100
 actions:
-  example_reward:
-    enabled: true # Whether the action is enabled
-    action: streamlabs_donation # The action that will trigger it
-    rate_limiter: # Will prevent donations from getting spammed by rate limiting them to 8 seconds for each user
-      type: interval
-      value: '{user}'
-      interval: 8
-    mode: AND # Mode of the conditions below, can either be "AND" or "OR", will default to AND when left out
-    conditions: # Conditions that must be met for the action to trigger
-      - '{user}=codingcat24'
-      - mode: OR # Condition groups can be nested for more complex logic
-        conditions:
-          - '{message}.>cats are cool'
-          - '{message}.>subscribe'
-    donation_conditions: # All conditions with the currency of the received donation will be checked (this will not be checked if the event is not a donation)
-      - "EUR>10"
-      - "EUR<50"
-      - "USD>10.54"
-      - "USD<50"
-      - "AUD>16.31"
-      - "AUD<50"
-    messages: # Messages that will be sent when the action triggers. USE § FOR COLOR CODES, NOT &!
-      - '[message]§l§6{user} §r§9donated {amount_formatted}!'
-      - '[title]§cNew Donation!'
-      - '[subtitle]§a{user} §9donated {amount_formatted}!'
-    commands: # Commands that will be executed when the action triggers. for ' do ''.
-      - 'give {player} diamond {diamond_amount}' # {diamond_amount} is a custom placeholder defined below, it changes dependent on the amount of money donated
-      - 'effect give {player} regeneration {amount} 1'
-      - '[{amount}/10]execute at {player} run summon zombie ~ ~ ~ {CustomName:''[{"text":"{user}"}]''}' # [{amount}/10] will be replaced with the amount divided by 10
+  my_simple_action: # Your action can have any name you want
+    enabled: true # Enable this action
+    action: twitch_bits # The Streamlabs event that should trigger this action, a full list can be found at https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Event-Types-&-Placeholders
+    steps: # Steps are executed in order, they allow you to do anything from displaying a title to running commands
+      - message: "Hello world!" # A step looks like this, "message" is the type of step we want to run, and "Hello world" is the data given to the step
+      - delay: 1000 # This is another step that will wait for 1000 milliseconds (1 second) before executing the next steps
+      - message: "[title]It works!" # Steps can often have additional information associated with them, this "message" step will display the message as a title
+      - message: "[subtitle]<red>I am red and <aqua>blue" # MiniMessage formatting for colors and text styling is supported, see https://docs.advntr.dev/minimessage/index.html
+      - message: "<green>The user {user} just donated {amount} bits!" # Placeholders from events (like twitch_bits) can be used to integrate data from the donation itself: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Event-Types-&-Placeholders
 
-custom_placeholders: # Custom placeholders allow you to define your own placeholders based on conditions, which is useful to add structure to your config and to avoid having to repeat certain conditions
-  diamond_amount:
-    default_value: 10 # Default value of the placeholder, used if none of the conditions are true
-    diamond_20:
-      value: "20" # The value of the placeholder used when the conditions below are true. Can be left out to use the name of this state instead.
-      donation_conditions:
-        - "EUR>15"
-        - "EUR<30"
-    diamond_40:
-      value: "40"
-      donation_conditions:
-        - "EUR>31"
-        - "EUR<50"
-    diamond_64:
-      value: "64"
-      donation_conditions:
-        - "EUR>51"
+  # This action will only execute if someone gifts more than 10 memberships
+  # You can test this by running the following command with a number higher and smaller than 10 for "amount":
+  # /streamlabs test youtube_gift_memberships amount=16
+  a_conditional_action:
+    enabled: true
+    action: youtube_gift_memberships
+    conditions: # The steps will only run if all of these conditions are met. Read more about conditions here: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Conditions
+      - "{amount}>10" # Checks whether the {amount} placeholder from the youtube_gift_memberships event is higher than 10
+    steps:
+      - message: "<green>{user} just gifted more than 10 memberships ({amount} to be specific)!"
+
+  # This action will demonstrate how to use donation conditions to get around
+  # the problem of donations having multiple possible currencies:
+  # For USD: /streamlabs test youtube_superchat amount=15 currency=USD
+  # For EUR: /streamlabs test youtube_superchat amount=15 currency=EUR
+  donation_condition_test:
+    enabled: true
+    action: youtube_superchat
+    donation_conditions: # Donation conditions are special kinds of conditions that support multiple currencies, read more at https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Conditions#donation-conditions
+      - "USD>12"
+      - "USD<=20"
+      - "EUR>10.61"
+      - "EUR<=17.69"
+    # Note that, if the donation arrives in a currency you haven't accounted for in your donation conditions, the action won't be executed!
+    # You can make sure that you've included all supported currencies by checking this list: https://dev.streamlabs.com/docs/currency-codes
+    steps:
+      - command: give YourMinecraftUsername minecraft:diamond 10 # Replace YourMinecraftUsername with the minecraft username of the player this command should affect!
+      - message: Player has been given 10 diamonds!
+
+  # This action will show you how to use the repeat step to execute steps multiple times.
+  # /streamlabs test twitch_subscription
+  repeat_demo:
+    enabled: true
+    action: twitch_subscription
+    steps:
+      - message: "<aqua>{user} <green>just subscribed on twitch, spawning 10 zombies!"
+      - repeat: # Using the repeat step, we can execute certain steps multiple times
+          # The {player} placeholder will execute this command for every player in affected_players and will be replaced with the player's name!
+          - command: "execute at {player} run summon zombie" # We're using "execute at ... run" here, since the command is executed in the console, and we want to spawn the zombies at the player's location
+        amount: 10 # Repeat the command 10 times
+        server_thread: true # Will execute the commands faster in this scenario, keep in mind that this can freeze your server if used wrongly! Make sure to read https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Misc.-Features-&-Guides#when-to-use-server_thread
+        # You can read more about the repeat step here: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Steps#repeat
+
+  # This action will demonstrate how queries can be used to generate data
+  # (The action only runs if the message contains "queries")
+  # /streamlabs test youtube_membership message=queries
+  queries_demo:
+    enabled: true
+    action: youtube_membership
+    conditions: # Only run the action if the message is correct
+      - "{message}.>queries" # Whether the message contains the text "queries"
+    steps:
+      # The random_number query can be used to generate random numbers in a given range.
+      # Queries in general are special types of steps that have an additional output: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Steps#queries
+      - random_number: 1|65 # Generates a random number between 1 (inclusive) and 65 (exclusive)
+        output: "the_number" # The output property of a query specifies the name of the placeholder that the returned value is going to be saved to
+      - command: "give {player} minecraft:cobblestone {$the_number}" # Query placeholders look like this: {$placeholder} and can be used in all places after the query
+
+  # This action will extract the name of a living entity (mob) from the donation message
+  # and spawn 10 of that mob at the player!
+  # (The action only runs if the message contains "extract-query")
+  # /streamlabs test youtube_membership message=extract-query-zombie
+  # ("zombie" can be replaced with the name of any minecraft mob)
+  extract_demo:
+    enabled: true
+    action: youtube_membership
+    conditions:
+      - "{message}.>extract-query"
+    steps:
+      # The extract query can extract a few elements from a given text, and convert them into a format that can be used in (vanilla) commands
+      # This query is a special type of query called a "transformation query". Transformation queries have an additional input that they then transform in some way to create their output!
+      - extract: living_entity_type # The element types this query can extract are called "named collections", here's a list of all available collections: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Misc.-Features-&-Guides#named-collections
+        input: "{message}" # The input that the entity type is extracted out of
+        output: "entity"
+      - repeat:
+          - command: "execute at {player} run summon {$entity}" # Spawn the extracted entity at the players
+        amount: 10 # Spawn 10 mobs
+        server_thread: true # Will execute the commands faster in this scenario, keep in mind that this can freeze your server if used wrongly! Make sure to read https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Misc.-Features-&-Guides#when-to-use-server_thread
+
+  # This action will demonstrate how more the expression query can be used to grab any number from the message
+  # and spawn as many random items as given in that number. The action also uses bulk_random_elements to generate the random items,
+  # as well as random_number to give each item a random stack amount.
+  # (The action only runs if the message contains "random-items")
+  # /streamlabs test youtube_membership message=random-items-10
+  # ("10" can be replaced with any number of items to spawn)
+  random_items_demo:
+    enabled: true
+    action: youtube_membership
+    conditions:
+      - "{message}.>random-items"
+    steps:
+      # The expression query is very powerful, as it allows you to use regular expressions
+      # to match parts of text (e.g. the message in this example).
+      # If you don't know RegEx, I'd suggest looking at websites such as https://regexone.com (as an introduction) and https://regex101.com (for quick reference)
+      - expression: "\\d+" # This expression matches any number. Note that you'll have to replace every backslash (\) with a (\\) and every " with \" in your expression, due to YAML formatting!
+        input: "{message}"
+        output: "items" # The expression query can do a lot more, check the documentation for a full reference: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Steps#expression
+      # This step can generate any amount of random elements from a named collection and execute the given steps for each of them.
+      # It also provides certain placeholders that contain information about the element, read more here: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Steps#bulk_random_elements
+      - bulk_random_elements:
+          - random_number: 1|11
+            output: "amount"
+          - command: "give {player} {$element_id} {$amount}"
+        collection: item # Select random elements from the "item" collection
+        amount: "{$items}" # Select as many items as specified in the message
+        server_thread: true # Will execute the commands faster in this scenario, keep in mind that this can freeze your server if used wrongly! Make sure to read https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Misc.-Features-&-Guides#when-to-use-server_thread
+
+  # This action will show how you can use the check step to execute different actions depending on a condition,
+  # and how set_placeholder can be used to create placeholder variables (in this case for a countdown)!
+  # (The action only runs if the message contains "variables-check")
+  # Below 4 months: /streamlabs test youtube_membership message=variables-check months=2
+  # Above 4 months: /streamlabs test youtube_membership message=variables-check months=10
+  variables_check_demo:
+    enabled: true
+    action: youtube_membership
+    conditions:
+      - "{message}.>variables-check"
+    steps:
+      - check: # The check step can execute steps based on conditions: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Steps#check
+          # The following steps will only be executed if all conditions are met
+          - set_placeholder: "[timer]10" # Set a timer placeholder to value 10: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Steps#set_placeholder
+          - repeat:
+              # Variable placeholders (from set_placeholder) look like this: {#placeholder}
+              - message: "[title]<yellow>Explosion in <white>{#timer}" # Show a title with the explosion timer
+              - delay: 1000 # Wait for one second
+              - set_placeholder: "[timer]{#timer}-1" # Decrease the timer by one (by setting it to itself - 1)
+            amount: 10
+          # After the repeat step is over, show a title and explode the player
+          - message: "[title]<red>Explosion now!"
+          - command: "execute at {player} run summon tnt"
+        conditions: # Conditions for the check step
+          - "{months}>=4" # Checks for the user being a member for 4 or more months
+        else: # Steps to execute if the conditions aren't met
+          - message: "<aqua>{user}, <red>you have to be a member for at least 4 months!"
+
+# You can do way more with this plugin, make sure to read the documentation for features like donation goals, rate limiters and functions!
+
+# DO NOT modify this value, it's used to keep track of the config version and not intended to be modified by the user!
+version: 100
