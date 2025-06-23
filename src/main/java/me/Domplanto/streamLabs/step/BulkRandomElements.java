@@ -9,46 +9,65 @@ import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner;
+import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.function.Supplier;
 
-import static me.Domplanto.streamLabs.config.issue.Issues.WNC1;
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ReflectUtil.ClassId("bulk_random_elements")
 public class BulkRandomElements extends RepeatStep {
+    private static final int MAX_TRIES = 10000;
     @YamlProperty("collection")
     private NamedCollection collection = NamedCollection.NONE;
+    @YamlProperty("selection_behavior")
+    private SelectionBehavior selectionBehavior = SelectionBehavior.NORMAL;
     @YamlProperty("seed")
     private long seed;
     private Random random;
     private @Nullable List<?> elements;
+    private List<Object> selectedElements;
+    private int step;
 
     @Override
     public void load(@SuppressWarnings("rawtypes") @NotNull List data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         super.load(data, issueHelper, parent);
         this.random = seed != 0 ? new Random(seed) : new Random();
+        this.selectedElements = new ArrayList<>();
     }
 
     @Override
     protected void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
+        this.selectedElements.clear();
+        this.step = 0;
         this.elements = collection.loadCollection(getPlugin().getServer()).toList();
         if (elements.isEmpty()) return;
+
         ctx.scopeStack().push("bulk random element loop at %s".formatted(getLocation().toFormattedString()));
         super.execute(ctx);
         ctx.scopeStack().pop();
+        this.elements = null;
     }
 
     @Override
     public List<? extends StepBase<?>> steps() {
         return List.of(StepBase.createExecuting((ctx, plugin) -> {
             if (elements == null) return;
-            int idx = random.nextInt(0, elements.size());
-            Object o = this.elements.get(idx);
+            boolean overflow = this.step++ >= elements.size();
+            Object o = this.selectionBehavior.selectNew(() -> {
+                int idx = random.nextInt(0, elements.size());
+                return this.elements.get(idx);
+            }, overflow, this.selectedElements);
+            if (o == null) return;
+            this.selectedElements.add(o);
+
             ctx.scopeStack().addPlaceholder(new AbstractQuery.QueryPlaceholder("element_id", collection.getId(o)));
             ctx.scopeStack().addPlaceholder(new AbstractQuery.QueryPlaceholder("element_name", collection.getName(o)));
             ctx.runSteps(StepExecutor.fromSteps(this.getName(), super.steps()), getPlugin());
@@ -60,8 +79,44 @@ public class BulkRandomElements extends RepeatStep {
         return Objects.requireNonNull(NamedCollection.SERIALIZER.serialize(input, issueHelper));
     }
 
+    @YamlPropertyCustomDeserializer(propertyName = "selection_behavior")
+    public @NotNull SelectionBehavior serializeSelectionBehavior(@NotNull String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        try {
+            return SelectionBehavior.valueOf(input.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            issueHelper.appendAtPath(WBS0.apply(input));
+            return SelectionBehavior.NORMAL;
+        }
+    }
+
     @YamlPropertyIssueAssigner(propertyName = "collection")
     public void assignToCollection(ConfigIssueHelper issueHelper, boolean actuallySet) {
         if (!actuallySet) issueHelper.appendAtPath(WNC1);
+    }
+
+    public enum SelectionBehavior {
+        NORMAL((newObj, overflow, selected) -> newObj.get()),
+        TRY_NO_DUPLICATES((newObj, overflow, selected) -> overflow ? newObj.get() : attemptSelect(newObj, selected)),
+        FORCE_NO_DUPLICATES((newObj, overflow, selected) -> overflow ? null : attemptSelect(newObj, selected));
+        private final TriFunction<Supplier<Object>, Boolean, List<Object>, Object> generator;
+
+        SelectionBehavior(TriFunction<Supplier<Object>, Boolean, List<Object>, Object> generator) {
+            this.generator = generator;
+        }
+
+        public @Nullable Object selectNew(@NotNull Supplier<Object> randomGenerator, boolean overflow, @NotNull List<Object> chosen) {
+            return this.generator.apply(randomGenerator, overflow, chosen);
+        }
+
+        private static @Nullable Object attemptSelect(Supplier<Object> randomGenerator, List<Object> chosen) {
+            int tries = 0;
+            Object o;
+            do {
+                o = randomGenerator.get();
+                tries++;
+                if (tries > MAX_TRIES) return null;
+            } while (chosen.contains(o));
+            return o;
+        }
     }
 }

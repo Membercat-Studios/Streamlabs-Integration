@@ -59,6 +59,7 @@ public class Issues {
     public static ConfigIssue WNR1 = new ConfigIssue("WNR1", ConfigIssue.Level.WARNING);
     public static ConfigIssue WNR2 = new ConfigIssue("WNR2", ConfigIssue.Level.WARNING);
     public static ConfigIssue WNR3 = new ConfigIssue("WNR3", ConfigIssue.Level.WARNING);
+    public static Function<String, ConfigIssue> WBS0 = behavior -> new ConfigIssue("WBS0", ConfigIssue.Level.WARNING, text(behavior));
     public static ConfigIssue WQ1 = new ConfigIssue("WQ1", ConfigIssue.Level.WARNING);
     public static ConfigIssue WV0 = new ConfigIssue("WV0", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WY0 = yamlKey -> new ConfigIssue("WY0", ConfigIssue.Level.WARNING, text(yamlKey));
