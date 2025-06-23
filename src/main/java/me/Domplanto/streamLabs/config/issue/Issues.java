@@ -3,6 +3,7 @@ package me.Domplanto.streamLabs.config.issue;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.util.components.Translations;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,6 +12,8 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static me.Domplanto.streamLabs.config.issue.ConfigPathStack.getClassDisplayName;
+import static me.Domplanto.streamLabs.config.issue.ConfigPathStack.getObjectTypeName;
 import static net.kyori.adventure.text.Component.*;
 
 public class Issues {
@@ -69,11 +72,11 @@ public class Issues {
     public static ConfigIssue HI0 = new ConfigIssue("HI0", ConfigIssue.Level.HINT);
 
     public static ConfigIssue WI2(Field field, Object value, YamlPropertyObject object) throws ReflectiveOperationException {
-        return new ConfigIssue("WI2", ConfigIssue.Level.WARNING, text(field.getType().getSimpleName()), text(value != null ? value.getClass().getSimpleName() : "null"), text(field.get(object).toString()));
+        Component defaultVal = Optional.ofNullable(field.get(object)).map(o -> ((Component) text(o.toString()))).orElseGet(() -> translatable("streamlabs.issue.format.nothing"));
+        return new ConfigIssue("WI2", ConfigIssue.Level.WARNING, text(getClassDisplayName(field.getType())), text(getObjectTypeName(value)), defaultVal);
     }
 
     public static ConfigIssue WPI2(String nameKey, @NotNull Class<?> expectedType, @Nullable Object actualObject) {
-        String actualTypeName = Optional.ofNullable(actualObject).map(o -> o.getClass().getSimpleName()).orElse("null");
-        return new ConfigIssue("WPI2", ConfigIssue.Level.WARNING, translatable(nameKey), text(expectedType.getSimpleName()), text(actualTypeName));
+        return new ConfigIssue("WPI2", ConfigIssue.Level.WARNING, translatable(nameKey), text(getClassDisplayName(expectedType)), text(getObjectTypeName(actualObject)));
     }
 }

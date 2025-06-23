@@ -35,7 +35,7 @@ public class ConfigIssueHelper {
         this.popIf(ConfigPathStack.Entry::isRoot);
         if (!pathStack.empty()) {
             this.appendAtPath(EI2);
-            this.replacePaths(new ConfigPathStack.Entry(null, null, "unknown", new HashSet<>(), new HashSet<>()));
+            this.replacePaths(new ConfigPathStack.Entry(null, "unknown", new HashSet<>(), new HashSet<>()));
         }
 
         if (!this.issues.isEmpty())
@@ -51,8 +51,7 @@ public class ConfigIssueHelper {
     }
 
     public void push(Class<?> segment, String name) {
-        ConfigPathSegment annotation = segment.getAnnotation(ConfigPathSegment.class);
-        this.pathStack.push(new ConfigPathStack.Entry(segment, annotation, name,
+        this.pathStack.push(new ConfigPathStack.Entry(segment, name,
                 !this.pathStack.empty() ? this.pathStack.peek().suppressedIssues() : new HashSet<>(), new HashSet<>()));
     }
 
