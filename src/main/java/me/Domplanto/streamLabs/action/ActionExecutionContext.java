@@ -50,6 +50,10 @@ public record ActionExecutionContext(
                 .orElse(false);
     }
 
+    public boolean shouldStopOnFailure() {
+        return action() != null && action().stopOnFailure;
+    }
+
     void setKeepExecutingCheck(@Nullable Predicate<ActionExecutionContext> keepExecutingCheck) {
         this.keepExecutingCheck.set(keepExecutingCheck);
     }

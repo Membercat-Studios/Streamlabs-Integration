@@ -98,6 +98,8 @@ public class PluginConfig extends ConfigRoot {
         public String id;
         @YamlProperty("instancing_behavior")
         public ActionExecutor.ActionInstancingBehaviour instancingBehaviour = ActionExecutor.ActionInstancingBehaviour.CANCEL_PREVIOUS;
+        @YamlProperty("stop_on_failure")
+        public boolean stopOnFailure;
         @Nullable
         @YamlProperty("rate_limiter")
         public RateLimiter rateLimiter;

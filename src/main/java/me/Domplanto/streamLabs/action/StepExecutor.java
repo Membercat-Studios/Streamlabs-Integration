@@ -22,6 +22,10 @@ public interface StepExecutor {
                 step.execute(ctx, plugin);
             } catch (AbstractStep.ActionFailureException e) {
                 plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing step %s (type: %s) in %s for event %s: %s".formatted(id, step.getStepId(), this.getName(), ctx.event().getId(), e.getMessage()), e.getCause());
+                if (ctx.shouldStopOnFailure()) {
+                    plugin.getLogger().info("Stopping step execution of %s due to stop_on_failure = true!".formatted(this.getName()));
+                    return;
+                }
             }
             id++;
         }
