@@ -1,7 +1,6 @@
 package me.Domplanto.streamLabs.events.youtube;
 
 import com.google.gson.JsonObject;
-import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.action.ActionExecutor;
 import me.Domplanto.streamLabs.events.StreamlabsPlatform;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
@@ -27,7 +26,7 @@ public class YoutubeMembershipGiftEvent extends BasicDonationEvent {
     }
 
     @Override
-    public boolean checkConditions(ActionExecutionContext ctx) {
-        return calculateAmount(ctx.baseObject()) != -1 && super.checkConditions(ctx);
+    public boolean isEventValid(@NotNull JsonObject baseObject) {
+        return calculateAmount(baseObject) != -1;
     }
 }

@@ -77,8 +77,7 @@ public class TestSubCommand extends SubCommand {
                 }
             }
 
-            if (bypassRateLimiters) event.bypassRateLimiters();
-            if (!getPlugin().getExecutor().checkAndExecute(event, object) && getPlugin().showStatusMessages())
+            if (!getPlugin().getExecutor().checkAndExecute(event, object, bypassRateLimiters) && getPlugin().showStatusMessages())
                 Translations.sendPrefixedResponse("streamlabs.error.action_failure", ColorScheme.ERROR, sender);
         });
     }

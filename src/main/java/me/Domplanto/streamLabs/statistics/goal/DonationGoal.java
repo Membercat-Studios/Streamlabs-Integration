@@ -40,11 +40,6 @@ public class DonationGoal extends PluginConfig.AbstractAction {
         this.active = false;
     }
 
-    @Override
-    public boolean check(ActionExecutionContext ctx) {
-        return (rateLimiter == null || rateLimiter.check(ctx)) && super.check(ctx);
-    }
-
     public double getValue() {
         return this.value;
     }

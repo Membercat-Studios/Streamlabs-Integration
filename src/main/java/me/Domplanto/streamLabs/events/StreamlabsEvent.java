@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.action.ActionExecutor;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
-import me.Domplanto.streamLabs.action.ratelimiter.RateLimiter;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +20,6 @@ public abstract class StreamlabsEvent {
     private final String id;
     private final StreamlabsPlatform platform;
     private final Set<ActionPlaceholder> placeholders;
-    private boolean bypassRateLimiters = false;
 
     public StreamlabsEvent(@NotNull String id, @NotNull String apiName, StreamlabsPlatform platform) {
         this.id = id;
@@ -84,15 +82,8 @@ public abstract class StreamlabsEvent {
         return placeholders;
     }
 
-    public void bypassRateLimiters() {
-        this.bypassRateLimiters = true;
-    }
-
-    public boolean checkConditions(ActionExecutionContext ctx) {
-        RateLimiter limiter = ctx.action().rateLimiter;
-        if (!this.bypassRateLimiters && (limiter != null && !limiter.check(ctx))) return false;
-
-        return ctx.action().check(ctx);
+    public boolean isEventValid(@NotNull JsonObject baseObject) {
+        return true;
     }
 
     public static Set<? extends StreamlabsEvent> findEventClasses() {

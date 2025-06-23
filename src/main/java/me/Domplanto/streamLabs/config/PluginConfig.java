@@ -115,6 +115,12 @@ public class PluginConfig extends ConfigRoot {
         }
 
         @Override
+        public boolean check(ActionExecutionContext ctx) {
+            if (!ctx.bypassRateLimiters() && (rateLimiter != null && !rateLimiter.check(ctx))) return false;
+            return super.check(ctx);
+        }
+
+        @Override
         public @NotNull String getName() {
             return "action %s".formatted(this.id);
         }

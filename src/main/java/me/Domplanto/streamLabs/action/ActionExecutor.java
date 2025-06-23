@@ -61,7 +61,7 @@ public class ActionExecutor {
 
             for (StreamlabsEvent event : events) {
                 JsonObject baseObject = event.getBaseObject(object);
-                if (!this.checkAndExecute(event, baseObject))
+                if (!this.checkAndExecute(event, baseObject, false))
                     Translations.sendPrefixedToPlayers("streamlabs.error.action_failure", ColorScheme.ERROR, plugin.getServer());
             }
         } catch (Exception e) {
@@ -70,7 +70,8 @@ public class ActionExecutor {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean checkAndExecute(StreamlabsEvent event, JsonObject baseObject) {
+    public boolean checkAndExecute(StreamlabsEvent event, JsonObject baseObject, boolean bypassRateLimiters) {
+        if (!event.isEventValid(baseObject)) return true;
         event.onExecute(this, baseObject);
         this.eventHistory.store(event, this.pluginConfig, baseObject);
         List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event.getId());
@@ -78,20 +79,23 @@ public class ActionExecutor {
         for (PluginConfig.Action action : actions) {
             try {
                 if (!action.enabled) continue;
-
-                ActionExecutionContext context = new ActionExecutionContext(event, this, this.pluginConfig, action, baseObject);
-                if (event.checkConditions(context)) executeAction(context);
+                this.executeAction(new ActionExecutionContext(event, this, this.pluginConfig, action, bypassRateLimiters, baseObject));
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing action %s for %s:".formatted(action.id, event.getId()), e);
                 successful = false;
             }
         }
 
-        this.updateGoal(new ActionExecutionContext(event, this, this.pluginConfig, null, baseObject));
+        this.updateGoal(new ActionExecutionContext(event, this, this.pluginConfig, null, bypassRateLimiters, baseObject));
         return successful;
     }
 
     public void executeAction(ActionExecutionContext ctx) {
+        this.executeAction(ctx, false);
+    }
+
+    public void executeAction(ActionExecutionContext ctx, boolean ignoreConditions) {
+        if (!ignoreConditions && !ctx.checkConditions()) return;
         String actionId = ctx.action().id;
         Set<UUID> instances = runningActions.containsKey(actionId) ? this.runningActions.get(actionId) : new HashSet<>();
         if (!instances.isEmpty() && ctx.action().instancingBehaviour == ActionInstancingBehaviour.CANCEL_PREVIOUS)
@@ -119,7 +123,7 @@ public class ActionExecutor {
             }
 
             if (!this.activeGoal.add(ctx)) return;
-            this.executeAction(new ActionExecutionContext(null, this, this.pluginConfig, goal, null));
+            this.executeAction(new ActionExecutionContext(null, this, this.pluginConfig, goal, null), true);
             this.stopGoal();
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Unexpected error while updating goal %s on event %s:".formatted(ctx.event().getId(), this.activeGoal), e);

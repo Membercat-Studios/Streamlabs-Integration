@@ -1,8 +1,9 @@
 package me.Domplanto.streamLabs.events.youtube;
 
-import me.Domplanto.streamLabs.action.ActionExecutionContext;
+import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.StreamlabsPlatform;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
 public class YoutubeMembershipReceiveEvent extends StreamlabsEvent {
@@ -14,7 +15,7 @@ public class YoutubeMembershipReceiveEvent extends StreamlabsEvent {
     }
 
     @Override
-    public boolean checkConditions(ActionExecutionContext ctx) {
-        return !ctx.baseObject().has("amount") && super.checkConditions(ctx);
+    public boolean isEventValid(@NotNull JsonObject baseObject) {
+        return !baseObject.has("amount");
     }
 }
