@@ -3,6 +3,7 @@ package me.Domplanto.streamLabs.action.ratelimiter;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -17,8 +18,7 @@ public class IntervalRateLimiter extends RateLimiter {
     private final HashMap<String, Long> timestampedValues = new HashMap<>();
 
     @Override
-    public boolean check(ActionExecutionContext ctx) {
-        String value = getValue(ctx);
+    public boolean check(@NotNull String value, ActionExecutionContext ctx) {
         long currentDate = new Date().getTime();
         Long timestamp = timestampedValues.putIfAbsent(value, currentDate);
         if (timestamp == null) return true;

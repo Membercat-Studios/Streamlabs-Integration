@@ -33,6 +33,7 @@ public class Issues {
     public static ConfigIssue WA1 = new ConfigIssue("WA1", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WA2 = type -> new ConfigIssue("WA2", ConfigIssue.Level.WARNING, text(type));
     public static Function<String, ConfigIssue> WR0 = type -> new ConfigIssue("WR0", ConfigIssue.Level.WARNING, text(type));
+    public static Function<String, ConfigIssue> WRE0 = mode -> new ConfigIssue("WRE0", ConfigIssue.Level.WARNING, text(mode));
     public static BiFunction<String, String, ConfigIssue> WM0 = (type, def) -> new ConfigIssue("WM0", ConfigIssue.Level.WARNING, text(type), text(def));
     public static ConfigIssue WM1 = new ConfigIssue("WM1", ConfigIssue.Level.WARNING, Translations.MINIMESSAGE_LINK);
     public static ConfigIssue WM2 = new ConfigIssue("WM2", ConfigIssue.Level.WARNING);

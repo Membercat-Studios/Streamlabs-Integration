@@ -2,6 +2,7 @@ package me.Domplanto.streamLabs.action.ratelimiter;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.util.ReflectUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,8 +13,8 @@ public class OnceRateLimiter extends RateLimiter {
     private final Set<String> values = new HashSet<>();
 
     @Override
-    public boolean check(ActionExecutionContext ctx) {
-        return this.values.add(getValue(ctx));
+    public boolean check(@NotNull String value, ActionExecutionContext ctx) {
+        return this.values.add(value);
     }
 
     @Override

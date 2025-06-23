@@ -21,7 +21,7 @@ public class RateLimitersSubCommand extends SubCommand {
         return literal("ratelimiters")
                 .then(literal("reset")
                         .executes(ctx -> exceptionHandler(ctx, sender -> {
-                            getPlugin().pluginConfig().fetchRateLimiters().forEach(RateLimiter::reset);
+                            getPlugin().pluginConfig().fetchRateLimiters().forEach(RateLimiter::resetState);
                             Translations.sendPrefixedResponse("streamlabs.commands.rate_limiters.reset", ColorScheme.DONE, sender);
                         })))
                 .build();

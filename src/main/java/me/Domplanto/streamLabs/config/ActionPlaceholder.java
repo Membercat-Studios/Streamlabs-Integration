@@ -80,9 +80,10 @@ public class ActionPlaceholder {
             this.contextDependentFunction = contextDependentValueFunction;
         }
 
-        public static PlaceholderFunction of(@NotNull String staticValue) {
+        public static PlaceholderFunction of(@NotNull Object staticValue) {
             Objects.requireNonNull(staticValue);
-            return new PlaceholderFunction(o -> staticValue, null);
+            String string = staticValue.toString();
+            return new PlaceholderFunction(o -> string, null);
         }
 
         public static PlaceholderFunction of(Function<JsonObject, String> valueFunction) {

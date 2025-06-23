@@ -6,6 +6,7 @@ import me.Domplanto.streamLabs.config.PlaceholderScopeStack;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -28,6 +29,10 @@ public record ActionExecutionContext(
         if (event != null) event.getPlaceholders().forEach(scopeStack::addPlaceholder);
         config.getCustomPlaceholders().forEach(scopeStack::addPlaceholder);
         scopeStack.push("action");
+    }
+
+    public ActionExecutionContext withAction(@NotNull PluginConfig.AbstractAction action) {
+        return new ActionExecutionContext(event(), executor(), config(), action, baseObject());
     }
 
     public boolean shouldKeepExecuting() {

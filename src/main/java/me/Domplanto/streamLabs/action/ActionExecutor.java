@@ -91,7 +91,7 @@ public class ActionExecutor {
         return successful;
     }
 
-    private void executeAction(ActionExecutionContext ctx) {
+    public void executeAction(ActionExecutionContext ctx) {
         String actionId = ctx.action().id;
         Set<UUID> instances = runningActions.containsKey(actionId) ? this.runningActions.get(actionId) : new HashSet<>();
         if (!instances.isEmpty() && ctx.action().instancingBehaviour == ActionInstancingBehaviour.CANCEL_PREVIOUS)
