@@ -54,6 +54,7 @@ public class Issues {
     public static ConfigIssue WE3 = new ConfigIssue("WE3", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WNC0 = extraction -> new ConfigIssue("WNC0", ConfigIssue.Level.WARNING, text(extraction));
     public static ConfigIssue WNC1 = new ConfigIssue("WNC1", ConfigIssue.Level.WARNING);
+    public static Function<String, ConfigIssue> WPS0 = message -> new ConfigIssue("WPS0", ConfigIssue.Level.WARNING, text(message));
     public static ConfigIssue WQ0 = new ConfigIssue("WQ0", ConfigIssue.Level.WARNING);
     public static ConfigIssue WNR0 = new ConfigIssue("WNR0", ConfigIssue.Level.WARNING);
     public static ConfigIssue WNR1 = new ConfigIssue("WNR1", ConfigIssue.Level.WARNING);

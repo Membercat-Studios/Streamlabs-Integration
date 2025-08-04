@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 
 @ReflectUtil.ClassId("command")
 public class CommandQuery extends AbstractQuery<String> {
-    private static final String PLAYER_PLACEHOLDER = "\\{player\\}";
+    public static final String PLAYER_PLACEHOLDER = "\\{player\\}";
     private String command;
     @YamlProperty("output_format")
     private ComponentSerializer<Component, ?, ?> outputSerializer = PlainTextComponentSerializer.plainText();
