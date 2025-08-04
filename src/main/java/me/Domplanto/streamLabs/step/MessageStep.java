@@ -2,6 +2,7 @@ package me.Domplanto.streamLabs.step;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
+import me.Domplanto.streamLabs.action.PlayerSelector;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
@@ -25,7 +26,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
 
@@ -37,6 +37,8 @@ import static net.kyori.adventure.text.Component.translatable;
 public class MessageStep extends AbstractStep<String> {
     private String content;
     private MessageType type;
+    @YamlProperty("audience")
+    private PlayerSelector audience = PlayerSelector.ofAffectedPlayers();
     @YamlProperty("title_fade_in")
     private Duration titleFadeIn = Title.DEFAULT_TIMES.fadeIn();
     @YamlProperty("title_stay")
@@ -83,25 +85,22 @@ public class MessageStep extends AbstractStep<String> {
             else
                 message = parsingError(e);
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             message = parsingError(e);
         }
 
-        Component finalMessage = message;
-        StreamLabs plugin = getPlugin();
-        runOnServerThread(() -> ctx.config().getAffectedPlayers().stream()
-                .map(playerName -> plugin.getServer().getPlayerExact(playerName))
-                .filter(Objects::nonNull)
-                .forEach(player -> {
-                    if (this.type == MessageType.TITLE) {
-                        player.clearTitle();
-                        player.sendTitlePart(TitlePart.TIMES, Title.Times.times(titleFadeIn, titleStay, titleFadeOut));
-                    }
-                    this.type.sendMessage(player, finalMessage);
-                }));
+        final Component finalMessage = message;
+        final StreamLabs plugin = this.getPlugin(); // Prevent an exception by accessing #getPlugin outside the executor function
+        runOnServerThread(() -> audience.resolve(ctx, plugin).forEach(player -> {
+            if (this.type == MessageType.TITLE) {
+                player.clearTitle();
+                player.sendTitlePart(TitlePart.TIMES, Title.Times.times(titleFadeIn, titleStay, titleFadeOut));
+            }
+            this.type.sendMessage(player, finalMessage);
+        }));
     }
 
-    private Component parsingError(Exception e) {
+    private Component parsingError(Throwable e) {
         String location = this.getLocation().toFormattedString();
         StreamLabs.LOGGER.log(Level.WARNING, "Failed to parse message at %s: ".formatted(location), e);
         return translatable()
@@ -109,6 +108,11 @@ public class MessageStep extends AbstractStep<String> {
                 .arguments(text(location))
                 .style(Style.style(ColorScheme.INVALID, TextDecoration.ITALIC))
                 .build();
+    }
+
+    @YamlPropertyCustomDeserializer(propertyName = "audience")
+    public PlayerSelector serializeAudience(String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        return PlayerSelector.parse(input, issueHelper);
     }
 
     @YamlPropertyCustomDeserializer(propertyName = "title_fade_in")
