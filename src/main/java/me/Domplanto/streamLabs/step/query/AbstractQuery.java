@@ -22,7 +22,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
-import java.util.logging.Level;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.WQ0;
 
@@ -44,7 +43,7 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
             String data = Objects.requireNonNullElse(this.runQuery(ctx, plugin), "");
             if (hasOutput()) ctx.scopeStack().addPlaceholder(new QueryPlaceholder(this.output, data));
         } catch (Exception e) {
-            StreamLabs.LOGGER.log(Level.WARNING, "Failed to run query for placeholder {$%s} at %s:".formatted(this.output, this.path.toFormattedString()), e);
+            throw new AbstractStep.ActionFailureException("An unexpected internal error occurred", e);
         }
     }
 
