@@ -30,9 +30,11 @@ public enum NamedCollection {
     ENTITY_TYPE(server -> fromRegistry(RegistryKey.ENTITY_TYPE, EntityType::isSpawnable)),
     LIVING_ENTITY_TYPE(server -> fromRegistry(RegistryKey.ENTITY_TYPE, type -> type.isSpawnable() && type.isAlive())),
     ENCHANTMENT(server -> fromRegistry(RegistryKey.ENCHANTMENT, null)),
+    STATUS_EFFECT(server -> fromRegistry(RegistryKey.MOB_EFFECT, null), NamedCollection::translatable, NamedCollection::keyedId),
     ITEM(server -> fromRegistry(RegistryKey.ITEM, null), NamedCollection::translatable, NamedCollection::keyedId),
     BLOCK(server -> fromRegistry(RegistryKey.BLOCK, null), NamedCollection::translatable, NamedCollection::keyedId),
     NON_AIR_BLOCK(server -> fromRegistry(RegistryKey.BLOCK, Predicate.not(BlockType::isAir)), NamedCollection::translatable, NamedCollection::keyedId),
+    SOLID_BLOCK(server -> fromRegistry(RegistryKey.BLOCK, BlockType::isSolid), NamedCollection::translatable, NamedCollection::keyedId),
     BIOME(server -> fromRegistry(RegistryKey.BIOME, null), NamedCollection::translatable, NamedCollection::keyedId),
     STRUCTURE(server -> fromRegistry(RegistryKey.STRUCTURE, null));
 
