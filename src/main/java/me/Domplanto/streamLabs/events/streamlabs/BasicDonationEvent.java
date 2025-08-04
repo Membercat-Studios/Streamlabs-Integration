@@ -20,7 +20,8 @@ public class BasicDonationEvent extends StreamlabsEvent {
     private void addPlaceholders() {
         this.addPlaceholder("amount", object -> String.valueOf((int) calculateAmount(object)));
         this.addPlaceholder("amount_double", object -> String.format("%.2f", calculateAmount(object)));
-        this.addPlaceholder("amount_formatted", object -> object.has("formattedAmount") ? object.get("formattedAmount").getAsString() : "");
+        this.addPlaceholder("amount_formatted", object -> object.has("formattedAmount") ? object.get("formattedAmount").getAsString()
+                : String.format("%.2f %s", calculateAmount(object), getCurrency(object)));
         this.addPlaceholder("currency", this::getCurrency);
         this.addPlaceholder("message", object -> object.has("message") ? object.get("message").getAsString() : "");
     }
