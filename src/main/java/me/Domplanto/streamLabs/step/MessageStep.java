@@ -10,6 +10,7 @@ import me.Domplanto.streamLabs.util.font.DefaultFontInfo;
 import me.Domplanto.streamLabs.util.yaml.BracketResolver;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -112,27 +113,23 @@ public class MessageStep extends AbstractStep<String> {
 
     @YamlPropertyCustomDeserializer(propertyName = "title_fade_in")
     public Duration serializeFadeIn(Integer input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
-        if (input < 0) {
-            issueHelper.appendAtPath(WM2);
-            return titleFadeIn;
-        }
-        return Duration.ofMillis(input);
+        return serializeDuration(input, this.titleFadeIn, issueHelper);
     }
 
     @YamlPropertyCustomDeserializer(propertyName = "title_stay")
     public Duration serializeStay(Integer input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
-        if (input < 0) {
-            issueHelper.appendAtPath(WM2);
-            return titleStay;
-        }
-        return Duration.ofMillis(input);
+        return serializeDuration(input, this.titleStay, issueHelper);
     }
 
     @YamlPropertyCustomDeserializer(propertyName = "title_fade_out")
     public Duration serializeFadeOut(Integer input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        return serializeDuration(input, this.titleFadeOut, issueHelper);
+    }
+
+    private @NotNull Duration serializeDuration(@NotNull Integer input, @NotNull Duration defaultValue, ConfigIssueHelper issueHelper) {
         if (input < 0) {
             issueHelper.appendAtPath(WM2);
-            return titleFadeOut;
+            return defaultValue;
         }
         return Duration.ofMillis(input);
     }
@@ -141,7 +138,8 @@ public class MessageStep extends AbstractStep<String> {
         MESSAGE(Player::sendMessage),
         MESSAGE_CENTERED((player, message) -> player.sendMessage(DefaultFontInfo.centerMessage(message))),
         TITLE((player, message) -> player.sendTitlePart(TitlePart.TITLE, message)),
-        SUBTITLE((player, message) -> player.sendTitlePart(TitlePart.SUBTITLE, message));
+        SUBTITLE((player, message) -> player.sendTitlePart(TitlePart.SUBTITLE, message)),
+        ACTIONBAR(Audience::sendActionBar);
 
         private final BiConsumer<Player, Component> action;
 
