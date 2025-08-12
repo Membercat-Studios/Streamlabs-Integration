@@ -14,10 +14,7 @@ import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
@@ -30,6 +27,7 @@ public class ActionExecutor {
     private final EventHistory eventHistory;
     private final StreamLabs plugin;
     private final ConcurrentMap<String, Set<UUID>> runningActions;
+    private final ConcurrentMap<String, Stack<ActionExecutionContext>> queuedActions;
     @Nullable
     private DonationGoal activeGoal;
 
@@ -38,6 +36,7 @@ public class ActionExecutor {
         this.plugin = plugin;
         this.eventHistory = new EventHistory();
         this.runningActions = new ConcurrentHashMap<>();
+        this.queuedActions = new ConcurrentHashMap<>();
     }
 
     public void parseAndExecute(JsonElement data) throws SocketSerializerException {
@@ -96,13 +95,19 @@ public class ActionExecutor {
     public void executeAction(ActionExecutionContext ctx, boolean ignoreConditions) {
         if (!ignoreConditions && !ctx.checkConditions()) return;
         String actionId = ctx.action().id;
-        Set<UUID> instances = runningActions.containsKey(actionId) ? this.runningActions.get(actionId) : new HashSet<>();
-        if (!instances.isEmpty() && ctx.action().instancingBehaviour == ActionInstancingBehaviour.CANCEL_PREVIOUS)
-            instances.clear();
+        Set<UUID> instances = runningActions.computeIfAbsent(actionId, s -> new HashSet<>());
+        if (!instances.isEmpty()) switch (ctx.action().instancingBehaviour) {
+            case CANCEL_PREVIOUS -> instances.clear();
+            case QUEUE -> {
+                Stack<ActionExecutionContext> queue = this.queuedActions.computeIfAbsent(actionId, s -> new Stack<>());
+                queue.add(ctx);
+                StreamLabs.LOGGER.info("Queueing new execution of action %s since it is already running. Queue size is now: %s".formatted(actionId, queue.size()));
+                return;
+            }
+        }
 
         UUID taskUUID = UUID.randomUUID();
         instances.add(taskUUID);
-        this.runningActions.put(actionId, instances);
         ctx.setKeepExecutingCheck(context -> runningActions.get(actionId).contains(taskUUID) && context.shouldExecute().get());
         Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
             ctx.runSteps(ctx.action(), plugin);
@@ -111,6 +116,14 @@ public class ActionExecutor {
             Set<UUID> instanceSet = this.runningActions.get(actionId);
             instanceSet.remove(taskUUID);
             if (instanceSet.isEmpty()) this.runningActions.remove(actionId);
+
+            if (queuedActions.containsKey(actionId)) {
+                Stack<ActionExecutionContext> queue = queuedActions.get(actionId);
+                ActionExecutionContext queuedCtx = queue.pop();
+                if (queue.isEmpty()) queuedActions.remove(actionId);
+                StreamLabs.LOGGER.info("Action %s has finished, now executing queued runs. Queue size is now: %s".formatted(actionId, queue.size()));
+                this.executeAction(queuedCtx, ignoreConditions);
+            }
         });
     }
 
@@ -158,7 +171,8 @@ public class ActionExecutor {
 
     public enum ActionInstancingBehaviour {
         CANCEL_PREVIOUS,
-        RUN_IN_PARALLEL;
+        RUN_IN_PARALLEL,
+        QUEUE;
 
         public static @NotNull ActionExecutor.ActionInstancingBehaviour fromString(@NotNull String s, ConfigIssueHelper issueHelper) {
             try {

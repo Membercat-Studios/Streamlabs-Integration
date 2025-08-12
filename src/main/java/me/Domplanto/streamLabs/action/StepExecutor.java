@@ -17,8 +17,8 @@ public interface StepExecutor {
     default void runSteps(ActionExecutionContext ctx, StreamLabs plugin) {
         int id = 0;
         for (StepBase<?> step : this.getSteps(ctx)) {
-            if (!ctx.shouldKeepExecuting() || step == null) return;
             try {
+                if (!ctx.shouldKeepExecuting() || step == null) return;
                 step.execute(ctx, plugin);
             } catch (AbstractStep.ActionFailureException e) {
                 ctx.markDirty();
