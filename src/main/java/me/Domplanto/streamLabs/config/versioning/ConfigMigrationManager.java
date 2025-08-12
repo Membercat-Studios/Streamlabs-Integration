@@ -12,7 +12,7 @@ import java.util.Comparator;
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 public class ConfigMigrationManager {
-    private static final long[] VERSIONS = {0, 100};
+    private static final long[] VERSIONS = {0, 100, 101};
     private static final long CONFIG_VERSION = VERSIONS[VERSIONS.length - 1];
     private final YamlConfiguration config;
 
