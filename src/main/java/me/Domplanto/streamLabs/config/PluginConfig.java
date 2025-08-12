@@ -47,9 +47,9 @@ public class PluginConfig extends ConfigRoot {
     public void customLoad(@NotNull FileConfiguration config) {
     }
 
-    public List<Action> getActionsForEvent(String eventType) {
+    public List<Action> getActionsForEvent(@NotNull StreamlabsEvent event) {
         return actions.values().stream()
-                .filter(action -> action.eventType.equals(eventType))
+                .filter(action -> action.shouldHandle(event))
                 .toList();
     }
 
@@ -137,20 +137,31 @@ public class PluginConfig extends ConfigRoot {
     public static class Action extends AbstractAction {
         private static final Set<String> ACTION_IDS = StreamLabs.getCachedEventObjects().stream()
                 .map(StreamlabsEvent::getId).collect(Collectors.toSet());
-        @YamlProperty("action")
-        public String eventType = "unknown";
+        @YamlProperty("event")
+        private Set<String> eventTypes = Set.of();
         @YamlProperty("enabled")
-        public boolean enabled = true;
+        private boolean enabled = true;
 
-        @YamlPropertyIssueAssigner(propertyName = "action")
+        @YamlPropertyCustomDeserializer(propertyName = "event")
+        public Set<String> deserializeEventTypes(@NotNull String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+            String[] data = input.split(",");
+            return Arrays.stream(data)
+                    .map(String::strip)
+                    .distinct()
+                    .filter(type -> {
+                        boolean filter = ACTION_IDS.contains(type);
+                        if (!filter) issueHelper.appendAtPath(WA0.apply(type));
+                        return filter;
+                    }).collect(Collectors.toSet());
+        }
+
+        @YamlPropertyIssueAssigner(propertyName = "event")
         public void assignToAction(ConfigIssueHelper issueHelper, boolean actuallySet) {
-            if (!actuallySet) {
-                issueHelper.appendAtPath(WA1);
-                return;
-            }
+            if (!actuallySet) issueHelper.appendAtPath(WA1);
+        }
 
-            if (!ACTION_IDS.contains(eventType))
-                issueHelper.appendAtPath(WA0.apply(eventType));
+        public boolean shouldHandle(@NotNull StreamlabsEvent event) {
+            return this.enabled && this.eventTypes.contains(event.getId());
         }
     }
 

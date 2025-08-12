@@ -72,11 +72,10 @@ public class ActionExecutor {
         if (!event.isEventValid(baseObject)) return true;
         event.onExecute(this, baseObject);
         this.eventHistory.store(event, this.pluginConfig, baseObject);
-        List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event.getId());
+        List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event);
         boolean successful = true;
         for (PluginConfig.Action action : actions) {
             try {
-                if (!action.enabled) continue;
                 this.executeAction(new ActionExecutionContext(event, this, this.pluginConfig, action, bypassRateLimiters, baseObject));
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing action %s for %s:".formatted(action.id, event.getId()), e);
