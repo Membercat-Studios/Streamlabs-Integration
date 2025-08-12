@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'me.Domplanto'
-version = '0.2.0'
+version = '0.2.1'
 description = 'A Minecraft plugin that allows Youtube/Twitch donations to trigger events in your Minecraft world using the Streamlabs API!'
 
 java.sourceCompatibility = JavaVersion.VERSION_21
