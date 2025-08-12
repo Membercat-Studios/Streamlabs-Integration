@@ -110,13 +110,13 @@ public class TestSubCommand extends SubCommand {
 
         @Override
         public <S> @NotNull CompletableFuture<Suggestions> listSuggestions(CommandContext<S> ctx, @NotNull SuggestionsBuilder builder) {
-            ParsedCommandNode<?> lastNode = ctx.getChild().getNodes().getLast();
+            ParsedCommandNode<?> lastNode = ctx.getNodes().getLast();
             String input = lastNode.getNode().getName().equals(ownName) ? lastNode.getRange().get(ctx.getInput()) : "";
             int elementStart = input.lastIndexOf(' ') + 1;
             String element = input.substring(elementStart);
             if (element.contains("=")) return builder.buildFuture();
 
-            StreamlabsEvent event = EventArgumentType.getEvent(ctx.getChild(), "event");
+            StreamlabsEvent event = EventArgumentType.getEvent(ctx, "event");
             event.getPlaceholders()
                     .stream().map(ActionPlaceholder::name)
                     .filter(name -> !name.startsWith("_") || element.startsWith("_"))
