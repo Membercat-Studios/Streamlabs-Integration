@@ -14,12 +14,11 @@ import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.papi.StreamlabsExpansion;
 import me.Domplanto.streamLabs.socket.SocketEventListener;
 import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
-import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
 import me.Domplanto.streamLabs.util.components.Translations;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.TranslationRegistry;
+import net.kyori.adventure.translation.TranslationStore;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -30,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -53,9 +53,6 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
 
     @Override
     public void onEnable() {
-        if (!this.runPaperCheck())
-            return;
-
         saveDefaultConfig();
         LOGGER = getLogger();
         this.initializeResourceBundles();
@@ -97,13 +94,13 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
     }
 
     private void initializeResourceBundles() {
-        TranslationRegistry registry = TranslationRegistry.create(Key.key(NAMESPACE, DEFAULT_BUNDLE_ID));
+        TranslationStore.StringBased<MessageFormat> store = TranslationStore.messageFormat(Key.key(NAMESPACE, DEFAULT_BUNDLE_ID));
         for (Locale locale : SUPPORTED_LOCALES) {
             ResourceBundle bundle = ResourceBundle.getBundle("%s.%s".formatted(NAMESPACE, DEFAULT_BUNDLE_ID), locale, UTF8ResourceBundleControl.get());
-            registry.registerAll(locale, bundle, true);
+            store.registerAll(locale, bundle, true);
         }
 
-        GlobalTranslator.translator().addSource(registry);
+        GlobalTranslator.translator().addSource(store);
     }
 
     private void registerCommandLoadHandler() {
@@ -117,14 +114,6 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
                 getLogger().log(Level.SEVERE, "Failed to register brigadier commands, please report this error to the developers at %s".formatted(Translations.ISSUES_URL), e);
             }
         });
-    }
-
-    private boolean runPaperCheck() {
-        if (ReflectUtil.checkForPaper()) return true;
-
-        getLogger().log(Level.SEVERE, "Streamlabs Integration was loaded on a non-paper server, shutting down! This plugin uses part of the paper API, which is not available in the current server software, meaning it won't work without paper and just cause a lot of errors. To prevent this, the plugin is automatically disabling itself.");
-        getServer().getPluginManager().disablePlugin(this);
-        return false;
     }
 
     public void printIssues(ConfigIssueHelper.IssueList issues, CommandSender sender) {

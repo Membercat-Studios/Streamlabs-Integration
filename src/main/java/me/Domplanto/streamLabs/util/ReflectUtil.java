@@ -70,15 +70,6 @@ public class ReflectUtil {
         }
     }
 
-    public static boolean checkForPaper() {
-        try {
-            Class.forName("io.papermc.paper.plugin.loader.PluginLoader");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
     @Retention(RetentionPolicy.RUNTIME)
     public @interface ClassId {
         String value();
