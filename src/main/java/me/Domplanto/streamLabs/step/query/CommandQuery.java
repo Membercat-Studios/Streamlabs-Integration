@@ -1,5 +1,6 @@
 package me.Domplanto.streamLabs.step.query;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.action.PlayerSelector;
@@ -15,6 +16,7 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -28,6 +30,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 @ReflectUtil.ClassId("command")
@@ -69,7 +72,7 @@ public class CommandQuery extends AbstractQuery<String> {
 
     private void dispatch(@NotNull String command, ActionExecutionContext ctx, StreamLabs plugin) {
         try {
-            runOnServerThread(plugin, this.timeout, () -> Bukkit.dispatchCommand(getSender(ctx, plugin), command));
+            runOnServerThread(plugin, this.timeout, () -> actuallyDispatchSafe(getSender(ctx, plugin), command));
         } catch (TimeoutException e) {
             StreamLabs.LOGGER.warning("Timeout while running command at %s, try manually specifying a higher timeout value!".formatted(location().toFormattedString()));
         }
@@ -78,7 +81,7 @@ public class CommandQuery extends AbstractQuery<String> {
     private @Nullable String dispatchWithOutput(@NotNull String command, StreamLabs plugin) {
         CompletableFuture<Component> result = new CompletableFuture<>();
         CommandSender sender = Bukkit.createCommandSender(result::complete);
-        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(sender, command));
+        Bukkit.getScheduler().runTask(plugin, () -> actuallyDispatchSafe(sender, command));
 
         Component output;
         try {
@@ -89,6 +92,18 @@ public class CommandQuery extends AbstractQuery<String> {
             throw new RuntimeException("Failed to execute command", e);
         }
         return outputSerializer.serialize(output).toString();
+    }
+
+    private void actuallyDispatchSafe(@NotNull CommandSender sender, @NotNull String command) {
+        try {
+            Bukkit.dispatchCommand(sender, command);
+        } catch (CommandException e) {
+            if (e.getCause() instanceof CommandSyntaxException se) {
+                StreamLabs.LOGGER.warning("Command at %s failed to execute due to syntax errors: %s".formatted(location().toFormattedString(), se.getMessage()));
+                return;
+            }
+            StreamLabs.LOGGER.log(Level.SEVERE, "Failed to execute command at %s due to internal server errors:".formatted(location().toFormattedString()), e);
+        }
     }
 
     @YamlPropertyCustomDeserializer(propertyName = "output_format")
