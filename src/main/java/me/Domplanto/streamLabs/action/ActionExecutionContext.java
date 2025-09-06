@@ -33,7 +33,7 @@ public record ActionExecutionContext(
     public ActionExecutionContext(@Nullable StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, boolean bypassRateLimiters, JsonObject jsonObject) {
         this(event, executor, config, action, new PlaceholderScopeStack(), bypassRateLimiters, new AtomicBoolean(), new AtomicReference<>(), jsonObject, new AtomicBoolean(true));
         if (event != null) event.getPlaceholders().forEach(scopeStack::addPlaceholder);
-        config.getCustomPlaceholders().forEach(scopeStack::addPlaceholder);
+        if (config != null) config.getCustomPlaceholders().forEach(scopeStack::addPlaceholder);
         scopeStack.push("action");
     }
 
