@@ -2,7 +2,8 @@ package me.Domplanto.streamLabs.step.query;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.action.NamedCollection;
+import me.Domplanto.streamLabs.action.collection.NamedCollection;
+import me.Domplanto.streamLabs.action.collection.NamedCollectionInstance;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.bukkit.Server;
@@ -14,12 +15,12 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 @ReflectUtil.ClassId("extract")
-public class ExtractQuery extends TransformationQuery<NamedCollection> {
+public class ExtractQuery extends TransformationQuery<NamedCollectionInstance<?>> {
     private static final long TIMEOUT = 10000;
-    private NamedCollection extractCollection;
+    private NamedCollectionInstance<?> extractCollection;
 
     @Override
-    public void load(@NotNull NamedCollection data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+    public void load(@NotNull NamedCollectionInstance<?> data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         super.load(data, issueHelper, parent);
         this.extractCollection = data;
     }
@@ -36,18 +37,20 @@ public class ExtractQuery extends TransformationQuery<NamedCollection> {
 
     private String extract(String input, Server server) {
         String lowerInput = input.toLowerCase();
-        return this.extractCollection.loadCollection(server)
-                .filter(e -> lowerInput.contains(extractCollection.getName(e).toLowerCase()))
-                .findFirst().map(extractCollection::getId).orElse(null);
+        //noinspection unchecked
+        NamedCollection<Object> collection = (NamedCollection<Object>) this.extractCollection.collection();
+        return this.extractCollection.getElements(server)
+                .filter(e -> lowerInput.contains(collection.getElementDisplayNameString(e).toLowerCase()))
+                .findFirst().map(collection::getElementId).orElse(null);
     }
 
     @Override
-    public @NotNull Set<Serializer<?, NamedCollection>> getOptionalDataSerializers() {
-        return Set.of(NamedCollection.SERIALIZER);
+    public @NotNull Set<Serializer<?, NamedCollectionInstance<?>>> getOptionalDataSerializers() {
+        return Set.of(NamedCollectionInstance.SERIALIZER);
     }
 
     @Override
-    public @NotNull Class<NamedCollection> getExpectedDataType() {
-        return NamedCollection.class;
+    public @NotNull Class<NamedCollectionInstance<?>> getExpectedDataType() {
+        return NamedCollectionInstance.CLS;
     }
 }

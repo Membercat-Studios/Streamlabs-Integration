@@ -1,14 +1,16 @@
 package me.Domplanto.streamLabs.step;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.action.NamedCollection;
 import me.Domplanto.streamLabs.action.StepExecutor;
+import me.Domplanto.streamLabs.action.collection.NamedCollection;
+import me.Domplanto.streamLabs.action.collection.NamedCollectionInstance;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.step.query.AbstractQuery;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -20,13 +22,14 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Supplier;
 
-import static me.Domplanto.streamLabs.config.issue.Issues.*;
+import static me.Domplanto.streamLabs.config.issue.Issues.WBS0;
+import static me.Domplanto.streamLabs.config.issue.Issues.WNC1;
 
 @ReflectUtil.ClassId("bulk_random_elements")
 public class BulkRandomElements extends RepeatStep {
     private static final int MAX_TRIES = 10000;
     @YamlProperty("collection")
-    private NamedCollection collection = NamedCollection.NONE;
+    private NamedCollectionInstance<?> collection = NamedCollectionInstance.EMPTY_INSTANCE;
     @YamlProperty("selection_behavior")
     private SelectionBehavior selectionBehavior = SelectionBehavior.NORMAL;
     @YamlProperty("seed")
@@ -47,7 +50,7 @@ public class BulkRandomElements extends RepeatStep {
     protected void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
         this.selectedElements.clear();
         this.step = 0;
-        this.elements = collection.loadCollection(getPlugin().getServer()).toList();
+        this.elements = collection.getElements(getPlugin().getServer()).toList();
         if (elements.isEmpty()) return;
 
         ctx.scopeStack().push("bulk random element loop at %s".formatted(getLocation().toFormattedString()));
@@ -58,6 +61,8 @@ public class BulkRandomElements extends RepeatStep {
 
     @Override
     public List<? extends StepBase<?>> steps() {
+        //noinspection unchecked
+        NamedCollection<Object> namedCollection = (NamedCollection<Object>) collection.collection();
         return List.of(StepBase.createExecuting((ctx, plugin) -> {
             if (elements == null) return;
             boolean overflow = this.step++ >= elements.size();
@@ -68,15 +73,17 @@ public class BulkRandomElements extends RepeatStep {
             if (o == null) return;
             this.selectedElements.add(o);
 
-            ctx.scopeStack().addPlaceholder(new AbstractQuery.QueryPlaceholder("element_id", collection.getId(o)));
-            ctx.scopeStack().addPlaceholder(new AbstractQuery.QueryPlaceholder("element_name", collection.getName(o)));
+            String mm = MiniMessage.miniMessage().serialize(namedCollection.getElementDisplayNameSafe(o));
+            ctx.scopeStack().addPlaceholder(new AbstractQuery.QueryPlaceholder("element_id", namedCollection.getElementId(o)));
+            ctx.scopeStack().addPlaceholder(new AbstractQuery.QueryPlaceholder("element_name", namedCollection.getElementDisplayNameString(o)));
+            ctx.scopeStack().addPlaceholder(new AbstractQuery.QueryPlaceholder("element_name_formatted", mm));
             ctx.runSteps(StepExecutor.fromSteps(this.getName(), super.steps()), getPlugin());
         }));
     }
 
     @YamlPropertyCustomDeserializer(propertyName = "collection")
-    public @NotNull NamedCollection serializeCollection(@NotNull String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
-        return Objects.requireNonNull(NamedCollection.SERIALIZER.serialize(input, issueHelper));
+    public @NotNull NamedCollectionInstance<?> serializeCollection(@NotNull String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        return Objects.requireNonNull(NamedCollectionInstance.SERIALIZER.serialize(input, issueHelper));
     }
 
     @YamlPropertyCustomDeserializer(propertyName = "selection_behavior")

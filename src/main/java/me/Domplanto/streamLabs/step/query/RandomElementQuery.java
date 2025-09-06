@@ -2,7 +2,8 @@ package me.Domplanto.streamLabs.step.query;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.action.NamedCollection;
+import me.Domplanto.streamLabs.action.collection.NamedCollection;
+import me.Domplanto.streamLabs.action.collection.NamedCollectionInstance;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
@@ -15,14 +16,14 @@ import java.util.Random;
 import java.util.Set;
 
 @ReflectUtil.ClassId("random_element")
-public class RandomElementQuery extends AbstractQuery<NamedCollection> {
-    private NamedCollection collection;
+public class RandomElementQuery extends AbstractQuery<NamedCollectionInstance<?>> {
+    private NamedCollectionInstance<?> collection;
     @YamlProperty("seed")
     private long seed;
     private Random random;
 
     @Override
-    public void load(@NotNull NamedCollection data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+    public void load(@NotNull NamedCollectionInstance<?> data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         super.load(data, issueHelper, parent);
         this.collection = data;
         this.random = seed != 0 ? new Random(seed) : new Random();
@@ -30,20 +31,22 @@ public class RandomElementQuery extends AbstractQuery<NamedCollection> {
 
     @Override
     protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
-        List<?> elements = collection.loadCollection(plugin.getServer()).toList();
+        //noinspection unchecked
+        NamedCollection<Object> namedCollection = (NamedCollection<Object>) collection.collection();
+        List<?> elements = collection.getElements(plugin.getServer()).toList();
         if (elements.isEmpty()) return null;
 
         int idx = random.nextInt(0, elements.size());
-        return collection.getId(elements.get(idx));
+        return namedCollection.getElementId(elements.get(idx));
     }
 
     @Override
-    public @NotNull Set<Serializer<?, NamedCollection>> getOptionalDataSerializers() {
-        return Set.of(NamedCollection.SERIALIZER);
+    public @NotNull Set<Serializer<?, NamedCollectionInstance<?>>> getOptionalDataSerializers() {
+        return Set.of(NamedCollectionInstance.SERIALIZER);
     }
 
     @Override
-    public @NotNull Class<NamedCollection> getExpectedDataType() {
-        return NamedCollection.class;
+    public @NotNull Class<NamedCollectionInstance<?>> getExpectedDataType() {
+        return NamedCollectionInstance.CLS;
     }
 }
