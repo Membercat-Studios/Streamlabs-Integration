@@ -8,6 +8,7 @@ import me.Domplanto.streamLabs.util.yaml.YamlPropertyObject;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -40,6 +41,18 @@ public class Condition implements ConditionBase {
         } catch (NumberFormatException e) {
             return invert != this.operator.check(e1, e2);
         }
+    }
+
+    public static @NotNull Condition ofStaticEquals(@NotNull ActionPlaceholder.PlaceholderFunction e1, @NotNull String staticValue) {
+        return Condition.of(e1, new Operator.Equality(), ActionPlaceholder.PlaceholderFunction.of(staticValue));
+    }
+
+    public static @NotNull Condition of(ActionPlaceholder.PlaceholderFunction e1, Operator operator, ActionPlaceholder.PlaceholderFunction e2) {
+        return new Condition(operator, false, e1, e2);
+    }
+
+    public static @NotNull Condition invert(@NotNull Condition condition) {
+        return new Condition(condition.operator, !condition.invert, condition.element1, condition.element2);
     }
 
     public static List<ConditionBase> parseConditions(List<?> rawConditions, ConfigIssueHelper issueHelper) {
