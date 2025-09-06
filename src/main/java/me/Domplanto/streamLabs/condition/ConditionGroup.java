@@ -52,6 +52,13 @@ public class ConditionGroup implements ConditionBase, YamlPropertyObject {
                 && (donationConditions.isEmpty() || (ctx.isDonation() && Mode.AND.check(ctx, this.donationConditions)));
     }
 
+    public static @NotNull ConditionGroup of(Mode mode, @NotNull ConditionBase... condition) {
+        ConditionGroup group = new ConditionGroup();
+        group.groupMode = mode;
+        group.conditions = List.of(condition);
+        return group;
+    }
+
     public enum Mode {
         AND((ctx, conditionList) -> {
             for (ConditionBase condition : conditionList)
