@@ -6,16 +6,4 @@ run
 .gradle
 build
 
-# Minecraft server directories
-.cache
-cache
-config
-world
-world_nether
-world_the_end
-plugins
-logs
-libraries
-versions
-
 docker-compose.yml
