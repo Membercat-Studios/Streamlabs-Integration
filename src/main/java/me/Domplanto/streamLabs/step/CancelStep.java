@@ -1,7 +1,7 @@
 package me.Domplanto.streamLabs.step;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.bukkit.configuration.ConfigurationSection;
@@ -33,7 +33,7 @@ public class CancelStep extends AbstractStep<String> {
 
     @Override
     protected void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
-        boolean execute = Boolean.parseBoolean(ActionPlaceholder.replacePlaceholders(this.enable, ctx));
+        boolean execute = Boolean.parseBoolean(AbstractPlaceholder.replacePlaceholders(this.enable, ctx));
         if (execute) ctx.stop();
     }
 }

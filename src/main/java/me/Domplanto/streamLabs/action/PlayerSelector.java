@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.action;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
 import me.Domplanto.streamLabs.step.query.CommandQuery;
@@ -50,7 +50,7 @@ public class PlayerSelector {
                     .filter(Objects::nonNull).toList();
 
             if (this.selector == null) return List.of();
-            String selector = containsPlaceholders ? ActionPlaceholder.replacePlaceholders(this.selector, ctx) : this.selector;
+            String selector = containsPlaceholders ? AbstractPlaceholder.replacePlaceholders(this.selector, ctx) : this.selector;
             AtomicInteger invalidEntities = new AtomicInteger();
             List<Player> results = List.of();
             try {

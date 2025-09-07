@@ -3,7 +3,7 @@ package me.Domplanto.streamLabs.step;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.action.PlayerSelector;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.components.ColorScheme;
@@ -71,7 +71,7 @@ public class MessageStep extends AbstractStep<String> {
 
     @Override
     public void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
-        String content = ActionPlaceholder.replacePlaceholders(this.content, ctx);
+        String content = AbstractPlaceholder.replacePlaceholders(this.content, ctx);
         //noinspection deprecation
         content = ChatColor.translateAlternateColorCodes('&', content);
         Component message;

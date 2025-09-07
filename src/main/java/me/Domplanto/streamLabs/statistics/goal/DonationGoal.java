@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.statistics.goal;
 
 import com.fathzer.soft.javaluator.DoubleEvaluator;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
@@ -17,7 +17,7 @@ public class DonationGoal extends PluginConfig.AbstractAction {
 
     public boolean add(ActionExecutionContext ctx) {
         if (!this.active || !this.check(ctx)) return false;
-        String expression = ActionPlaceholder.replacePlaceholders(this.addAmount, ctx);
+        String expression = AbstractPlaceholder.replacePlaceholders(this.addAmount, ctx);
         this.value += new DoubleEvaluator().evaluate(expression);
 
         return this.value >= this.max;

@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.step;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
@@ -32,7 +32,7 @@ public class RepeatStep extends AbstractLogicStep {
 
     @Override
     public @NotNull Collection<? extends StepBase<?>> getSteps(ActionExecutionContext ctx) {
-        String parsed = ActionPlaceholder.replacePlaceholders(this.amount, ctx);
+        String parsed = AbstractPlaceholder.replacePlaceholders(this.amount, ctx);
         int amount;
         try {
             amount = Integer.parseInt(parsed);

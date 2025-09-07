@@ -13,7 +13,7 @@ public class PlaceholderScopeStack extends Stack<PlaceholderScopeStack.Entry> {
     }
 
     public void push(@Nullable String scopeName) {
-        Set<ActionPlaceholder> placeholders = !isEmpty() ? peek().placeholders() : Set.of();
+        Set<AbstractPlaceholder> placeholders = !isEmpty() ? peek().placeholders() : Set.of();
         this.push(new Entry(scopeName, new HashSet<>(placeholders)));
     }
 
@@ -21,20 +21,20 @@ public class PlaceholderScopeStack extends Stack<PlaceholderScopeStack.Entry> {
         this.addPlaceholder(new ActionPlaceholder(name, function));
     }
 
-    public void addPlaceholder(@NotNull ActionPlaceholder placeholder) {
+    public void addPlaceholder(@NotNull AbstractPlaceholder placeholder) {
         if (this.isEmpty()) return;
-        Set<ActionPlaceholder> placeholders = this.peek().placeholders();
+        Set<AbstractPlaceholder> placeholders = this.peek().placeholders();
         placeholders.removeIf(placeholder::equals);
         placeholders.add(placeholder);
     }
 
-    public @NotNull Set<ActionPlaceholder> getPlaceholders() {
+    public @NotNull Set<AbstractPlaceholder> getPlaceholders() {
         return !empty() ? peek().placeholders() : Set.of();
     }
 
     public record Entry(
             @Nullable String scopeName,
-            Set<ActionPlaceholder> placeholders
+            Set<AbstractPlaceholder> placeholders
     ) {
     }
 }

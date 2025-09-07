@@ -42,12 +42,12 @@ public abstract class StreamlabsEvent {
 
     public void addPlaceholder(String name, Function<JsonObject, String> valueFunction) {
         this.placeholders.removeIf(placeholder -> placeholder.name().equals(name));
-        this.placeholders.add(new ActionPlaceholder(name, ActionPlaceholder.PlaceholderFunction.of(valueFunction)));
+        this.placeholders.add(new ActionPlaceholder(name, ActionPlaceholder.PlaceholderFunction.ofObj(valueFunction)));
     }
 
     public void addContextPlaceholder(String name, Function<ActionExecutionContext, String> valueFunction) {
         this.placeholders.removeIf(placeholder -> placeholder.name().equals(name));
-        this.placeholders.add(new ActionPlaceholder(name, ActionPlaceholder.PlaceholderFunction.of((obj, ctx) -> valueFunction.apply(ctx))));
+        this.placeholders.add(new ActionPlaceholder(name, ActionPlaceholder.PlaceholderFunction.of(valueFunction)));
     }
 
     @NotNull

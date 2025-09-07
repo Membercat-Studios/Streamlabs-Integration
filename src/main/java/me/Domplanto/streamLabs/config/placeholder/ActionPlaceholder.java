@@ -1,50 +1,20 @@
 package me.Domplanto.streamLabs.config.placeholder;
 
 import com.google.gson.JsonObject;
-import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.clip.placeholderapi.PlaceholderAPI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
-public class ActionPlaceholder {
-    private final @NotNull String name;
+public class ActionPlaceholder extends AbstractPlaceholder {
     private final PlaceholderFunction function;
 
     public ActionPlaceholder(@NotNull String name, PlaceholderFunction function) {
-        this.name = Objects.requireNonNull(name);
+        super(name);
         this.function = function;
-    }
-
-    public static String replacePlaceholders(String originalString, ActionExecutionContext ctx) {
-        return replacePlaceholders(originalString, ctx, 0);
-    }
-
-    private static String replacePlaceholders(String originalString, ActionExecutionContext ctx, int plExecutionCount) {
-        boolean containsPlaceholders = false;
-        for (ActionPlaceholder placeholder : ctx.scopeStack().getPlaceholders()) {
-            String format = placeholder.getFormat();
-            if (!originalString.contains(format)) continue;
-
-            containsPlaceholders = true;
-            originalString = originalString.replace(format, placeholder.function().execute(ctx.baseObject(), ctx));
-        }
-
-        if (StreamLabs.isPapiInstalled())
-            originalString = PlaceholderAPI.setPlaceholders(null, originalString);
-        plExecutionCount++;
-        if (plExecutionCount > 1000)
-            return "(Infinite placeholder loop detected)";
-        if (containsPlaceholders)
-            originalString = replacePlaceholders(originalString, ctx, plExecutionCount);
-
-        return originalString;
     }
 
     @Override
@@ -58,56 +28,46 @@ public class ActionPlaceholder {
         return "{%s}".formatted(name());
     }
 
-    public @NotNull String name() {
-        return name;
-    }
-
     public PlaceholderFunction function() {
         return function;
     }
 
+    @Override
+    public boolean isPresentIn(@NotNull String input) {
+        return input.contains(getFormat());
+    }
+
+    @Override
+    public @NotNull String replaceAll(@NotNull String input, ActionExecutionContext ctx) {
+        return input.replaceAll(Pattern.quote(getFormat()), function().execute(ctx));
+    }
+
+    @SuppressWarnings("ClassCanBeRecord")
     public static class PlaceholderFunction {
-        @Nullable
-        private final Function<JsonObject, String> valueFunction;
-        @Nullable
-        private final BiFunction<JsonObject, ActionExecutionContext, String> contextDependentFunction;
+        @NotNull
+        private final Function<ActionExecutionContext, String> valueFunction;
 
-        private PlaceholderFunction(@Nullable Function<JsonObject, String> valueFunction, @Nullable BiFunction<JsonObject, ActionExecutionContext, String> contextDependentValueFunction) {
-            if (valueFunction == null && contextDependentValueFunction == null)
-                throw new NullPointerException();
-
+        private PlaceholderFunction(@NotNull Function<ActionExecutionContext, String> valueFunction) {
             this.valueFunction = valueFunction;
-            this.contextDependentFunction = contextDependentValueFunction;
         }
 
         public static PlaceholderFunction of(@NotNull Object staticValue) {
-            Objects.requireNonNull(staticValue);
-            String string = staticValue.toString();
-            return new PlaceholderFunction(o -> string, null);
+            String string = Objects.requireNonNull(staticValue).toString();
+            return new PlaceholderFunction(ctx -> string);
         }
 
-        public static PlaceholderFunction of(Function<JsonObject, String> valueFunction) {
-            return new PlaceholderFunction(Objects.requireNonNull(valueFunction), null);
+        public static PlaceholderFunction ofObj(Function<JsonObject, String> valueFunction) {
+            Objects.requireNonNull(valueFunction);
+            return new PlaceholderFunction(ctx -> valueFunction.apply(ctx.baseObject()));
         }
 
-        public static PlaceholderFunction of(BiFunction<JsonObject, ActionExecutionContext, String> valueFunction) {
-            return new PlaceholderFunction(null, Objects.requireNonNull(valueFunction));
+        public static PlaceholderFunction of(Function<ActionExecutionContext, String> valueFunction) {
+            return new PlaceholderFunction(Objects.requireNonNull(valueFunction));
         }
 
-        public String execute(@NotNull JsonObject object, @Nullable ActionExecutionContext context) {
-            try {
-                if (contextDependentFunction == null && valueFunction == null)
-                    throw new NullPointerException();
-
-                String result = contextDependentFunction != null ? contextDependentFunction.apply(object, context)
-                        : valueFunction.apply(object);
-                return result != null ? result : "(Error while resolving placeholder)";
-            } catch (Exception e) {
-                StringWriter writer = new StringWriter();
-                e.printStackTrace(new PrintWriter(writer));
-                StreamLabs.LOGGER.warning("Failed to resolve placeholder:%s\n%s".formatted(e.toString(), writer.toString()));
-                return "(Unexpected error while resolving placeholder, check the logs for more info)";
-            }
+        public String execute(@Nullable ActionExecutionContext context) {
+            String result = valueFunction.apply(context);
+            return Objects.requireNonNullElse(result, "(Error while resolving placeholder)");
         }
     }
 }

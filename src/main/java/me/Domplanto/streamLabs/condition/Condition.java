@@ -1,6 +1,7 @@
 package me.Domplanto.streamLabs.condition;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
@@ -34,8 +35,8 @@ public class Condition implements ConditionBase {
 
     @Override
     public boolean check(ActionExecutionContext ctx) {
-        String e1 = element1.execute(ctx.baseObject(), ctx);
-        String e2 = element2.execute(ctx.baseObject(), ctx);
+        String e1 = element1.execute(ctx);
+        String e2 = element2.execute(ctx);
         try {
             return invert != this.operator.check(Double.parseDouble(e1), Double.parseDouble(e2));
         } catch (NumberFormatException e) {
@@ -175,7 +176,7 @@ public class Condition implements ConditionBase {
         if (elementString.contains("{") && !elementString.contains("}"))
             issueHelper.appendAtPath(HC0);
 
-        return ActionPlaceholder.PlaceholderFunction.of((object, ctx) -> ActionPlaceholder.replacePlaceholders(elementString, ctx));
+        return ActionPlaceholder.PlaceholderFunction.of(ctx -> AbstractPlaceholder.replacePlaceholders(elementString, ctx));
     }
 
     private static Operator findOperator(String condition) {

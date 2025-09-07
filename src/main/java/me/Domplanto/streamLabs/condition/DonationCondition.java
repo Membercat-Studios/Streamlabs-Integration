@@ -14,8 +14,8 @@ public class DonationCondition extends Condition {
     @Override
     public boolean check(ActionExecutionContext ctx) {
         if (!(ctx.event() instanceof BasicDonationEvent donationEvent)) return false;
-        String e1 = getElement1().execute(ctx.baseObject(), ctx);
-        String e2 = getElement2().execute(ctx.baseObject(), ctx);
+        String e1 = getElement1().execute(ctx);
+        String e2 = getElement2().execute(ctx);
         if (!e1.equals(donationEvent.getCurrency(ctx.baseObject()))) return true;
 
         double amount = donationEvent.calculateAmount(ctx.baseObject());

@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.action.ratelimiter;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.condition.ConditionBase;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.util.ReflectUtil;
@@ -57,7 +57,7 @@ public abstract class RateLimiter implements ConditionBase, YamlPropertyObject {
 
     @Override
     public final boolean check(ActionExecutionContext ctx) {
-        String value = ActionPlaceholder.replacePlaceholders(this.value, ctx);
+        String value = AbstractPlaceholder.replacePlaceholders(this.value, ctx);
         boolean result = this.check(value, ctx);
         if (event != null) event.onCheck(value, result, ctx);
         return result;

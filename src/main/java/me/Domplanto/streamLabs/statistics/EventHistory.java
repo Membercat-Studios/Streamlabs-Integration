@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.statistics;
 
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import org.jetbrains.annotations.Nullable;
@@ -60,7 +60,7 @@ public class EventHistory {
             long timestamp
     ) {
         public String replacePlaceholders(String originalString) {
-            return ActionPlaceholder.replacePlaceholders(originalString, createContext());
+            return AbstractPlaceholder.replacePlaceholders(originalString, createContext());
         }
 
         public ActionExecutionContext createContext() {

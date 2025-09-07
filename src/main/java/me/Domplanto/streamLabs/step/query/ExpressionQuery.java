@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.step.query;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
@@ -57,7 +57,7 @@ public class ExpressionQuery extends TransformationQuery<String> {
         Pattern matchingPattern = this.compiledPattern;
         try {
             if (matchingPattern == null)
-                matchingPattern = Pattern.compile(ActionPlaceholder.replacePlaceholders(this.pattern, ctx));
+                matchingPattern = Pattern.compile(AbstractPlaceholder.replacePlaceholders(this.pattern, ctx));
         } catch (PatternSyntaxException e) {
             StreamLabs.LOGGER.warning("Failed to compile expression with placeholders from \"%s\": %s".formatted(this.pattern, e.getDescription()));
             return null;

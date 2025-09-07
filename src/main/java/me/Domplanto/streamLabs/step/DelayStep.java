@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.step;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.components.Translations;
@@ -46,7 +46,7 @@ public class DelayStep extends AbstractStep<String> {
 
     @Override
     public void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
-        String parsed = ActionPlaceholder.replacePlaceholders(this.delay, ctx);
+        String parsed = AbstractPlaceholder.replacePlaceholders(this.delay, ctx);
         long delay;
         try {
             delay = Long.parseLong(parsed);

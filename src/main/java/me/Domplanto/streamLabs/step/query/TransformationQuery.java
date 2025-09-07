@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.step.query;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner;
@@ -23,7 +23,7 @@ public abstract class TransformationQuery<T> extends AbstractQuery<T> {
     @Override
     protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
         if (input == null) return null;
-        String input = ActionPlaceholder.replacePlaceholders(this.input, ctx);
+        String input = AbstractPlaceholder.replacePlaceholders(this.input, ctx);
         return this.runQuery(input, ctx, plugin);
     }
 
