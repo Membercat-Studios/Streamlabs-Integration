@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.action;
 
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.config.PlaceholderScopeStack;
+import me.Domplanto.streamLabs.config.placeholder.PlaceholderScopeStack;
 import me.Domplanto.streamLabs.config.PluginConfig;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.streamlabs.BasicDonationEvent;

@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.config;
+package me.Domplanto.streamLabs.config.placeholder;
 
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.condition.ConditionGroup;

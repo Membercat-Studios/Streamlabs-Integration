@@ -14,7 +14,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.command.argument.EventArgumentType;
-import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
 import me.Domplanto.streamLabs.events.youtube.YoutubeSuperchatEvent;
 import me.Domplanto.streamLabs.util.components.Translations;

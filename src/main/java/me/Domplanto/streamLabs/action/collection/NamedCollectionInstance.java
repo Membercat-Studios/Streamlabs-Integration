@@ -3,7 +3,7 @@ package me.Domplanto.streamLabs.action.collection;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
-import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.statistics.EventHistorySelector;
 import me.Domplanto.streamLabs.util.yaml.PropertyLoadable;

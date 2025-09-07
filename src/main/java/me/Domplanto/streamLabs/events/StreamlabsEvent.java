@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.action.ActionExecutor;
-import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.socket.serializer.SocketSerializerException;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;

@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.config;
+package me.Domplanto.streamLabs.config.placeholder;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

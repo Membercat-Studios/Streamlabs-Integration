@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.action;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.Domplanto.streamLabs.StreamLabs;
-import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
 import me.Domplanto.streamLabs.step.query.CommandQuery;

@@ -1,4 +1,4 @@
-package me.Domplanto.streamLabs.config;
+package me.Domplanto.streamLabs.config.placeholder;
 
 import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.StreamLabs;

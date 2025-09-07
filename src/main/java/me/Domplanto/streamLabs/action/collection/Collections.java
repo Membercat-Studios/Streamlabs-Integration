@@ -7,7 +7,7 @@ import io.papermc.paper.registry.keys.tags.EntityTypeTagKeys;
 import io.papermc.paper.registry.keys.tags.ItemTypeTagKeys;
 import me.Domplanto.streamLabs.condition.Condition;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
-import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.OfflinePlayer;
