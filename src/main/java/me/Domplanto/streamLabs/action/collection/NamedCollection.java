@@ -6,6 +6,7 @@ import io.papermc.paper.registry.tag.TagKey;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.translation.Translatable;
 import org.bukkit.Keyed;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -62,7 +64,13 @@ public abstract class NamedCollection<T> {
     }
 
     public @NotNull Map<String, Function<T, ?>> getAdditionalProperties() {
-        return this.additionalProperties;
+        Map<String, Function<T, ?>> props = new HashMap<>(this.additionalProperties);
+        MiniMessage mm = MiniMessage.miniMessage();
+        props.put("display_name", this::getElementDisplayName);
+        props.put("display_name_safe", this::getElementDisplayNameSafe);
+        props.put("display_name_formatted", e -> Optional.ofNullable(this.getElementDisplayName(e)).map(mm::serialize).orElse(null));
+        props.put("display_name_safe_formatted", e -> mm.serialize(this.getElementDisplayNameSafe(e)));
+        return props;
     }
 
     public @NotNull String getPropertyAsString(@NotNull String propertyId, @NotNull T element) {
@@ -72,6 +80,7 @@ public abstract class NamedCollection<T> {
             case Component component -> PlainTextComponentSerializer.plainText().serialize(component);
             case TextColor color -> color.asHexString();
             case Keyed keyed -> keyed.key().asString();
+            case Enum<?> en -> en.name().toLowerCase();
             default -> o.toString();
         };
     }
