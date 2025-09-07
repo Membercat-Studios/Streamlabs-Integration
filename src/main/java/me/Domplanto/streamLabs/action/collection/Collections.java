@@ -1,6 +1,7 @@
 package me.Domplanto.streamLabs.action.collection;
 
 import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.keys.tags.BlockTypeTagKeys;
 import io.papermc.paper.registry.keys.tags.EnchantmentTagKeys;
 import io.papermc.paper.registry.keys.tags.EntityTypeTagKeys;
 import io.papermc.paper.registry.keys.tags.ItemTypeTagKeys;
@@ -9,9 +10,14 @@ import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Biome;
+import org.bukkit.block.BlockType;
+import org.bukkit.block.TileState;
+import org.bukkit.block.data.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
@@ -149,9 +155,43 @@ public class Collections {
             .withProperty("fuel", ItemType::isFuel)
             .withProperty("compostable", ItemType::isCompostable)
             .withProperty("compost_chance", ItemType::getCompostChance);
+    public static final NamedCollection<BlockType> BLOCK = new NamedCollection.RegistryCollection<>(RegistryKey.BLOCK)
+            .withTagProperty("air", BlockTypeTagKeys.AIR)
+            .withTagProperty("valid_spawn", BlockTypeTagKeys.VALID_SPAWN)
+            .withTagProperty("wither_immune", BlockTypeTagKeys.WITHER_IMMUNE)
+            .withProperty("has_item", BlockType::hasItemType)
+            .withProperty("associated_item", bt -> bt.hasItemType() ? bt.getItemType().key() : null)
+            .withProperty("blast_resistance", BlockType::getBlastResistance)
+            .withProperty("hardness", BlockType::getHardness)
+            .withProperty("slipperiness", BlockType::getSlipperiness)
+            .withProperty("collision", BlockType::hasCollision)
+            .withProperty("gravity", BlockType::hasGravity)
+            .withProperty("burnable", BlockType::isBurnable)
+            .withProperty("flammable", BlockType::isFlammable)
+            .withProperty("occluding", BlockType::isOccluding)
+            .withProperty("solid", BlockType::isSolid)
+            .withProperty("block_entity", bt -> TileState.class.isAssignableFrom(bt.createBlockData().createBlockState().getClass()))
+            .withProperty("bisected", bt -> checkBlockData(Bisected.class, bt))
+            .withProperty("directional", bt -> checkBlockData(Directional.class, bt))
+            .withProperty("powerable", bt -> checkBlockData(Powerable.class, bt))
+            .withProperty("fine_powerable", bt -> checkBlockData(AnaloguePowerable.class, bt))
+            .withProperty("ageable", bt -> checkBlockData(Ageable.class, bt))
+            .withProperty("randomly_ticking", bt -> bt.createBlockData().isRandomlyTicked())
+            .withProperty("light_emission", bt -> bt.createBlockData().getLightEmission())
+            .withProperty("piston_behavior", bt -> bt.createBlockData().getPistonMoveReaction())
+            .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND,
+                    Condition.invert(Condition.ofStaticEquals(placeholder("air"), Boolean.TRUE.toString())),
+                    Condition.invert(Condition.ofStaticEquals(placeholder("wither_immune"), Boolean.TRUE.toString()))
+            ));
+    public static final NamedCollection<Biome> BIOME = new NamedCollection.RegistryCollection<>(RegistryKey.BIOME);
+    public static final NamedCollection<Structure> STRUCTURE = new NamedCollection.RegistryCollection<>(RegistryKey.STRUCTURE);
 
     private static <T> @Nullable T ofPlayer(@NotNull OfflinePlayer player, @NotNull Function<Player, T> func) {
         return Optional.ofNullable(player.getPlayer()).map(func).orElse(null);
+    }
+
+    private static boolean checkBlockData(@NotNull Class<? extends BlockData> cls, @NotNull BlockType type) {
+        return cls.isAssignableFrom(type.createBlockData().getClass());
     }
 
     private static ActionPlaceholder.PlaceholderFunction placeholder(@NotNull String id) {
