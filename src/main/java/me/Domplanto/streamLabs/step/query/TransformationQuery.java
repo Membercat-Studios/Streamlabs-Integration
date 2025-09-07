@@ -9,6 +9,8 @@ import me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 import static me.Domplanto.streamLabs.config.issue.Issues.WQ1;
 
 public abstract class TransformationQuery<T> extends AbstractQuery<T> {
@@ -22,9 +24,20 @@ public abstract class TransformationQuery<T> extends AbstractQuery<T> {
 
     @Override
     protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+        return null;
+    }
+
+    @Override
+    protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
         if (input == null) return null;
         String input = AbstractPlaceholder.replacePlaceholders(this.input, ctx);
-        return this.runQuery(input, ctx, plugin);
+        return this.query(input, ctx, plugin);
+    }
+
+    protected @Nullable AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+        if (!this.hasOutput()) return null;
+        String data = Objects.requireNonNullElse(this.runQuery(input, ctx, plugin), "");
+        return new QueryPlaceholder(this.outputName(), data);
     }
 
     protected abstract @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin);

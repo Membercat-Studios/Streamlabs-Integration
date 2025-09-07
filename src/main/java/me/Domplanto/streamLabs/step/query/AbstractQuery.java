@@ -2,6 +2,7 @@ package me.Domplanto.streamLabs.step.query;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
@@ -40,8 +41,8 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
     public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws AbstractStep.ActionFailureException {
         if (invalid()) return;
         try {
-            String data = Objects.requireNonNullElse(this.runQuery(ctx, plugin), "");
-            if (hasOutput()) ctx.scopeStack().addPlaceholder(new QueryPlaceholder(this.output, data));
+            AbstractPlaceholder result = this.query(ctx, plugin);
+            if (hasOutput()) ctx.scopeStack().addPlaceholder(Objects.requireNonNull(result));
         } catch (Exception e) {
             throw new AbstractStep.ActionFailureException("An unexpected internal error occurred", e);
         }
@@ -70,8 +71,14 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
         } catch (InterruptedException e) {
             throw new RuntimeException("Server thread action interrupted");
         } catch (ExecutionException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error while executing action on server thread", e);
         }
+    }
+
+    protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+        if (!this.hasOutput()) return null;
+        String data = Objects.requireNonNullElse(this.runQuery(ctx, plugin), "");
+        return new QueryPlaceholder(this.output, data);
     }
 
     protected abstract @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin);
@@ -82,6 +89,10 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
 
     protected boolean hasOutput() {
         return this.output != null;
+    }
+
+    protected String outputName() {
+        return this.output;
     }
 
     private boolean invalid() {
