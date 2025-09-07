@@ -8,8 +8,10 @@ import io.papermc.paper.registry.keys.tags.ItemTypeTagKeys;
 import me.Domplanto.streamLabs.condition.Condition;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.ActionPlaceholder;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.TileState;
@@ -19,6 +21,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.ItemType;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -185,6 +188,36 @@ public class Collections {
             ));
     public static final NamedCollection<Biome> BIOME = new NamedCollection.RegistryCollection<>(RegistryKey.BIOME);
     public static final NamedCollection<Structure> STRUCTURE = new NamedCollection.RegistryCollection<>(RegistryKey.STRUCTURE);
+    public static final NamedCollection<World> WORLD = new NamedCollection.SimpleCollection<>(s -> s.getWorlds().stream(), World::getName)
+            .withProperty("uuid", World::getUID)
+            .withProperty("can_generate_structures", World::canGenerateStructures)
+            .withProperty("bonus_chest", World::hasBonusChest)
+            .withProperty("ceiling", World::hasCeiling)
+            .withProperty("sky_light", World::hasSkyLight)
+            .withProperty("animals", World::getAllowAnimals)
+            .withProperty("monsters", World::getAllowMonsters)
+            .withProperty("chunks", World::getChunkCount)
+            .withProperty("coordinate_scale", World::getCoordinateScale)
+            .withProperty("difficulty", World::getDifficulty)
+            .withProperty("min_height", World::getMinHeight)
+            .withProperty("max_height", World::getMaxHeight)
+            .withProperty("environment", World::getEnvironment)
+            .withProperty("pvp", World::getPVP)
+            .withProperty("sea_level", World::getSeaLevel)
+            .withProperty("world_border", w -> w.getWorldBorder().getSize())
+            .withProperty("seed", World::getSeed);
+    public static final NamedCollection<Plugin> PLUGIN = new NamedCollection.SimpleCollection<>(s -> Arrays.stream(s.getPluginManager().getPlugins()), Plugin::getName)
+            .withNameFunction(pl -> Component.text(pl.getPluginMeta().getDisplayName()))
+            .withProperty("enabled", Plugin::isEnabled)
+            .withProperty("description", pl -> pl.getPluginMeta().getDescription())
+            .withProperty("version", pl -> pl.getPluginMeta().getVersion())
+            .withProperty("website", pl -> pl.getPluginMeta().getWebsite())
+            .withProperty("authors", pl -> String.join(", ", pl.getPluginMeta().getAuthors()))
+            .withProperty("contributors", pl -> String.join(", ", pl.getPluginMeta().getContributors()))
+            .withProperty("dependencies", pl -> String.join(", ", pl.getPluginMeta().getPluginDependencies()))
+            .withProperty("soft_dependencies", pl -> String.join(", ", pl.getPluginMeta().getPluginSoftDependencies()))
+            .withProperty("api_version", pl -> pl.getPluginMeta().getAPIVersion())
+            .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND, Condition.ofStaticEquals(placeholder("enabled"), Boolean.TRUE.toString())));
 
     private static <T> @Nullable T ofPlayer(@NotNull OfflinePlayer player, @NotNull Function<Player, T> func) {
         return Optional.ofNullable(player.getPlayer()).map(func).orElse(null);
