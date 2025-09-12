@@ -5,12 +5,12 @@ import me.Domplanto.streamLabs.action.StepExecutor;
 import me.Domplanto.streamLabs.action.collection.NamedCollection;
 import me.Domplanto.streamLabs.action.collection.NamedCollectionInstance;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
+import me.Domplanto.streamLabs.config.placeholder.PropertyPlaceholder;
 import me.Domplanto.streamLabs.step.query.AbstractQuery;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyCustomDeserializer;
 import me.Domplanto.streamLabs.util.yaml.YamlPropertyIssueAssigner;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -73,10 +73,8 @@ public class BulkRandomElements extends RepeatStep {
             if (o == null) return;
             this.selectedElements.add(o);
 
-            String mm = MiniMessage.miniMessage().serialize(namedCollection.getElementDisplayNameSafe(o));
-            ctx.scopeStack().addPlaceholder(new AbstractQuery.QueryPlaceholder("element_id", namedCollection.getElementId(o)));
-            ctx.scopeStack().addPlaceholder(new AbstractQuery.QueryPlaceholder("element_name", namedCollection.getElementDisplayNameString(o)));
-            ctx.scopeStack().addPlaceholder(new AbstractQuery.QueryPlaceholder("element_name_formatted", mm));
+            PropertyPlaceholder placeholder = namedCollection.createPropertyPlaceholder(o, "element", AbstractQuery.QueryPlaceholder.FORMAT);
+            ctx.scopeStack().addPlaceholder(placeholder);
             ctx.runSteps(StepExecutor.fromSteps(this.getName(), super.steps()), getPlugin());
         }));
     }

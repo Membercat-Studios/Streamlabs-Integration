@@ -5,6 +5,7 @@ import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.action.collection.NamedCollection;
 import me.Domplanto.streamLabs.action.collection.NamedCollectionInstance;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import org.bukkit.configuration.ConfigurationSection;
@@ -30,14 +31,19 @@ public class RandomElementQuery extends AbstractQuery<NamedCollectionInstance<?>
     }
 
     @Override
-    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
         //noinspection unchecked
         NamedCollection<Object> namedCollection = (NamedCollection<Object>) collection.collection();
         List<?> elements = collection.getElements(plugin.getServer()).toList();
-        if (elements.isEmpty()) return null;
+        if (elements.isEmpty()) return new QueryPlaceholder(outputName(), "");
 
         int idx = random.nextInt(0, elements.size());
-        return namedCollection.getElementId(elements.get(idx));
+        return namedCollection.createPropertyPlaceholder(elements.get(idx), outputName(), QueryPlaceholder.FORMAT);
+    }
+
+    @Override
+    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+        return null;
     }
 
     @Override

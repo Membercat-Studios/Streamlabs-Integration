@@ -5,6 +5,7 @@ import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.action.collection.NamedCollection;
 import me.Domplanto.streamLabs.action.collection.NamedCollectionInstance;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import org.bukkit.Server;
 import org.bukkit.configuration.ConfigurationSection;
@@ -26,22 +27,31 @@ public class ExtractQuery extends TransformationQuery<NamedCollectionInstance<?>
     }
 
     @Override
-    protected @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
         try {
-            return runOnServerThread(plugin, TIMEOUT, () -> this.extract(input, plugin.getServer()));
+            return runOnServerThread(plugin, TIMEOUT, () -> {
+                //noinspection unchecked
+                NamedCollection<Object> collection = (NamedCollection<Object>) this.extractCollection.collection();
+                Object element = this.extract(input, plugin.getServer(), collection);
+                if (element == null) return new QueryPlaceholder(outputName(), "");
+                return collection.createPropertyPlaceholder(element, outputName(), QueryPlaceholder.FORMAT);
+            });
         } catch (TimeoutException e) {
             StreamLabs.LOGGER.warning("Extract query for type %s couldn't extract the correct value in time, action took >10000ms (tried to extract from: \"%s\")!".formatted(this.extractCollection, input));
             return null;
         }
     }
 
-    private String extract(String input, Server server) {
+    @Override
+    protected @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+        return null;
+    }
+
+    private @Nullable Object extract(String input, Server server, @NotNull NamedCollection<Object> collection) {
         String lowerInput = input.toLowerCase();
-        //noinspection unchecked
-        NamedCollection<Object> collection = (NamedCollection<Object>) this.extractCollection.collection();
         return this.extractCollection.getElements(server)
                 .filter(e -> lowerInput.contains(collection.getElementDisplayNameString(e).toLowerCase()))
-                .findFirst().map(collection::getElementId).orElse(null);
+                .findFirst().orElse(null);
     }
 
     @Override

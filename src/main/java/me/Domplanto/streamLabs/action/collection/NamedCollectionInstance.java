@@ -11,6 +11,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Server;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.WNC0;
@@ -66,8 +68,9 @@ public final class NamedCollectionInstance<T> {
             return data.filter(element -> {
                 ActionExecutionContext groupCtx = new ActionExecutionContext(null, null, null, null, false, new JsonObject());
                 groupCtx.scopeStack().addPlaceholder("id", ActionPlaceholder.PlaceholderFunction.of(o -> source.getElementId(element)));
-                for (String key : source.getAdditionalProperties().keySet()) {
-                    groupCtx.scopeStack().addPlaceholder(key, ActionPlaceholder.PlaceholderFunction.of(o -> source.getPropertyAsString(key, element)));
+                for (Map.Entry<String, Function<T, ?>> entry : source.getAdditionalProperties().entrySet()) {
+                    groupCtx.scopeStack().addPlaceholder(entry.getKey(), ActionPlaceholder.PlaceholderFunction.of(o ->
+                            NamedCollection.getPropertyAsString(entry.getValue().apply(element))));
                 }
                 return this.conditionGroup.check(groupCtx);
             });

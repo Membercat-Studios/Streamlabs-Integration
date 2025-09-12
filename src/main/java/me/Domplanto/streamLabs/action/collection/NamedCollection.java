@@ -3,11 +3,14 @@ package me.Domplanto.streamLabs.action.collection;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.tag.TagKey;
+import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
+import me.Domplanto.streamLabs.config.placeholder.PropertyPlaceholder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translatable;
 import org.bukkit.Keyed;
 import org.bukkit.Registry;
@@ -16,10 +19,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.stream.Stream;
 
 public abstract class NamedCollection<T> {
@@ -42,7 +46,8 @@ public abstract class NamedCollection<T> {
     }
 
     public @NotNull String getElementDisplayNameString(@NotNull T element) {
-        return PlainTextComponentSerializer.plainText().serialize(getElementDisplayNameSafe(element));
+        Component safe = this.getElementDisplayNameSafe(element);
+        return PlainTextComponentSerializer.plainText().serialize(GlobalTranslator.render(safe, Locale.getDefault()));
     }
 
     protected NamedCollection<T> withProperty(@NotNull String name, @NotNull Function<T, Object> propertyFunc) {
@@ -65,23 +70,39 @@ public abstract class NamedCollection<T> {
 
     public @NotNull Map<String, Function<T, ?>> getAdditionalProperties() {
         Map<String, Function<T, ?>> props = new HashMap<>(this.additionalProperties);
-        MiniMessage mm = MiniMessage.miniMessage();
         props.put("display_name", this::getElementDisplayName);
         props.put("display_name_safe", this::getElementDisplayNameSafe);
-        props.put("display_name_formatted", e -> Optional.ofNullable(this.getElementDisplayName(e)).map(mm::serialize).orElse(null));
-        props.put("display_name_safe_formatted", e -> mm.serialize(this.getElementDisplayNameSafe(e)));
         return props;
     }
 
-    public @NotNull String getPropertyAsString(@NotNull String propertyId, @NotNull T element) {
-        if (!additionalProperties.containsKey(propertyId)) return "";
-        Object o = additionalProperties.get(propertyId).apply(element);
-        return switch (o) {
-            case Component component -> PlainTextComponentSerializer.plainText().serialize(component);
+    public @NotNull PropertyPlaceholder createPropertyPlaceholder(@NotNull T element, @NotNull String outputName, @NotNull String format) {
+        PropertyPlaceholder placeholder = new PropertyPlaceholder(outputName, format)
+                .withDefaultValue(getElementId(element));
+        for (Map.Entry<String, Function<T, ?>> entry : getAdditionalProperties().entrySet()) {
+            try {
+                Object result = entry.getValue().apply(element);
+                if (result instanceof Component component) {
+                    String formatted = MiniMessage.miniMessage().serialize(component);
+                    placeholder.addProperty(entry.getKey() + "_formatted", formatted);
+                }
+
+                placeholder.addProperty(entry.getKey(), getPropertyAsString(result));
+            } catch (Throwable e) {
+                StreamLabs.LOGGER.log(Level.WARNING, "Failed to read property \"%s\" of named collection entry:", e);
+            }
+        }
+        return placeholder;
+    }
+
+    public static @NotNull String getPropertyAsString(@Nullable Object property) {
+        if (property == null) return "";
+        return switch (property) {
+            case Component component -> PlainTextComponentSerializer.plainText()
+                    .serialize(GlobalTranslator.render(component, Locale.getDefault()));
             case TextColor color -> color.asHexString();
             case Keyed keyed -> keyed.key().asString();
             case Enum<?> en -> en.name().toLowerCase();
-            default -> o.toString();
+            default -> property.toString();
         };
     }
 
