@@ -37,6 +37,7 @@ public class Issues {
     public static Function<String, ConfigIssue> WA2 = type -> new ConfigIssue("WA2", ConfigIssue.Level.WARNING, text(type));
     public static Function<String, ConfigIssue> WR0 = type -> new ConfigIssue("WR0", ConfigIssue.Level.WARNING, text(type));
     public static Function<String, ConfigIssue> WRE0 = mode -> new ConfigIssue("WRE0", ConfigIssue.Level.WARNING, text(mode));
+    public static BiFunction<String, String, ConfigIssue> WL0 = (type, def) -> new ConfigIssue("WL0", ConfigIssue.Level.WARNING, text(type), text(def));
     public static BiFunction<String, String, ConfigIssue> WM0 = (type, def) -> new ConfigIssue("WM0", ConfigIssue.Level.WARNING, text(type), text(def));
     public static ConfigIssue WM1 = new ConfigIssue("WM1", ConfigIssue.Level.WARNING, Translations.MINIMESSAGE_LINK);
     public static ConfigIssue WM2 = new ConfigIssue("WM2", ConfigIssue.Level.WARNING);
@@ -50,8 +51,6 @@ public class Issues {
     public static BiFunction<String, String, ConfigIssue> WD0 = (value, defaultVal) -> new ConfigIssue("WD0", ConfigIssue.Level.WARNING, text(value), text(defaultVal));
     public static Function<String, ConfigIssue> WE0 = expression -> new ConfigIssue("WE0", ConfigIssue.Level.WARNING, text(expression));
     public static Function<String, ConfigIssue> WE1 = action -> new ConfigIssue("WE1", ConfigIssue.Level.WARNING, text(action));
-    public static Function<String, ConfigIssue> WE2 = group -> new ConfigIssue("WE2", ConfigIssue.Level.WARNING, text(group));
-    public static ConfigIssue WE3 = new ConfigIssue("WE3", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WNC0 = extraction -> new ConfigIssue("WNC0", ConfigIssue.Level.WARNING, text(extraction));
     public static ConfigIssue WNC1 = new ConfigIssue("WNC1", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WPS0 = message -> new ConfigIssue("WPS0", ConfigIssue.Level.WARNING, text(message));
