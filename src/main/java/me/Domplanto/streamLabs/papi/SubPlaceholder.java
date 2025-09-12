@@ -2,6 +2,7 @@ package me.Domplanto.streamLabs.papi;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.util.ReflectUtil;
+import net.kyori.adventure.text.Component;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,7 +19,7 @@ public abstract class SubPlaceholder {
         this.name = name;
     }
 
-    public abstract @NotNull Optional<String> onRequest(OfflinePlayer player, @NotNull String params);
+    public abstract @NotNull Optional<Component> onRequest(OfflinePlayer player, @NotNull String params);
 
     public StreamLabs getPlugin() {
         return plugin;

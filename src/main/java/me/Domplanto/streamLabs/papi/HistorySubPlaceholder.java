@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static net.kyori.adventure.text.Component.text;
+
 @SuppressWarnings("unused")
 public class HistorySubPlaceholder extends SubPlaceholder implements HistoryChangedListener {
     private final EventHistory history;
@@ -31,8 +33,8 @@ public class HistorySubPlaceholder extends SubPlaceholder implements HistoryChan
     }
 
     @Override
-    public @NotNull Optional<String> onRequest(OfflinePlayer player, @NotNull String params) {
-        if (!params.contains(":")) return Optional.of("Error: Missing section after history selector");
+    public @NotNull Optional<Component> onRequest(OfflinePlayer player, @NotNull String params) {
+        if (!params.contains(":")) return Optional.of(text("Error: Missing section after history selector"));
         int idx = params.indexOf(":");
         String selector = params.substring(0, idx);
 
@@ -40,12 +42,12 @@ public class HistorySubPlaceholder extends SubPlaceholder implements HistoryChan
             this.selectorCache.put(selector, this.buildSelector(selector));
         if (!values.containsKey(params)) {
             EventHistorySelector historySelector = selectorCache.get(selector);
-            if (historySelector == null) return Optional.of("Error: Invalid history selector");
+            if (historySelector == null) return Optional.of(text("Error: Invalid history selector"));
             EventHistory.LoggedEvent event = history.getEvent(historySelector);
             values.put(params, event != null ? event.replacePlaceholders(params.substring(idx + 1)) : "");
         }
 
-        return Optional.of(this.values.get(params));
+        return Optional.of(text(this.values.get(params)));
     }
 
     @Nullable
@@ -61,7 +63,7 @@ public class HistorySubPlaceholder extends SubPlaceholder implements HistoryChan
             if (e.getIssues().stream().anyMatch(issue -> issue.issue().getLevel() != ConfigIssue.Level.HINT))
                 built = null;
         }
-        
+
         return built;
     }
 

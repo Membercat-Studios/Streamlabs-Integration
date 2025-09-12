@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.papi;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutor;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +19,7 @@ public class ExecutorSubPlaceholder extends SubPlaceholder {
     }
 
     @Override
-    public @NotNull Optional<String> onRequest(OfflinePlayer player, @NotNull String params) {
+    public @NotNull Optional<Component> onRequest(OfflinePlayer player, @NotNull String params) {
         String[] additionalData = new String[0];
         if (params.contains(":")) {
             String[] data = params.split(":");
@@ -34,7 +34,7 @@ public class ExecutorSubPlaceholder extends SubPlaceholder {
             case "queued_actions" -> executor.getQueuedCount();
             case "queued_instances" -> additionalData.length == 1 ? executor.getQueuedInstanceCount(additionalData[0])
                     : executor.getQueuedInstanceCount();
-            default -> NamedTextColor.RED + "Unknown sub-placeholder \"%s\"".formatted(params);
-        }));
+            default -> "Unknown sub-placeholder \"%s\"".formatted(params);
+        })).map(Component::text);
     }
 }
