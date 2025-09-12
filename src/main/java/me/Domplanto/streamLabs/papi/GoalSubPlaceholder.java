@@ -3,7 +3,7 @@ package me.Domplanto.streamLabs.papi;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutor;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +27,7 @@ public class GoalSubPlaceholder extends SubPlaceholder {
             case "amount" -> (int) goal.getValue();
             case "max" -> (int) goal.getGoal();
             case "percentage" -> (int) ((goal.getValue() / goal.getGoal()) * 100);
-            default -> ChatColor.RED + "Unknown sub-placeholder \"%s\"".formatted(params);
+            default -> NamedTextColor.RED + "Unknown sub-placeholder \"%s\"".formatted(params);
         }));
     }
 }
