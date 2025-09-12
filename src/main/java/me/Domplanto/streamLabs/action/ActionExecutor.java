@@ -168,6 +168,32 @@ public class ActionExecutor {
         return eventHistory;
     }
 
+    public int getRunningCount() {
+        return this.runningActions.size();
+    }
+
+    public long getInstanceCount() {
+        return this.runningActions.values()
+                .stream().mapToLong(Collection::size).sum();
+    }
+
+    public int getInstanceCount(@NotNull String actionId) {
+        return this.runningActions.getOrDefault(actionId, Set.of()).size();
+    }
+
+    public int getQueuedCount() {
+        return this.queuedActions.size();
+    }
+
+    public long getQueuedInstanceCount() {
+        return this.queuedActions.values()
+                .stream().mapToLong(Collection::size).sum();
+    }
+
+    public int getQueuedInstanceCount(@NotNull String actionId) {
+        return this.queuedActions.getOrDefault(actionId, new Stack<>()).size();
+    }
+
     public enum ActionInstancingBehaviour {
         CANCEL_PREVIOUS,
         RUN_IN_PARALLEL,
