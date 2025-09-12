@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public class PropertyPlaceholder extends AbstractPlaceholder {
-    private static final @RegExp String PROPERTY_PATTERN = "(?:\\.(\\S+))?";
+    private static final @RegExp String PROPERTY_PATTERN = "(?:\\.([a-zA-Z_]+))?";
     private final Pattern pattern;
     private final Map<String, String> properties;
     private @Nullable String defaultValue;
