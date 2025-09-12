@@ -2,11 +2,12 @@ package me.Domplanto.streamLabs.step;
 
 import com.fathzer.soft.javaluator.DoubleEvaluator;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
+import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.step.query.AbstractQuery;
-import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.BracketResolver;
+import me.Domplanto.streamLabs.util.yaml.YamlProperty;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,8 @@ import static me.Domplanto.streamLabs.config.issue.Issues.WV0;
 public class SetPlaceholderStep extends AbstractStep<BracketResolver> {
     private @Nullable String placeholderName;
     private String value;
+    @YamlProperty("ignore_placeholders")
+    private boolean ignorePlaceholders;
 
     public SetPlaceholderStep() {
         super(BracketResolver.class);
@@ -38,7 +41,7 @@ public class SetPlaceholderStep extends AbstractStep<BracketResolver> {
     @Override
     protected void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
         if (placeholderName == null) return;
-        String content = AbstractPlaceholder.replacePlaceholders(this.value, ctx);
+        String content = !ignorePlaceholders ? AbstractPlaceholder.replacePlaceholders(value, ctx) : value;
         try {
             double value = new DoubleEvaluator().evaluate(content);
             content = (value == (int) value) ? String.valueOf((int) value) : String.valueOf(value);
