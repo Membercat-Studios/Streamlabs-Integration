@@ -35,7 +35,7 @@ public class RandomElementQuery extends AbstractQuery<NamedCollectionInstance<?>
         //noinspection unchecked
         NamedCollection<Object> namedCollection = (NamedCollection<Object>) collection.collection();
         List<?> elements = collection.getElements(plugin.getServer()).toList();
-        if (elements.isEmpty()) return new QueryPlaceholder(outputName(), "");
+        if (elements.isEmpty()) return createPlaceholder(null);
 
         int idx = random.nextInt(0, elements.size());
         return namedCollection.createPropertyPlaceholder(elements.get(idx), outputName(), QueryPlaceholder.FORMAT);

@@ -33,7 +33,7 @@ public class ExtractQuery extends TransformationQuery<NamedCollectionInstance<?>
                 //noinspection unchecked
                 NamedCollection<Object> collection = (NamedCollection<Object>) this.extractCollection.collection();
                 Object element = this.extract(input, plugin.getServer(), collection);
-                if (element == null) return new QueryPlaceholder(outputName(), "");
+                if (element == null) return createPlaceholder(null);
                 return collection.createPropertyPlaceholder(element, outputName(), QueryPlaceholder.FORMAT);
             });
         } catch (TimeoutException e) {

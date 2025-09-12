@@ -76,9 +76,12 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
     }
 
     protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
-        String data = Objects.requireNonNullElse(this.runQuery(ctx, plugin), "");
-        if (!this.hasOutput()) return null;
-        return new QueryPlaceholder(this.output, data);
+        String data = this.runQuery(ctx, plugin);
+        return this.hasOutput() ? this.createPlaceholder(data) : null;
+    }
+
+    protected @NotNull AbstractPlaceholder createPlaceholder(@Nullable String input) {
+        return new QueryPlaceholder(outputName(), Objects.requireNonNullElse(input, ""));
     }
 
     protected abstract @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin);
