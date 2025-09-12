@@ -63,7 +63,7 @@ public class ExpressionQuery extends TransformationQuery<String> {
                 if (!matcher.find()) yield createPlaceholder(null);
                 PropertyPlaceholder placeholder = new PropertyPlaceholder(outputName(), QueryPlaceholder.FORMAT)
                         .withDefaultValue(matcher.group());
-                for (int i = 1; i < matcher.groupCount(); i++) {
+                for (int i = 1; i <= matcher.groupCount(); i++) {
                     final int groupId = i;
                     String name = matcher.namedGroups()
                             .entrySet().stream()
