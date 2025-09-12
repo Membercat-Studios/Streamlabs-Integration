@@ -3,53 +3,71 @@ package me.Domplanto.streamLabs.step.query;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
+import me.Domplanto.streamLabs.config.issue.ConfigLoadedWithIssuesException;
+import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
 import me.Domplanto.streamLabs.util.ReflectUtil;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.Objects;
 import java.util.Random;
-import java.util.Set;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ReflectUtil.ClassId("random_number")
-public class RandomNumberQuery extends AbstractQuery<RandomNumberQuery.NumRange> {
+public class RandomNumberQuery extends AbstractQuery<String> {
     private NumRange range;
+    private String rangeToParse;
     @YamlProperty("seed")
     private long seed;
     @YamlProperty("decimal")
     private int decimal;
+    @YamlProperty("placeholders")
+    private boolean placeholders;
     private Random random;
 
     @Override
-    public void load(@NotNull NumRange data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+    public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
         super.load(data, issueHelper, parent);
-        this.range = data;
+        if (!placeholders) this.range = NumRange.serializer().serialize(data, issueHelper);
+        else this.rangeToParse = data;
         this.random = seed != 0 ? new Random(seed) : new Random();
     }
 
     @Override
     protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+        NumRange range = this.range;
+        if (placeholders) {
+            ComponentLogger logger = ComponentLogger.logger(RandomNumberQuery.class);
+            ConfigIssueHelper issueHelper = new ConfigIssueHelper(logger);
+            String rangeVal = AbstractPlaceholder.replacePlaceholders(rangeToParse, ctx);
+            range = NumRange.serializer().serialize(rangeVal, issueHelper);
+            try {
+                issueHelper.complete();
+            } catch (ConfigLoadedWithIssuesException e) {
+                StreamLabs.LOGGER.warning("Failed to parse placeholder number range at %s (from %s)".formatted(location().toFormattedString(), rangeVal));
+                return null;
+            }
+        }
+
         DecimalFormat format = new DecimalFormat();
         format.setMaximumFractionDigits(decimal);
         format.setRoundingMode(RoundingMode.DOWN);
-        return format.format(range.randomDouble(random));
+        return format.format(Objects.requireNonNull(range).randomDouble(random));
     }
 
     @Override
-    public @NotNull Set<Serializer<?, NumRange>> getOptionalDataSerializers() {
-        return Set.of(NumRange.serializer(), NumRange.intSerializer());
+    public @NotNull Class<String> getExpectedDataType() {
+        return String.class;
     }
 
-    @Override
-    public @NotNull Class<NumRange> getExpectedDataType() {
-        return NumRange.class;
-    }
-
+    @ConfigPathSegment(id = "Number Range")
     public record NumRange(
             double min,
             double max
@@ -92,17 +110,6 @@ public class RandomNumberQuery extends AbstractQuery<RandomNumberQuery.NumRange>
                             issueHelper.appendAtPath(WNR0);
                             return DEFAULT;
                         }
-                    });
-        }
-
-        public static Serializer<Integer, NumRange> intSerializer() {
-            return new Serializer<>(Integer.class, NumRange.class,
-                    (i, issueHelper) -> {
-                        if (i < 1) {
-                            issueHelper.appendAtPath(WNR3);
-                            return DEFAULT;
-                        }
-                        return new NumRange(0, i);
                     });
         }
     }
