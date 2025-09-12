@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ public class ActionExecutor {
     private final StreamLabs plugin;
     private final ConcurrentMap<String, Set<UUID>> runningActions;
     private final ConcurrentMap<String, Stack<ActionExecutionContext>> queuedActions;
+    private final Queue<ActionExecutionContext> globalQueue;
     @Nullable
     private DonationGoal activeGoal;
 
@@ -37,6 +39,7 @@ public class ActionExecutor {
         this.eventHistory = new EventHistory();
         this.runningActions = new ConcurrentHashMap<>();
         this.queuedActions = new ConcurrentHashMap<>();
+        this.globalQueue = new ConcurrentLinkedQueue<>();
     }
 
     public void parseAndExecute(JsonElement data) throws SocketSerializerException {
@@ -76,25 +79,26 @@ public class ActionExecutor {
         boolean successful = true;
         for (PluginConfig.Action action : actions) {
             try {
-                this.executeAction(new ActionExecutionContext(event, this, this.pluginConfig, action, bypassRateLimiters, baseObject));
+                this.executeAction(new ActionExecutionContext(event, this, this.pluginConfig, action, bypassRateLimiters, false, baseObject));
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing action %s for %s:".formatted(action.id, event.getId()), e);
                 successful = false;
             }
         }
 
-        this.updateGoal(new ActionExecutionContext(event, this, this.pluginConfig, null, bypassRateLimiters, baseObject));
+        this.updateGoal(new ActionExecutionContext(event, this, this.pluginConfig, null, bypassRateLimiters, false, baseObject));
         return successful;
     }
 
     public void executeAction(ActionExecutionContext ctx) {
-        this.executeAction(ctx, false);
-    }
-
-    public void executeAction(ActionExecutionContext ctx, boolean ignoreConditions) {
-        if (!ignoreConditions && !ctx.checkConditions()) return;
+        if (!ctx.checkConditions()) return;
         String actionId = ctx.action().id;
         Set<UUID> instances = runningActions.computeIfAbsent(actionId, s -> new HashSet<>());
+        if (getInstanceCount() != 0 && ctx.action().instancingBehaviour == ActionInstancingBehaviour.GLOBAL_QUEUE) {
+            this.globalQueue.add(ctx);
+            StreamLabs.LOGGER.info("New execution of action %s will be queued until all other running actions are done. Global queue size is now: %s".formatted(actionId, globalQueue.size()));
+            return;
+        }
         if (!instances.isEmpty()) switch (ctx.action().instancingBehaviour) {
             case CANCEL_PREVIOUS -> instances.clear();
             case QUEUE -> {
@@ -121,7 +125,21 @@ public class ActionExecutor {
                 ActionExecutionContext queuedCtx = queue.pop();
                 if (queue.isEmpty()) queuedActions.remove(actionId);
                 StreamLabs.LOGGER.info("Action %s has finished, now executing queued runs. Queue size is now: %s".formatted(actionId, queue.size()));
-                this.executeAction(queuedCtx, ignoreConditions);
+                try {
+                    Thread.sleep(queuedCtx.action().queueDelay);
+                } catch (InterruptedException ignored) {
+                }
+                this.executeAction(queuedCtx);
+                return;
+            }
+            if (getInstanceCount() == 0 && !globalQueue.isEmpty()) {
+                ActionExecutionContext globalQueuedCtx = globalQueue.poll();
+                StreamLabs.LOGGER.info("All actions have finished, now executing globally queued runs. Global queue size is now: %s".formatted(globalQueue.size()));
+                try {
+                    Thread.sleep(globalQueuedCtx.action().queueDelay);
+                } catch (InterruptedException ignored) {
+                }
+                this.executeAction(globalQueuedCtx);
             }
         });
     }
@@ -136,7 +154,7 @@ public class ActionExecutor {
             }
 
             if (!this.activeGoal.add(ctx)) return;
-            this.executeAction(new ActionExecutionContext(null, this, this.pluginConfig, goal, null), true);
+            this.executeAction(new ActionExecutionContext(null, this, this.pluginConfig, goal, false, true, null));
             this.stopGoal();
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Unexpected error while updating goal %s on event %s:".formatted(ctx.event().getId(), this.activeGoal), e);
@@ -194,14 +212,19 @@ public class ActionExecutor {
         return this.queuedActions.getOrDefault(actionId, new Stack<>()).size();
     }
 
+    public int getGlobalQueuedCount() {
+        return this.globalQueue.size();
+    }
+
     public enum ActionInstancingBehaviour {
         CANCEL_PREVIOUS,
         RUN_IN_PARALLEL,
-        QUEUE;
+        QUEUE,
+        GLOBAL_QUEUE;
 
         public static @NotNull ActionExecutor.ActionInstancingBehaviour fromString(@NotNull String s, ConfigIssueHelper issueHelper) {
             try {
-                return valueOf(s);
+                return valueOf(s.toUpperCase());
             } catch (IllegalArgumentException e) {
                 issueHelper.appendAtPath(WA2.apply(s));
                 return CANCEL_PREVIOUS;

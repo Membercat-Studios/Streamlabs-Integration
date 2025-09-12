@@ -66,7 +66,7 @@ public final class NamedCollectionInstance<T> {
 
         public @NotNull Stream<T> applyOn(@NotNull Stream<T> data, @NotNull NamedCollection<T> source) {
             return data.filter(element -> {
-                ActionExecutionContext groupCtx = new ActionExecutionContext(null, null, null, null, false, new JsonObject());
+                ActionExecutionContext groupCtx = new ActionExecutionContext(null, null, null, null, false, false, new JsonObject());
                 groupCtx.scopeStack().addPlaceholder("id", ActionPlaceholder.PlaceholderFunction.of(o -> source.getElementId(element)));
                 for (Map.Entry<String, Function<T, ?>> entry : source.getAdditionalProperties().entrySet()) {
                     groupCtx.scopeStack().addPlaceholder(entry.getKey(), ActionPlaceholder.PlaceholderFunction.of(o ->

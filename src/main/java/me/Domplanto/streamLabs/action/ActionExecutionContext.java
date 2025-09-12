@@ -21,24 +21,25 @@ public record ActionExecutionContext(
         PluginConfig.AbstractAction action,
         PlaceholderScopeStack scopeStack,
         boolean bypassRateLimiters,
+        boolean ignoreConditions,
         AtomicBoolean dirty,
         AtomicReference<Predicate<ActionExecutionContext>> keepExecutingCheck,
         JsonObject baseObject,
         AtomicBoolean shouldExecute
 ) {
     public ActionExecutionContext(@Nullable StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, JsonObject jsonObject) {
-        this(event, executor, config, action, false, jsonObject);
+        this(event, executor, config, action, false, false, jsonObject);
     }
 
-    public ActionExecutionContext(@Nullable StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, boolean bypassRateLimiters, JsonObject jsonObject) {
-        this(event, executor, config, action, new PlaceholderScopeStack(), bypassRateLimiters, new AtomicBoolean(), new AtomicReference<>(), jsonObject, new AtomicBoolean(true));
+    public ActionExecutionContext(@Nullable StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, boolean bypassRateLimiters, boolean ignoreConditions, JsonObject jsonObject) {
+        this(event, executor, config, action, new PlaceholderScopeStack(), bypassRateLimiters, ignoreConditions, new AtomicBoolean(), new AtomicReference<>(), jsonObject, new AtomicBoolean(true));
         if (event != null) event.getPlaceholders().forEach(scopeStack::addPlaceholder);
         if (config != null) config.getCustomPlaceholders().forEach(scopeStack::addPlaceholder);
         scopeStack.push("action");
     }
 
     boolean checkConditions() {
-        return action().check(this);
+        return ignoreConditions || action().check(this);
     }
 
     public void markDirty() {

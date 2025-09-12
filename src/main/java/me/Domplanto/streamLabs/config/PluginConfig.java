@@ -99,6 +99,8 @@ public class PluginConfig extends ConfigRoot {
         public String id;
         @YamlProperty("instancing_behavior")
         public ActionExecutor.ActionInstancingBehaviour instancingBehaviour = ActionExecutor.ActionInstancingBehaviour.CANCEL_PREVIOUS;
+        @YamlProperty("queue_delay")
+        public long queueDelay = 0;
         @YamlProperty("stop_on_failure")
         public boolean stopOnFailure;
         @Nullable

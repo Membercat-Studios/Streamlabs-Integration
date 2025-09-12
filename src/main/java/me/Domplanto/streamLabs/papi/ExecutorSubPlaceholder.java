@@ -34,6 +34,7 @@ public class ExecutorSubPlaceholder extends SubPlaceholder {
             case "queued_actions" -> executor.getQueuedCount();
             case "queued_instances" -> additionalData.length == 1 ? executor.getQueuedInstanceCount(additionalData[0])
                     : executor.getQueuedInstanceCount();
+            case "global_queued_instances" -> executor.getGlobalQueuedCount();
             default -> "Unknown sub-placeholder \"%s\"".formatted(params);
         })).map(Component::text);
     }
