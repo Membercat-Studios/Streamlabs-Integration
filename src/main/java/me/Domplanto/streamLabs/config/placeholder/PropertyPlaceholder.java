@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -21,12 +22,18 @@ public class PropertyPlaceholder extends AbstractPlaceholder {
     public PropertyPlaceholder(@NotNull String name, @NotNull String format) throws PatternSyntaxException {
         super(name);
         this.properties = new HashMap<>();
-        this.pattern = Pattern.compile(Pattern.quote(format).formatted(Pattern.quote(name()) + PROPERTY_PATTERN));
+        this.pattern = Pattern.compile(format.formatted(Pattern.quote(name()) + PROPERTY_PATTERN));
     }
 
     public @NotNull PropertyPlaceholder withDefaultValue(@Nullable String defaultValue) {
         this.defaultValue = defaultValue;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof PropertyPlaceholder that)) return false;
+        return Objects.equals(pattern.toString(), that.pattern.toString());
     }
 
     public void addProperty(@NotNull String key, @Nullable String value) {
@@ -41,19 +48,19 @@ public class PropertyPlaceholder extends AbstractPlaceholder {
     @Override
     public @NotNull String replaceAll(@NotNull String input, ActionExecutionContext ctx) {
         return this.pattern.matcher(input).replaceAll(result -> {
-            String key = result.group();
-            if (key.isBlank()) {
+            String key = result.group(1);
+            if (key == null) {
                 if (this.defaultValue == null) {
                     StreamLabs.LOGGER.warning("No property of placeholder \"%s\" specified, and no default value is present".formatted(name()));
                     return "";
                 }
-                return this.defaultValue;
+                return Matcher.quoteReplacement(this.defaultValue);
             }
 
             String value = this.properties.get(key);
             if (value == null)
                 StreamLabs.LOGGER.warning("Attempted to resolve non-existent property \"%s\" of property placeholder \"%s\"".formatted(key, name()));
-            return Objects.requireNonNullElse(value, "");
+            return Matcher.quoteReplacement(Objects.requireNonNullElse(value, ""));
         });
     }
 }

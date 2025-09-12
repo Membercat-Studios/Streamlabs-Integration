@@ -17,7 +17,7 @@ import java.util.Objects;
 @ConfigPathSegment(id = "custom_placeholder")
 public final class CustomPlaceholder extends ActionPlaceholder implements YamlPropertyObject {
     public CustomPlaceholder(@NotNull String id, @Nullable String defaultValue, List<StateBasedValue> values) {
-        super(id, PlaceholderFunction.of((object, ctx) -> getValue(values, defaultValue, ctx)));
+        super(id, PlaceholderFunction.of(ctx -> getValue(values, defaultValue, ctx)));
     }
 
     @NotNull

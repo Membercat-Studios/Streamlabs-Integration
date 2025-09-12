@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ActionPlaceholder extends AbstractPlaceholder {
@@ -39,7 +40,7 @@ public class ActionPlaceholder extends AbstractPlaceholder {
 
     @Override
     public @NotNull String replaceAll(@NotNull String input, ActionExecutionContext ctx) {
-        return input.replaceAll(Pattern.quote(getFormat()), function().execute(ctx));
+        return input.replaceAll(Pattern.quote(getFormat()), Matcher.quoteReplacement(function().execute(ctx)));
     }
 
     @SuppressWarnings("ClassCanBeRecord")

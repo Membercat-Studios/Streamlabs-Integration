@@ -28,7 +28,8 @@ public abstract class AbstractPlaceholder {
                 originalString = placeholder.replaceAll(originalString, ctx);
             } catch (Exception e) {
                 ctx.markDirty();
-                StreamLabs.LOGGER.log(Level.WARNING, "Failed to resolve placeholder %s:", e);
+                StreamLabs.LOGGER.log(Level.WARNING, "Failed to resolve placeholder %s:".formatted(placeholder), e);
+                return originalString;
             }
         }
 
@@ -51,4 +52,7 @@ public abstract class AbstractPlaceholder {
     public abstract boolean isPresentIn(@NotNull String input);
 
     public abstract @NotNull String replaceAll(@NotNull String input, ActionExecutionContext ctx);
+
+    @Override
+    public abstract boolean equals(Object obj);
 }

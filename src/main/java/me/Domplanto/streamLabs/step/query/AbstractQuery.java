@@ -2,11 +2,11 @@ package me.Domplanto.streamLabs.step.query;
 
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
-import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.config.issue.ConfigPathStack;
+import me.Domplanto.streamLabs.config.placeholder.AbstractPlaceholder;
+import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.step.AbstractStep;
 import me.Domplanto.streamLabs.step.StepBase;
 import me.Domplanto.streamLabs.util.yaml.YamlProperty;
@@ -76,8 +76,8 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
     }
 
     protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
-        if (!this.hasOutput()) return null;
         String data = Objects.requireNonNullElse(this.runQuery(ctx, plugin), "");
+        if (!this.hasOutput()) return null;
         return new QueryPlaceholder(this.output, data);
     }
 
@@ -109,13 +109,15 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
     }
 
     public static class QueryPlaceholder extends ActionPlaceholder {
+        public static final String FORMAT = "\\{\\$%s\\}";
+
         public QueryPlaceholder(@NotNull String name, @NotNull String value) {
             super(name, PlaceholderFunction.of(value));
         }
 
         @Override
         public @NotNull String getFormat() {
-            return "{$%s}".formatted(name());
+            return FORMAT.replaceAll("\\\\", "").formatted(name());
         }
     }
 }

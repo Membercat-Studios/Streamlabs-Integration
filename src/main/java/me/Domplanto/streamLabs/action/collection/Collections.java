@@ -1,10 +1,7 @@
 package me.Domplanto.streamLabs.action.collection;
 
 import io.papermc.paper.registry.RegistryKey;
-import io.papermc.paper.registry.keys.tags.BlockTypeTagKeys;
-import io.papermc.paper.registry.keys.tags.EnchantmentTagKeys;
-import io.papermc.paper.registry.keys.tags.EntityTypeTagKeys;
-import io.papermc.paper.registry.keys.tags.ItemTypeTagKeys;
+import io.papermc.paper.registry.keys.tags.*;
 import me.Domplanto.streamLabs.condition.Condition;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
@@ -157,7 +154,7 @@ public class Collections {
             .withProperty("food", ItemType::isEdible)
             .withProperty("fuel", ItemType::isFuel)
             .withProperty("compostable", ItemType::isCompostable)
-            .withProperty("compost_chance", ItemType::getCompostChance);
+            .withProperty("compost_chance", i -> i.isCompostable() ? i.getCompostChance() : null);
     public static final NamedCollection<BlockType> BLOCK = new NamedCollection.RegistryCollection<>(RegistryKey.BLOCK)
             .withTagProperty("air", BlockTypeTagKeys.AIR)
             .withTagProperty("valid_spawn", BlockTypeTagKeys.VALID_SPAWN)
@@ -186,7 +183,9 @@ public class Collections {
                     Condition.invert(Condition.ofStaticEquals(placeholder("air"), Boolean.TRUE.toString())),
                     Condition.invert(Condition.ofStaticEquals(placeholder("wither_immune"), Boolean.TRUE.toString()))
             ));
-    public static final NamedCollection<Biome> BIOME = new NamedCollection.RegistryCollection<>(RegistryKey.BIOME);
+    public static final NamedCollection<Biome> BIOME = new NamedCollection.RegistryCollection<>(RegistryKey.BIOME)
+            .withTagProperty("ocean", BiomeTagKeys.IS_OCEAN)
+            .withTagProperty("deep_ocean", BiomeTagKeys.IS_DEEP_OCEAN);
     public static final NamedCollection<Structure> STRUCTURE = new NamedCollection.RegistryCollection<>(RegistryKey.STRUCTURE);
     public static final NamedCollection<World> WORLD = new NamedCollection.SimpleCollection<>(s -> s.getWorlds().stream(), World::getName)
             .withProperty("uuid", World::getUID)
@@ -228,11 +227,12 @@ public class Collections {
     }
 
     private static ActionPlaceholder.PlaceholderFunction placeholder(@NotNull String id) {
-        return ActionPlaceholder.PlaceholderFunction.of((obj, ctx) -> ctx.scopeStack()
+        return ActionPlaceholder.PlaceholderFunction.of(ctx -> ctx.scopeStack()
                 .getPlaceholders().stream()
+                .filter(p -> p instanceof ActionPlaceholder)
                 .filter(p -> p.name().equals(id))
-                .findAny().map(ActionPlaceholder::function)
-                .map(f -> f.execute(obj, ctx)).orElseThrow());
+                .findAny().map(p -> ((ActionPlaceholder) p).function())
+                .map(f -> f.execute(ctx)).orElseThrow());
     }
 
     public static @Nullable NamedCollection<?> fromName(@NotNull String name) {

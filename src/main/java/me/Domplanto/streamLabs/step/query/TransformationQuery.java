@@ -35,8 +35,8 @@ public abstract class TransformationQuery<T> extends AbstractQuery<T> {
     }
 
     protected @Nullable AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
-        if (!this.hasOutput()) return null;
         String data = Objects.requireNonNullElse(this.runQuery(input, ctx, plugin), "");
+        if (!this.hasOutput()) return null;
         return new QueryPlaceholder(this.outputName(), data);
     }
 
