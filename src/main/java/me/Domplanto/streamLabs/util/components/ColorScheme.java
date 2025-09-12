@@ -11,4 +11,5 @@ public class ColorScheme {
     public static TextColor DISABLE = TextColor.color(0xFF5915);
     public static TextColor ERROR = TextColor.color(0xFF1A4C);
     public static TextColor COMMENT = TextColor.color(0x677676);
+    public static TextColor TODO = TextColor.color(0x5DAD46);
 }

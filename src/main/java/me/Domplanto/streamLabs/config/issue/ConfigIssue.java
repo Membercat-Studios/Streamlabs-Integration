@@ -42,21 +42,28 @@ public class ConfigIssue {
     }
 
     public enum Level {
-        ERROR(ColorScheme.ERROR, java.util.logging.Level.SEVERE),
-        WARNING(ColorScheme.INVALID, java.util.logging.Level.WARNING),
-        HINT(ColorScheme.COMMENT, java.util.logging.Level.INFO);
+        ERROR(ColorScheme.ERROR, java.util.logging.Level.SEVERE, true),
+        WARNING(ColorScheme.INVALID, java.util.logging.Level.WARNING, true),
+        HINT(ColorScheme.COMMENT, java.util.logging.Level.INFO, false),
+        TODO(ColorScheme.TODO, java.util.logging.Level.INFO, false);
         private final TextColor color;
         private final java.util.logging.Level logLevel;
+        private final boolean important;
 
-        Level(TextColor color, java.util.logging.Level logLevel) {
+        Level(TextColor color, java.util.logging.Level logLevel, boolean important) {
             this.color = color;
             this.logLevel = logLevel;
+            this.important = important;
         }
 
         public Component translatable() {
             return Component.translatable()
                     .key("streamlabs.issue.level.%s".formatted(this.name().toLowerCase()))
-                    .style(Style.style(this.color, this != HINT ? Set.of(TextDecoration.BOLD) : Set.of())).build();
+                    .style(Style.style(this.color, isImportant() ? Set.of(TextDecoration.BOLD) : Set.of())).build();
+        }
+
+        public boolean isImportant() {
+            return important;
         }
 
         public TextColor getColor() {

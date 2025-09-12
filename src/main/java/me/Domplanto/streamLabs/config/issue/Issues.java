@@ -73,6 +73,8 @@ public class Issues {
     public static ConfigIssue HCS0 = new ConfigIssue("HCS0", ConfigIssue.Level.HINT);
     public static ConfigIssue HI0 = new ConfigIssue("HI0", ConfigIssue.Level.HINT);
 
+    public static Function<String, ConfigIssue> TODO = notice -> new ConfigIssue("TODO", ConfigIssue.Level.TODO, text(notice));
+
     public static ConfigIssue WI2(Field field, Object value, YamlPropertyObject object) throws ReflectiveOperationException {
         Component defaultVal = Optional.ofNullable(field.get(object)).map(o -> ((Component) text(o.toString()))).orElseGet(() -> translatable("streamlabs.issue.format.nothing"));
         return new ConfigIssue("WI2", ConfigIssue.Level.WARNING, text(getClassDisplayName(field.getType())), text(getObjectTypeName(value)), defaultVal);

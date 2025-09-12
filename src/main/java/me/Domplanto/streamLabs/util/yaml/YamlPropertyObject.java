@@ -16,6 +16,7 @@ import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 public interface YamlPropertyObject {
     String SUPPRESS_KEY = "__suppress";
+    String TODO_KEY = "__todo";
 
     @Nullable
     static String getString(ConfigurationSection section, String key) {
@@ -54,10 +55,15 @@ public interface YamlPropertyObject {
                 .collect(Collectors.toMap(o -> (String) o[0], o -> (T) o[1]));
     }
 
-    private static void suppressForSection(ConfigurationSection section, ConfigIssueHelper issueHelper) {
-        if (getSectionKeys(section, false).contains(SUPPRESS_KEY)) {
+    private static void processSpecialKeys(ConfigurationSection section, ConfigIssueHelper issueHelper) {
+        Set<String> keys = getSectionKeys(section, false);
+        if (keys.contains(SUPPRESS_KEY)) {
             issueHelper.process(SUPPRESS_KEY);
             issueHelper.suppress(section.getStringList(SUPPRESS_KEY));
+        } else if (keys.contains(TODO_KEY)) {
+            issueHelper.process(TODO_KEY);
+            String notice = String.valueOf(section.get(TODO_KEY));
+            issueHelper.appendAtPath(TODO.apply(notice));
         }
     }
 
@@ -72,7 +78,7 @@ public interface YamlPropertyObject {
     static <T extends YamlPropertyObject> T createInstance(Class<T> type,
                                                            ConfigurationSection section, ConfigIssueHelper issueHelper) {
         try {
-            suppressForSection(section, issueHelper);
+            processSpecialKeys(section, issueHelper);
             Method staticDeserializer = YamlPropertyObject.getOtherCustomDeserializer(type);
             T instance;
             if (staticDeserializer != null) {
@@ -109,7 +115,7 @@ public interface YamlPropertyObject {
 
     default void acceptYamlProperties(ConfigurationSection section, ConfigIssueHelper issueHelper) {
         try {
-            suppressForSection(section, issueHelper);
+            processSpecialKeys(section, issueHelper);
             for (Field field : this.getYamlPropertyFields()) {
                 boolean isSection = field.isAnnotationPresent(YamlPropertySection.class);
                 String value = isSection ? field.getAnnotation(YamlPropertySection.class).value()
