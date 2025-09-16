@@ -7,6 +7,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import java.util.Objects;
 import java.util.Set;
 
 import static net.kyori.adventure.text.Component.translatable;
@@ -39,6 +40,12 @@ public class ConfigIssue {
 
     public Component getDescription() {
         return description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ConfigIssue that)) return false;
+        return Objects.equals(getId(), that.getId()) && getLevel() == that.getLevel() && Component.EQUALS.test(getDescription(), that.getDescription());
     }
 
     public enum Level {
