@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.HC1;
+import static me.Domplanto.streamLabs.config.issue.Issues.HC2;
 
 @SuppressWarnings("unused")
 public interface Operator {
@@ -47,6 +48,7 @@ public interface Operator {
         @Override
         default void assignIssues(Object element1, Object element2, ConfigIssueHelper issueHelper) {
             for (Object element : List.of(element1, element2)) {
+                if (element.toString().contains(",")) issueHelper.appendAtPath(HC2);
                 if (element.toString().isBlank()) {
                     issueHelper.appendAtPath(HC1);
                     return;
