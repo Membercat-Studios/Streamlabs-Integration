@@ -142,12 +142,12 @@ public class PluginConfig extends ConfigRoot {
     public static class Action extends AbstractAction {
         private static final Set<String> ACTION_IDS = StreamLabs.getCachedEventObjects().stream()
                 .map(StreamlabsEvent::getId).collect(Collectors.toSet());
-        @YamlProperty("event")
+        @YamlProperty("events")
         private Set<String> eventTypes = Set.of();
         @YamlProperty("enabled")
         private boolean enabled = true;
 
-        @YamlPropertyCustomDeserializer(propertyName = "event")
+        @YamlPropertyCustomDeserializer(propertyName = "events")
         public Set<String> deserializeEventTypes(@NotNull String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
             String[] data = input.split(",");
             return Arrays.stream(data)
@@ -160,7 +160,7 @@ public class PluginConfig extends ConfigRoot {
                     }).collect(Collectors.toSet());
         }
 
-        @YamlPropertyIssueAssigner(propertyName = "event")
+        @YamlPropertyIssueAssigner(propertyName = "events")
         public void assignToAction(ConfigIssueHelper issueHelper, boolean actuallySet) {
             if (!actuallySet) issueHelper.appendAtPath(WA1);
         }

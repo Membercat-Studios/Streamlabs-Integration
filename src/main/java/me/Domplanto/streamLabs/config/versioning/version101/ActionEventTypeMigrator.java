@@ -27,7 +27,7 @@ public class ActionEventTypeMigrator implements ConfigMigrator {
             String eventType = action.getString("action");
             if (eventType == null) continue;
             action.set("action", null);
-            action.set("event", eventType);
+            action.set("events", eventType);
         }
     }
 }
