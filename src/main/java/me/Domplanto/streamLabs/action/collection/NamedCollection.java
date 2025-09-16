@@ -2,7 +2,8 @@ package me.Domplanto.streamLabs.action.collection;
 
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
-import io.papermc.paper.registry.tag.TagKey;
+import io.papermc.paper.registry.TypedKey;
+import io.papermc.paper.registry.tag.Tag;
 import me.Domplanto.streamLabs.StreamLabs;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.placeholder.PropertyPlaceholder;
@@ -145,17 +146,24 @@ public abstract class NamedCollection<T> {
             this.key = key;
         }
 
+        @Override
         @SuppressWarnings("UnstableApiUsage")
-        protected RegistryCollection<E, K> withTagProperty(@NotNull String name, TagKey<@NotNull E> tagKey) {
-            return (RegistryCollection<E, K>) this.withProperty(name, element -> {
-                Registry<@NotNull E> registry = RegistryAccess.registryAccess().getRegistry(tagKey.registryKey());
-                return registry.getTag(tagKey).resolve(registry).contains(element);
-            });
+        public @NotNull Map<String, Function<E, ?>> getAdditionalProperties() {
+            Map<String, Function<E, ?>> props = new HashMap<>(super.getAdditionalProperties());
+            for (Tag<@NotNull E> tag : registry().getTags()) {
+                String key = tag.tagKey().key().asMinimalString();
+                props.put("tag:" + key, element -> tag.contains(TypedKey.create(this.key, element.key())));
+            }
+            return props;
         }
 
         @Override
         public @NotNull Stream<E> loadCollection(@NotNull Server server) {
-            return RegistryAccess.registryAccess().getRegistry(this.key).stream();
+            return registry().stream();
+        }
+
+        private @NotNull Registry<@NotNull E> registry() {
+            return RegistryAccess.registryAccess().getRegistry(this.key);
         }
 
         @Override
