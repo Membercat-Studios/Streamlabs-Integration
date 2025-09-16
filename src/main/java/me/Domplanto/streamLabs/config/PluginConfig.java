@@ -10,6 +10,7 @@ import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
 import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.config.placeholder.CustomPlaceholder;
 import me.Domplanto.streamLabs.events.StreamlabsEvent;
+import me.Domplanto.streamLabs.socket.StreamlabsSocketClient;
 import me.Domplanto.streamLabs.statistics.goal.DonationGoal;
 import me.Domplanto.streamLabs.step.AbstractStep;
 import me.Domplanto.streamLabs.step.StepBase;
@@ -20,6 +21,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -202,7 +204,7 @@ public class PluginConfig extends ConfigRoot {
     @ConfigPathSegment(id = "plugin_options")
     public static class PluginOptions implements YamlPropertyObject {
         @YamlProperty("socket_token")
-        public String socketToken;
+        public String socketToken = "";
         @YamlProperty("debug_mode")
         public boolean debugMode = false;
         @YamlProperty("show_status_messages")
@@ -214,6 +216,21 @@ public class PluginConfig extends ConfigRoot {
         private void assignToSocketToken(ConfigIssueHelper issueHelper, boolean actuallySet) {
             if (!actuallySet || this.socketToken.isBlank())
                 issueHelper.appendAtPath(ES0);
+            try {
+                StreamlabsSocketClient.createURI(this.socketToken);
+            } catch (IllegalArgumentException e) {
+                if (!(e.getCause() instanceof URISyntaxException syntaxException)
+                        || !syntaxException.getMessage().contains("Illegal character")
+                        || syntaxException.getIndex() == -1)
+                    issueHelper.appendAtPath(WS0);
+                else {
+                    int start = StreamlabsSocketClient.getURIString(socketToken).indexOf(socketToken);
+                    int index = syntaxException.getIndex() - start;
+                    String character = String.valueOf(this.socketToken.charAt(index));
+                    issueHelper.appendAtPath(WS0D.apply(character, index));
+                }
+                this.socketToken = "";
+            }
         }
 
         @YamlPropertyIssueAssigner(propertyName = "debug_mode")

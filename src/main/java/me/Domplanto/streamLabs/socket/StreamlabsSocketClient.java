@@ -30,8 +30,12 @@ public class StreamlabsSocketClient extends WebSocketClient {
         this.eventListeners = new HashSet<>();
     }
 
-    private static URI createURI(String socketToken) {
-        return URI.create(String.format("wss://sockets.streamlabs.com/socket.io/?token=%s&transport=websocket", socketToken));
+    public static String getURIString(String socketToken) {
+        return String.format("wss://sockets.streamlabs.com/socket.io/?token=%s&transport=websocket", socketToken);
+    }
+
+    public static URI createURI(String socketToken) throws IllegalArgumentException {
+        return URI.create(getURIString(socketToken));
     }
 
     private boolean processStatusCode(int statusCode) {

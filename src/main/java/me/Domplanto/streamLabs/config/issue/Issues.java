@@ -32,6 +32,8 @@ public class Issues {
 
     public static ConfigIssue WI0 = new ConfigIssue("WI0", ConfigIssue.Level.WARNING);
     public static ConfigIssue WI1 = new ConfigIssue("WI1", ConfigIssue.Level.WARNING);
+    public static ConfigIssue WS0 = new ConfigIssue("WS0", ConfigIssue.Level.WARNING);
+    public static BiFunction<String, Integer, ConfigIssue> WS0D = (character, pos) -> new ConfigIssue("WS0D", ConfigIssue.Level.WARNING, text(character), text(pos));
     public static Function<String, ConfigIssue> WA0 = action -> new ConfigIssue("WA0", ConfigIssue.Level.WARNING, text(action));
     public static ConfigIssue WA1 = new ConfigIssue("WA1", ConfigIssue.Level.WARNING);
     public static Function<String, ConfigIssue> WA2 = type -> new ConfigIssue("WA2", ConfigIssue.Level.WARNING, text(type));
