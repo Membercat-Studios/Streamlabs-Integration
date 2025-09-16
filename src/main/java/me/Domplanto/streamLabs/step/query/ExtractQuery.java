@@ -28,7 +28,7 @@ public class ExtractQuery extends TransformationQuery<NamedCollectionInstance<?>
     protected @Nullable AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
         //noinspection unchecked
         NamedCollection<Object> collection = (NamedCollection<Object>) this.extractCollection.collection();
-        Object element = this.extract(input, plugin.getServer(), collection);
+        Object element = this.extract(input, plugin.getServer(), ctx, collection);
         if (element == null) return createPlaceholder(null);
         return collection.createPropertyPlaceholder(element, outputName(), QueryPlaceholder.FORMAT);
     }
@@ -38,9 +38,9 @@ public class ExtractQuery extends TransformationQuery<NamedCollectionInstance<?>
         return null;
     }
 
-    private @Nullable Object extract(String input, Server server, @NotNull NamedCollection<Object> collection) {
+    private @Nullable Object extract(String input, Server server, ActionExecutionContext ctx, @NotNull NamedCollection<Object> collection) {
         String lowerInput = input.toLowerCase();
-        return this.extractCollection.getElements(server)
+        return this.extractCollection.getElements(server, ctx)
                 .filter(e -> lowerInput.contains(collection.getElementDisplayNameString(e).toLowerCase()))
                 .findFirst().orElse(null);
     }

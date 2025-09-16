@@ -34,7 +34,7 @@ public class RandomElementQuery extends AbstractQuery<NamedCollectionInstance<?>
     protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
         //noinspection unchecked
         NamedCollection<Object> namedCollection = (NamedCollection<Object>) collection.collection();
-        List<?> elements = collection.getElements(plugin.getServer()).toList();
+        List<?> elements = collection.getElements(plugin.getServer(), ctx).toList();
         if (elements.isEmpty()) return createPlaceholder(null);
 
         int idx = random.nextInt(0, elements.size());

@@ -1,10 +1,9 @@
 package me.Domplanto.streamLabs.action.collection;
 
-import com.google.gson.JsonObject;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
-import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
+import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.statistics.EventHistorySelector;
 import me.Domplanto.streamLabs.util.yaml.PropertyLoadable;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,7 +11,9 @@ import org.bukkit.Server;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static me.Domplanto.streamLabs.config.issue.Issues.WNC0;
@@ -45,8 +46,8 @@ public final class NamedCollectionInstance<T> {
         return new NamedCollectionInstance<>(namedCollection, filter);
     }
 
-    public @NotNull Stream<T> getElements(@NotNull Server server) {
-        return this.filter.applyOn(this.collection.loadCollection(server), collection);
+    public @NotNull Stream<T> getElements(@NotNull Server server, @NotNull ActionExecutionContext ctx) {
+        return this.filter.applyOn(this.collection.loadCollection(server), collection, ctx);
     }
 
     public @NotNull NamedCollection<T> collection() {
@@ -64,16 +65,32 @@ public final class NamedCollectionInstance<T> {
             this.conditionGroup = ConditionGroup.of(ConditionGroup.Mode.AND, from.conditionGroup, this.conditionGroup);
         }
 
-        public @NotNull Stream<T> applyOn(@NotNull Stream<T> data, @NotNull NamedCollection<T> source) {
-            return data.filter(element -> {
-                ActionExecutionContext groupCtx = new ActionExecutionContext(null, null, null, null, false, false, new JsonObject());
-                groupCtx.scopeStack().addPlaceholder("id", ActionPlaceholder.PlaceholderFunction.of(o -> source.getElementId(element)));
-                for (Map.Entry<String, Function<T, ?>> entry : source.getAdditionalProperties().entrySet()) {
-                    groupCtx.scopeStack().addPlaceholder(entry.getKey(), ActionPlaceholder.PlaceholderFunction.of(o ->
-                            NamedCollection.getPropertyAsString(entry.getValue().apply(element))));
-                }
-                return this.conditionGroup.check(groupCtx);
-            });
+        public @NotNull Stream<T> applyOn(@NotNull Stream<T> data, @NotNull NamedCollection<T> source, @NotNull ActionExecutionContext ctx) {
+            AtomicReference<T> activeElement = new AtomicReference<>();
+            ctx.scopeStack().push("named collection filter");
+            ctx.scopeStack().addPlaceholder(new FilterPlaceholder("id", () -> source.getElementId(activeElement.get())));
+            for (Map.Entry<String, Function<T, ?>> entry : source.getAdditionalProperties().entrySet()) {
+                ctx.scopeStack().addPlaceholder(new FilterPlaceholder(entry.getKey(), () ->
+                        NamedCollection.getPropertyAsString(entry.getValue().apply(activeElement.get()))));
+            }
+
+            Stream<T> result = data.filter(element -> {
+                activeElement.set(element);
+                return this.conditionGroup.check(ctx);
+            }).toList().stream();
+            ctx.scopeStack().pop();
+            return result;
+        }
+
+        private static class FilterPlaceholder extends ActionPlaceholder {
+            public FilterPlaceholder(@NotNull String name, Supplier<String> valueSupplier) {
+                super(name, PlaceholderFunction.of(ctx -> valueSupplier.get()));
+            }
+
+            @Override
+            public @NotNull String getFormat() {
+                return "#%s#".formatted(name());
+            }
         }
     }
 

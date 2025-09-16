@@ -50,7 +50,7 @@ public class BulkRandomElements extends RepeatStep {
     protected void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException {
         this.selectedElements.clear();
         this.step = 0;
-        this.elements = collection.getElements(getPlugin().getServer()).toList();
+        this.elements = collection.getElements(getPlugin().getServer(), ctx).toList();
         if (elements.isEmpty()) return;
 
         ctx.scopeStack().push("bulk random element loop at %s".formatted(getLocation().toFormattedString()));

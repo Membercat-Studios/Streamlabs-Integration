@@ -84,7 +84,7 @@ public abstract class NamedCollection<T> {
                 Object result = entry.getValue().apply(element);
                 if (result instanceof Component component) {
                     String formatted = MiniMessage.miniMessage().serialize(component);
-                    placeholder.addProperty(entry.getKey() + "_formatted", formatted);
+                    placeholder.addProperty(entry.getKey() + ":formatted", formatted);
                 }
 
                 placeholder.addProperty(entry.getKey(), getPropertyAsString(result));
