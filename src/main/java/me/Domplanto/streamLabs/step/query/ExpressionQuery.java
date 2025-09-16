@@ -17,8 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static me.Domplanto.streamLabs.config.issue.Issues.WE0;
-import static me.Domplanto.streamLabs.config.issue.Issues.WE1;
+import static me.Domplanto.streamLabs.config.issue.Issues.*;
 
 @ReflectUtil.ClassId("expression")
 public class ExpressionQuery extends TransformationQuery<String> {
@@ -40,7 +39,7 @@ public class ExpressionQuery extends TransformationQuery<String> {
             this.compiledPattern = Pattern.compile(this.pattern);
         } catch (PatternSyntaxException e) {
             this.pattern = "";
-            issueHelper.appendAtPath(WE0.apply(e.getMessage()));
+            issueHelper.appendAtPath(e.getIndex() != -1 ? WE0D.apply(e.getDescription(), e.getIndex()) : WE0.apply(e.getDescription()));
         }
     }
 

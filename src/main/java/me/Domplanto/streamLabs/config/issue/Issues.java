@@ -52,6 +52,7 @@ public class Issues {
     public static ConfigIssue WRP0 = new ConfigIssue("WRP0", ConfigIssue.Level.WARNING);
     public static BiFunction<String, String, ConfigIssue> WD0 = (value, defaultVal) -> new ConfigIssue("WD0", ConfigIssue.Level.WARNING, text(value), text(defaultVal));
     public static Function<String, ConfigIssue> WE0 = expression -> new ConfigIssue("WE0", ConfigIssue.Level.WARNING, text(expression));
+    public static BiFunction<String, Integer, ConfigIssue> WE0D = (expression, index) -> new ConfigIssue("WE0D", ConfigIssue.Level.WARNING, text(expression), text(index));
     public static Function<String, ConfigIssue> WE1 = action -> new ConfigIssue("WE1", ConfigIssue.Level.WARNING, text(action));
     public static Function<String, ConfigIssue> WNC0 = extraction -> new ConfigIssue("WNC0", ConfigIssue.Level.WARNING, text(extraction));
     public static ConfigIssue WNC1 = new ConfigIssue("WNC1", ConfigIssue.Level.WARNING);
