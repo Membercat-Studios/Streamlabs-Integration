@@ -28,7 +28,7 @@ public class ActionExecutor {
     private final EventHistory eventHistory;
     private final StreamLabs plugin;
     private final ConcurrentMap<String, Set<UUID>> runningActions;
-    private final ConcurrentMap<String, Stack<ActionExecutionContext>> queuedActions;
+    private final ConcurrentMap<String, Queue<ActionExecutionContext>> queuedActions;
     private final Queue<ActionExecutionContext> globalQueue;
     @Nullable
     private DonationGoal activeGoal;
@@ -102,7 +102,7 @@ public class ActionExecutor {
         if (!instances.isEmpty()) switch (ctx.action().instancingBehaviour) {
             case CANCEL_PREVIOUS -> instances.clear();
             case QUEUE -> {
-                Stack<ActionExecutionContext> queue = this.queuedActions.computeIfAbsent(actionId, s -> new Stack<>());
+                Queue<ActionExecutionContext> queue = this.queuedActions.computeIfAbsent(actionId, s -> new ConcurrentLinkedQueue<>());
                 queue.add(ctx);
                 StreamLabs.LOGGER.info("Queueing new execution of action %s since it is already running. Queue size is now: %s".formatted(actionId, queue.size()));
                 return;
@@ -121,8 +121,9 @@ public class ActionExecutor {
             if (instanceSet.isEmpty()) this.runningActions.remove(actionId);
 
             if (queuedActions.containsKey(actionId)) {
-                Stack<ActionExecutionContext> queue = queuedActions.get(actionId);
-                ActionExecutionContext queuedCtx = queue.pop();
+                Queue<ActionExecutionContext> queue = queuedActions.get(actionId);
+                ActionExecutionContext queuedCtx = queue.poll();
+                assert queuedCtx != null;
                 if (queue.isEmpty()) queuedActions.remove(actionId);
                 StreamLabs.LOGGER.info("Action %s has finished, now executing queued runs. Queue size is now: %s".formatted(actionId, queue.size()));
                 try {
@@ -209,7 +210,7 @@ public class ActionExecutor {
     }
 
     public int getQueuedInstanceCount(@NotNull String actionId) {
-        return this.queuedActions.getOrDefault(actionId, new Stack<>()).size();
+        return this.queuedActions.getOrDefault(actionId, new ConcurrentLinkedQueue<>()).size();
     }
 
     public int getGlobalQueuedCount() {
