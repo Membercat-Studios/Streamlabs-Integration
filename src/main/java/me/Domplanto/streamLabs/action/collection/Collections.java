@@ -30,7 +30,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-@SuppressWarnings({"UnstableApiUsage", "unused"})
+@SuppressWarnings({"unused"})
 public class Collections {
     public static final NamedCollection<?> EMPTY = new NamedCollection.SimpleCollection<>(s -> Stream.of(), o -> "");
     public static final NamedCollection<OfflinePlayer> PLAYER = new NamedCollection.SimpleCollection<>(s -> Arrays.stream(s.getOfflinePlayers()), p -> p.getUniqueId().toString())
@@ -53,6 +53,7 @@ public class Collections {
             .create();
     public static final NamedCollection<Enchantment> ENCHANTMENT = new NamedCollection.RegistryCollection<>(RegistryKey.ENCHANTMENT)
             .withProperty("description", NamedCollection.TypedFunction.ofGeneric(Component.class, Enchantment::description))
+            .withProperty("weight", Enchantment::getWeight)
             .withProperty("start_level", Enchantment::getStartLevel)
             .withProperty("max_level", Enchantment::getMaxLevel)
             .withProperty("anvil_cost", Enchantment::getAnvilCost)
@@ -62,6 +63,7 @@ public class Collections {
             .withProperty("category", PotionEffectType::getEffectCategory)
             .withProperty("color", e -> TextColor.color(e.getColor().asARGB()))
             .withProperty("category_color", e -> e.getEffectCategory().getColor())
+            .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND, Condition.ofStaticEquals(placeholder("instant"), Boolean.FALSE.toString())))
             .create();
     public static final NamedCollection<ItemType> ITEM = new NamedCollection.RegistryCollection<>(RegistryKey.ITEM)
             .withProperty("block_item", ItemType::hasBlockType)
@@ -103,7 +105,7 @@ public class Collections {
     public static final NamedCollection<Structure> STRUCTURE = new NamedCollection.RegistryCollection<>(RegistryKey.STRUCTURE);
     public static final NamedCollection<World> WORLD = new NamedCollection.SimpleCollection<>(s -> s.getWorlds().stream(), World::getName)
             .withProperty("uuid", World::getUID)
-            .withProperty("can_generate_structures", World::canGenerateStructures)
+            .withProperty("generate_structures", World::canGenerateStructures)
             .withProperty("bonus_chest", World::hasBonusChest)
             .withProperty("ceiling", World::hasCeiling)
             .withProperty("sky_light", World::hasSkyLight)
