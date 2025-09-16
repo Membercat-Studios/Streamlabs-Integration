@@ -13,11 +13,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 
 @ReflectUtil.ClassId("extract")
 public class ExtractQuery extends TransformationQuery<NamedCollectionInstance<?>> {
-    private static final long TIMEOUT = 10000;
     private NamedCollectionInstance<?> extractCollection;
 
     @Override
@@ -28,18 +26,11 @@ public class ExtractQuery extends TransformationQuery<NamedCollectionInstance<?>
 
     @Override
     protected @Nullable AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
-        try {
-            return runOnServerThread(plugin, TIMEOUT, () -> {
-                //noinspection unchecked
-                NamedCollection<Object> collection = (NamedCollection<Object>) this.extractCollection.collection();
-                Object element = this.extract(input, plugin.getServer(), collection);
-                if (element == null) return createPlaceholder(null);
-                return collection.createPropertyPlaceholder(element, outputName(), QueryPlaceholder.FORMAT);
-            });
-        } catch (TimeoutException e) {
-            StreamLabs.LOGGER.warning("Extract query for type %s couldn't extract the correct value in time, action took >10000ms (tried to extract from: \"%s\")!".formatted(this.extractCollection, input));
-            return null;
-        }
+        //noinspection unchecked
+        NamedCollection<Object> collection = (NamedCollection<Object>) this.extractCollection.collection();
+        Object element = this.extract(input, plugin.getServer(), collection);
+        if (element == null) return createPlaceholder(null);
+        return collection.createPropertyPlaceholder(element, outputName(), QueryPlaceholder.FORMAT);
     }
 
     @Override
