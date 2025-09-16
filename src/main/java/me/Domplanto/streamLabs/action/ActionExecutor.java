@@ -112,7 +112,7 @@ public class ActionExecutor {
         UUID taskUUID = UUID.randomUUID();
         instances.add(taskUUID);
         ctx.setKeepExecutingCheck(context -> runningActions.get(actionId).contains(taskUUID) && context.shouldExecute().get());
-        Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+        Bukkit.getAsyncScheduler().runNow(this.plugin, task -> {
             ctx.runSteps(ctx.action(), plugin);
             if (ctx.dirty().get())
                 Translations.sendPrefixedToPlayers(Translations.ACTION_FAILURE, plugin.getServer(), false);
@@ -160,6 +160,13 @@ public class ActionExecutor {
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Unexpected error while updating goal %s on event %s:".formatted(ctx.event().getId(), this.activeGoal), e);
         }
+    }
+
+    public void shutdown() {
+        StreamLabs.LOGGER.info("Attempting to cancel active action runs...");
+        this.runningActions.clear();
+        this.globalQueue.clear();
+        this.queuedActions.clear();
     }
 
     public void activateGoal(DonationGoal goal, int max) {

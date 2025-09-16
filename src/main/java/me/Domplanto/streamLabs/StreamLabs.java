@@ -143,6 +143,7 @@ public class StreamLabs extends JavaPlugin implements SocketEventListener {
         if (socketClient != null && socketClient.isOpen()) {
             StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(socketClient);
         }
+        if (this.executor != null) this.executor.shutdown();
     }
 
     public void reloadPluginConfig() throws ConfigLoadedWithIssuesException {

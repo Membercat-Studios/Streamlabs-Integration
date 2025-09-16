@@ -81,7 +81,8 @@ public class CommandQuery extends AbstractQuery<String> {
     private @Nullable String dispatchWithOutput(@NotNull String command, StreamLabs plugin) {
         CompletableFuture<Component> result = new CompletableFuture<>();
         CommandSender sender = Bukkit.createCommandSender(result::complete);
-        Bukkit.getScheduler().runTask(plugin, () -> actuallyDispatchSafe(sender, command));
+        if (Bukkit.isPrimaryThread()) actuallyDispatchSafe(sender, command);
+        else Bukkit.getGlobalRegionScheduler().run(plugin, task -> actuallyDispatchSafe(sender, command));
 
         Component output;
         try {
