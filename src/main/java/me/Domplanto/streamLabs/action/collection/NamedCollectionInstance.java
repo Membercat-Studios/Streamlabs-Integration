@@ -11,7 +11,6 @@ import org.bukkit.Server;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -65,21 +64,23 @@ public final class NamedCollectionInstance<T> {
             this.conditionGroup = ConditionGroup.of(ConditionGroup.Mode.AND, from.conditionGroup, this.conditionGroup);
         }
 
-        public @NotNull Stream<T> applyOn(@NotNull Stream<T> data, @NotNull NamedCollection<T> source, @NotNull ActionExecutionContext ctx) {
-            AtomicReference<T> activeElement = new AtomicReference<>();
-            ctx.scopeStack().push("named collection filter");
-            ctx.scopeStack().addPlaceholder(new FilterPlaceholder("id", () -> source.getElementId(activeElement.get())));
-            for (Map.Entry<String, Function<T, ?>> entry : source.getAdditionalProperties().entrySet()) {
-                ctx.scopeStack().addPlaceholder(new FilterPlaceholder(entry.getKey(), () ->
-                        NamedCollection.getPropertyAsString(entry.getValue().apply(activeElement.get()))));
-            }
+        public @NotNull Stream<T> applyOn(@NotNull Stream<T> data, @NotNull NamedCollection<T> source, @NotNull ActionExecutionContext context) {
+            if (conditionGroup.conditions.isEmpty()) return data;
+            return data.filter(element -> {
+                // Cloning context for multithreaded data operations
+                // This is fine, since we only use the context for placeholders here.
+                ActionExecutionContext ctx = context.cloneScopeStack();
+                ctx.scopeStack().push("named collection filter");
+                ctx.scopeStack().addPlaceholder(new FilterPlaceholder("id", () -> source.getElementId(element)));
+                for (Map.Entry<String, Function<T, ?>> entry : source.getAdditionalProperties().entrySet()) {
+                    ctx.scopeStack().addPlaceholder(new FilterPlaceholder(entry.getKey(), () ->
+                            NamedCollection.getPropertyAsString(entry.getValue().apply(element))));
+                }
 
-            Stream<T> result = data.filter(element -> {
-                activeElement.set(element);
-                return this.conditionGroup.check(ctx);
+                boolean result = this.conditionGroup.check(ctx);
+                ctx.scopeStack().pop();
+                return result;
             }).toList().stream();
-            ctx.scopeStack().pop();
-            return result;
         }
 
         private static class FilterPlaceholder extends ActionPlaceholder {

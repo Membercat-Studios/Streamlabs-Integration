@@ -56,6 +56,10 @@ public record ActionExecutionContext(
                 .orElse(false);
     }
 
+    public ActionExecutionContext cloneScopeStack() {
+        return new ActionExecutionContext(event, executor, config, action, (PlaceholderScopeStack) scopeStack.clone(), bypassRateLimiters, ignoreConditions, dirty, keepExecutingCheck, baseObject, shouldExecute);
+    }
+
     public boolean shouldStopOnFailure() {
         return action() != null && action().stopOnFailure;
     }
