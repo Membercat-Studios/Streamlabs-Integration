@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.5-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     compileOnly("me.clip:placeholderapi:2.11.6")
 
     implementation("com.fathzer:javaluator:3.0.3")
@@ -37,7 +37,7 @@ dependencies {
 
 paperPluginYaml {
     main.set "me.Domplanto.streamLabs.StreamLabs"
-    apiVersion.set "1.21.4"
+    apiVersion.set "1.21.8"
     authors.addAll("Membercat Studios", "Domplanto", "codingcat")
     website.set "https://github.com/Membercat-Studios/Streamlabs-Integration/wiki"
 
