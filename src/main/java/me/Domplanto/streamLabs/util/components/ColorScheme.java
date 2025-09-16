@@ -2,7 +2,7 @@ package me.Domplanto.streamLabs.util.components;
 
 import net.kyori.adventure.text.format.TextColor;
 
-public class ColorScheme {
+public final class ColorScheme {
     public static TextColor STREAMLABS = TextColor.color(0x80F5D2);
     public static TextColor WHITE = TextColor.color(0xFFFFFF);
     public static TextColor SUCCESS = TextColor.color(0x77FF33);

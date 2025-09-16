@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class ReflectUtil {
+public final class ReflectUtil {
     private static final Logger BASE_LOGGER = Logger.getLogger("StreamlabsIntegration Reflection Utils");
 
     public static <T> Set<? extends T> initializeClasses(Class<T> superType, Object... constructorArgs) {

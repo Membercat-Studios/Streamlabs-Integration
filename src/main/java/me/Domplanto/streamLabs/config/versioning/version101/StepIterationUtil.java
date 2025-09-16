@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import static me.Domplanto.streamLabs.config.versioning.version100.StepsMigrator.getSubSections;
 
-public class StepIterationUtil {
+public final class StepIterationUtil {
     private static final Set<String> LOGIC_STEPS;
 
     public static void applyForStepResult(@NotNull ConfigurationSection root, @NotNull String stepId, Consumer<StepResult> action) {

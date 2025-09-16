@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static net.kyori.adventure.text.Component.*;
 
-public class Translations {
+public final class Translations {
     private static final String STATUS_MESSAGE_PERMISSION = "streamlabs.status";
     private static final String MINIMESSAGE_URL = "https://docs.advntr.dev/minimessage";
     public static final Component MINIMESSAGE_LINK = text()
