@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -16,7 +18,7 @@ import java.util.regex.PatternSyntaxException;
 public class PropertyPlaceholder extends AbstractPlaceholder {
     private static final @RegExp String PROPERTY_PATTERN = "(?:\\.([a-zA-Z0-9_:]+))?";
     private final Pattern pattern;
-    private final Map<String, String> properties;
+    private final Map<String, Supplier<@Nullable String>> properties;
     private @Nullable String defaultValue;
 
     public PropertyPlaceholder(@NotNull String name, @NotNull String format) throws PatternSyntaxException {
@@ -37,7 +39,11 @@ public class PropertyPlaceholder extends AbstractPlaceholder {
     }
 
     public void addProperty(@NotNull String key, @Nullable String value) {
-        this.properties.put(key, value);
+        this.addProperty(key, () -> value);
+    }
+
+    public void addProperty(@NotNull String key, @NotNull Supplier<@Nullable String> valueSupplier) {
+        this.properties.put(key, valueSupplier);
     }
 
     @Override
@@ -47,19 +53,22 @@ public class PropertyPlaceholder extends AbstractPlaceholder {
 
     @Override
     public @NotNull String replaceAll(@NotNull String input, ActionExecutionContext ctx) {
+        String scopeName = Optional.ofNullable(ctx.scopeStack().peek().scopeName()).map(" (in %s)"::formatted).orElse("");
         return this.pattern.matcher(input).replaceAll(result -> {
             String key = result.group(1);
             if (key == null) {
                 if (this.defaultValue == null) {
-                    StreamLabs.LOGGER.warning("No property of placeholder \"%s\" specified, and no default value is present".formatted(name()));
+                    StreamLabs.LOGGER.warning("No property of placeholder \"%s\" specified, and no default value is present".formatted(name()) + scopeName);
                     return "";
                 }
                 return Matcher.quoteReplacement(this.defaultValue);
             }
 
-            String value = this.properties.get(key);
+            String value = Optional.ofNullable(this.properties.get(key))
+                    .map(str -> Objects.requireNonNullElse(str.get(), ""))
+                    .orElse(null);
             if (value == null)
-                StreamLabs.LOGGER.warning("Attempted to resolve non-existent property \"%s\" of property placeholder \"%s\"".formatted(key, name()));
+                StreamLabs.LOGGER.warning("Attempted to resolve non-existent property \"%s\" of property placeholder \"%s\"".formatted(key, name()) + scopeName);
             return Matcher.quoteReplacement(Objects.requireNonNullElse(value, ""));
         });
     }

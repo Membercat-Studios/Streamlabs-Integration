@@ -52,7 +52,7 @@ public class Collections {
             .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND, Condition.ofStaticEquals(placeholder("spawnable"), Boolean.TRUE.toString())))
             .create();
     public static final NamedCollection<Enchantment> ENCHANTMENT = new NamedCollection.RegistryCollection<>(RegistryKey.ENCHANTMENT)
-            .withProperty("description", Enchantment::description)
+            .withProperty("description", NamedCollection.TypedFunction.ofGeneric(Component.class, Enchantment::description))
             .withProperty("start_level", Enchantment::getStartLevel)
             .withProperty("max_level", Enchantment::getMaxLevel)
             .withProperty("anvil_cost", Enchantment::getAnvilCost)

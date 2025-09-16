@@ -87,8 +87,8 @@ public abstract class NamedCollection<T> {
 
     public @NotNull Map<String, Function<T, ?>> createAdditionalProperties() {
         Map<String, Function<T, ?>> props = new HashMap<>();
-        props.put("display_name", this::getElementDisplayName);
-        props.put("display_name_safe", this::getElementDisplayNameSafe);
+        props.put("display_name", TypedFunction.of(Component.class, this::getElementDisplayName));
+        props.put("display_name_safe", TypedFunction.of(Component.class, this::getElementDisplayNameSafe));
         return props;
     }
 
@@ -97,13 +97,9 @@ public abstract class NamedCollection<T> {
                 .withDefaultValue(getElementId(element));
         for (Map.Entry<String, Function<T, ?>> entry : getAdditionalProperties().entrySet()) {
             try {
-                Object result = entry.getValue().apply(element);
-                if (result instanceof Component component) {
-                    String formatted = MiniMessage.miniMessage().serialize(component);
-                    placeholder.addProperty(entry.getKey() + ":formatted", formatted);
-                }
-
-                placeholder.addProperty(entry.getKey(), getPropertyAsString(result));
+                if (entry.getValue() instanceof NamedCollection.TypedFunction<T, ?> func && func.result() == Component.class)
+                    placeholder.addProperty(entry.getKey() + ":formatted", () -> MiniMessage.miniMessage().serialize((Component) entry.getValue().apply(element)));
+                placeholder.addProperty(entry.getKey(), () -> getPropertyAsString(entry.getValue().apply(element)));
             } catch (Throwable e) {
                 StreamLabs.LOGGER.log(Level.WARNING, "Failed to read property \"%s\" of named collection entry:", e);
             }
@@ -121,6 +117,29 @@ public abstract class NamedCollection<T> {
             case Enum<?> en -> en.name().toLowerCase();
             default -> property.toString();
         };
+    }
+
+    public interface TypedFunction<T, R> extends Function<T, R> {
+        @NotNull Class<R> result();
+
+        static <T> @NotNull TypedFunction<T, Object> ofGeneric(@NotNull Class<?> result, @NotNull Function<T, Object> func) {
+            //noinspection unchecked
+            return of((Class<Object>) result, func);
+        }
+
+        static <T, R> @NotNull TypedFunction<T, R> of(@NotNull Class<R> result, @NotNull Function<T, R> func) {
+            return new TypedFunction<>() {
+                @Override
+                public @NotNull Class<R> result() {
+                    return result;
+                }
+
+                @Override
+                public R apply(T t) {
+                    return func.apply(t);
+                }
+            };
+        }
     }
 
     public static class SimpleCollection<T> extends NamedCollection<T> {
@@ -175,7 +194,7 @@ public abstract class NamedCollection<T> {
 
         @Override
         public @NotNull Stream<E> loadCollection(@NotNull Server server) {
-            return registry().stream();
+            return registry().stream().parallel();
         }
 
         private @NotNull Registry<@NotNull E> registry() {
