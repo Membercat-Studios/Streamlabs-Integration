@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 public abstract class NamedCollection<T> {
     private final Map<String, Function<T, ?>> additionalProperties;
     private @Nullable NamedCollectionInstance.CollectionFilter<T> defaultFilter;
+    private boolean created;
 
     protected NamedCollection() {
         this.additionalProperties = new HashMap<>();
@@ -65,12 +66,27 @@ public abstract class NamedCollection<T> {
         return this.withDefaultFilter(new NamedCollectionInstance.CollectionFilter<>(filterGroup));
     }
 
+    protected NamedCollection<T> create() {
+        try {
+            this.additionalProperties.putAll(this.createAdditionalProperties());
+        } catch (Throwable e) {
+            StreamLabs.LOGGER.log(Level.SEVERE, "Failed to create additional properties for named collection:", e);
+        }
+        this.created = true;
+        return this;
+    }
+
     public void applyDefaultFilters(@NotNull NamedCollectionInstance.CollectionFilter<T> filter) {
         if (this.defaultFilter != null) filter.merge(this.defaultFilter);
     }
 
-    public @NotNull Map<String, Function<T, ?>> getAdditionalProperties() {
-        Map<String, Function<T, ?>> props = new HashMap<>(this.additionalProperties);
+    public final @NotNull Map<String, Function<T, ?>> getAdditionalProperties() {
+        if (!this.created) throw new IllegalStateException("Named collection not created yet");
+        return this.additionalProperties;
+    }
+
+    public @NotNull Map<String, Function<T, ?>> createAdditionalProperties() {
+        Map<String, Function<T, ?>> props = new HashMap<>();
         props.put("display_name", this::getElementDisplayName);
         props.put("display_name_safe", this::getElementDisplayNameSafe);
         return props;
@@ -148,8 +164,8 @@ public abstract class NamedCollection<T> {
 
         @Override
         @SuppressWarnings("UnstableApiUsage")
-        public @NotNull Map<String, Function<E, ?>> getAdditionalProperties() {
-            Map<String, Function<E, ?>> props = new HashMap<>(super.getAdditionalProperties());
+        public @NotNull Map<String, Function<E, ?>> createAdditionalProperties() {
+            Map<String, Function<E, ?>> props = new HashMap<>(super.createAdditionalProperties());
             for (Tag<@NotNull E> tag : registry().getTags()) {
                 String key = tag.tagKey().key().asMinimalString();
                 props.put("tag:" + key, element -> tag.contains(TypedKey.create(this.key, element.key())));

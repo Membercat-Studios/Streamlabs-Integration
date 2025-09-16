@@ -44,21 +44,25 @@ public class Collections {
             .withProperty("sprinting", p -> ofPlayer(p, Player::isSprinting))
             .withProperty("dead", p -> ofPlayer(p, Player::isDead))
             .withProperty("under_water", p -> ofPlayer(p, Player::isUnderWater))
-            .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND, Condition.ofStaticEquals(placeholder("online"), Boolean.TRUE.toString())));
+            .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND, Condition.ofStaticEquals(placeholder("online"), Boolean.TRUE.toString())))
+            .create();
     public static final NamedCollection<EntityType> ENTITY_TYPE = new NamedCollection.RegistryCollection<>(RegistryKey.ENTITY_TYPE)
             .withProperty("alive", EntityType::isAlive)
             .withProperty("spawnable", EntityType::isSpawnable)
-            .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND, Condition.ofStaticEquals(placeholder("spawnable"), Boolean.TRUE.toString())));
+            .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND, Condition.ofStaticEquals(placeholder("spawnable"), Boolean.TRUE.toString())))
+            .create();
     public static final NamedCollection<Enchantment> ENCHANTMENT = new NamedCollection.RegistryCollection<>(RegistryKey.ENCHANTMENT)
             .withProperty("description", Enchantment::description)
             .withProperty("start_level", Enchantment::getStartLevel)
             .withProperty("max_level", Enchantment::getMaxLevel)
-            .withProperty("anvil_cost", Enchantment::getAnvilCost);
+            .withProperty("anvil_cost", Enchantment::getAnvilCost)
+            .create();
     public static final NamedCollection<PotionEffectType> STATUS_EFFECT = new NamedCollection.RegistryCollection<>(RegistryKey.MOB_EFFECT)
             .withProperty("instant", PotionEffectType::isInstant)
             .withProperty("category", PotionEffectType::getEffectCategory)
             .withProperty("color", e -> TextColor.color(e.getColor().asARGB()))
-            .withProperty("category_color", e -> e.getEffectCategory().getColor());
+            .withProperty("category_color", e -> e.getEffectCategory().getColor())
+            .create();
     public static final NamedCollection<ItemType> ITEM = new NamedCollection.RegistryCollection<>(RegistryKey.ITEM)
             .withProperty("block_item", ItemType::hasBlockType)
             .withProperty("associated_block", i -> i.hasBlockType() ? i.getBlockType().key() : null)
@@ -68,7 +72,8 @@ public class Collections {
             .withProperty("food", ItemType::isEdible)
             .withProperty("fuel", ItemType::isFuel)
             .withProperty("compostable", ItemType::isCompostable)
-            .withProperty("compost_chance", i -> i.isCompostable() ? i.getCompostChance() : null);
+            .withProperty("compost_chance", i -> i.isCompostable() ? i.getCompostChance() : null)
+            .create();
     public static final NamedCollection<BlockType> BLOCK = new NamedCollection.RegistryCollection<>(RegistryKey.BLOCK)
             .withProperty("has_item", BlockType::hasItemType)
             .withProperty("associated_item", bt -> bt.hasItemType() ? bt.getItemType().key() : null)
@@ -93,7 +98,7 @@ public class Collections {
             .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND,
                     Condition.invert(Condition.ofStaticEquals(placeholder("tag:air"), Boolean.TRUE.toString())),
                     Condition.invert(Condition.ofStaticEquals(placeholder("tag:wither_immune"), Boolean.TRUE.toString()))
-            ));
+            )).create();
     public static final NamedCollection<Biome> BIOME = new NamedCollection.RegistryCollection<>(RegistryKey.BIOME);
     public static final NamedCollection<Structure> STRUCTURE = new NamedCollection.RegistryCollection<>(RegistryKey.STRUCTURE);
     public static final NamedCollection<World> WORLD = new NamedCollection.SimpleCollection<>(s -> s.getWorlds().stream(), World::getName)
@@ -113,7 +118,8 @@ public class Collections {
             .withProperty("pvp", World::getPVP)
             .withProperty("sea_level", World::getSeaLevel)
             .withProperty("world_border", w -> w.getWorldBorder().getSize())
-            .withProperty("seed", World::getSeed);
+            .withProperty("seed", World::getSeed)
+            .create();
     public static final NamedCollection<Plugin> PLUGIN = new NamedCollection.SimpleCollection<>(s -> Arrays.stream(s.getPluginManager().getPlugins()), Plugin::getName)
             .withNameFunction(pl -> Component.text(pl.getPluginMeta().getDisplayName()))
             .withProperty("enabled", Plugin::isEnabled)
@@ -125,7 +131,8 @@ public class Collections {
             .withProperty("dependencies", pl -> String.join(", ", pl.getPluginMeta().getPluginDependencies()))
             .withProperty("soft_dependencies", pl -> String.join(", ", pl.getPluginMeta().getPluginSoftDependencies()))
             .withProperty("api_version", pl -> pl.getPluginMeta().getAPIVersion())
-            .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND, Condition.ofStaticEquals(placeholder("enabled"), Boolean.TRUE.toString())));
+            .withDefaultFilter(ConditionGroup.of(ConditionGroup.Mode.AND, Condition.ofStaticEquals(placeholder("enabled"), Boolean.TRUE.toString())))
+            .create();
 
     private static <T> @Nullable T ofPlayer(@NotNull OfflinePlayer player, @NotNull Function<Player, T> func) {
         return Optional.ofNullable(player.getPlayer()).map(func).orElse(null);
