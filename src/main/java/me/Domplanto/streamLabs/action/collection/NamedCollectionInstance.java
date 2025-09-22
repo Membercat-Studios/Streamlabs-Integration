@@ -3,6 +3,7 @@ package me.Domplanto.streamLabs.action.collection;
 import me.Domplanto.streamLabs.action.ActionExecutionContext;
 import me.Domplanto.streamLabs.condition.ConditionGroup;
 import me.Domplanto.streamLabs.config.issue.ConfigIssueHelper;
+import me.Domplanto.streamLabs.config.issue.ConfigPathSegment;
 import me.Domplanto.streamLabs.config.placeholder.ActionPlaceholder;
 import me.Domplanto.streamLabs.statistics.EventHistorySelector;
 import me.Domplanto.streamLabs.util.yaml.PropertyLoadable;
@@ -18,6 +19,7 @@ import java.util.stream.Stream;
 import static me.Domplanto.streamLabs.config.issue.Issues.WNC0;
 
 @SuppressWarnings("ClassCanBeRecord")
+@ConfigPathSegment(id = "named_collection")
 public final class NamedCollectionInstance<T> {
     public static final PropertyLoadable.Serializer<String, NamedCollectionInstance<?>> SERIALIZER;
     public static final NamedCollectionInstance<?> EMPTY_INSTANCE;
@@ -34,14 +36,17 @@ public final class NamedCollectionInstance<T> {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static @NotNull NamedCollectionInstance<?> parse(@NotNull String input, ConfigIssueHelper issueHelper) {
         Pair<String, ConditionGroup> data = EventHistorySelector.parseOptionalFilter(input, issueHelper);
-        NamedCollection namedCollection = Collections.fromName(data.getKey());
+        String name = data.getKey();
+        boolean defaultFilters = name.length() <= 1 || !name.endsWith("$");
+        if (!defaultFilters) name = name.substring(0, name.length() - 1);
+        NamedCollection namedCollection = Collections.fromName(name);
         if (namedCollection == null) {
-            namedCollection = Collections.EMPTY;
-            issueHelper.appendAtPath(WNC0.apply(data.getKey()));
+            issueHelper.appendAtPath(WNC0.apply(name));
+            return EMPTY_INSTANCE;
         }
 
         CollectionFilter<?> filter = new CollectionFilter<>(data.getValue());
-        namedCollection.applyDefaultFilters(filter);
+        if (defaultFilters) namedCollection.applyDefaultFilters(filter);
         return new NamedCollectionInstance<>(namedCollection, filter);
     }
 
