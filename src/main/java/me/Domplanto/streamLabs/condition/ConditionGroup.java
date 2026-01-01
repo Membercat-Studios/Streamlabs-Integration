@@ -49,7 +49,7 @@ public class ConditionGroup implements ConditionBase, YamlPropertyObject {
     @Override
     public boolean check(ActionExecutionContext ctx) {
         return (conditions.isEmpty() || groupMode.check(ctx, this.conditions))
-                && (donationConditions.isEmpty() || (ctx.isDonation() && Mode.AND.check(ctx, this.donationConditions)));
+                && (donationConditions.isEmpty() || (ctx.isDonation() && Mode.OR.check(ctx, this.donationConditions)));
     }
 
     public static @NotNull ConditionGroup of(Mode mode, @NotNull ConditionBase... condition) {

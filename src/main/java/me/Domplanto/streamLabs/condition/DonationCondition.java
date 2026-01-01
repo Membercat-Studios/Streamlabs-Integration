@@ -16,7 +16,7 @@ public class DonationCondition extends Condition {
         if (!(ctx.event() instanceof BasicDonationEvent donationEvent)) return false;
         String e1 = getElement1().execute(ctx);
         String e2 = getElement2().execute(ctx);
-        if (!e1.equals(donationEvent.getCurrency(ctx.baseObject()))) return true;
+        if (!e1.equals(donationEvent.getCurrency(ctx.baseObject()))) return false;
 
         double amount = donationEvent.calculateAmount(ctx.baseObject());
         try {
