@@ -33,7 +33,7 @@ public final class Translations {
     public static final Component MINIMESSAGE_LINK = text()
             .content(MINIMESSAGE_URL)
             .style(Style.style(ColorScheme.DONE, TextDecoration.UNDERLINED))
-            .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, MINIMESSAGE_URL))
+            .clickEvent(ClickEvent.openUrl(MINIMESSAGE_URL))
             .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.more_info")))
             .build();
     private static final String REPO_URL = "https://github.com/Membercat-Studios/Streamlabs-Integration";
@@ -88,7 +88,7 @@ public final class Translations {
         return translatable()
                 .key("%s.issue_report".formatted(baseKey))
                 .style(Style.style(ColorScheme.INVALID, TextDecoration.UNDERLINED))
-                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, ISSUES_URL))
+                .clickEvent(ClickEvent.openUrl(ISSUES_URL))
                 .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.report_issue")))
                 .build();
     }
@@ -103,7 +103,7 @@ public final class Translations {
                 .append(translatable()
                         .key(responsePrefix ? "streamlabs.prefix.response" : "streamlabs.prefix")
                         .color(ColorScheme.STREAMLABS)
-                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, WIKI_URL))
+                        .clickEvent(ClickEvent.openUrl(WIKI_URL))
                         .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.more_info"))))
                 .append(text().content(responsePrefix ? " -> " : "] ").color(ColorScheme.COMMENT))
                 .append(component)
@@ -116,7 +116,7 @@ public final class Translations {
                         .key("streamlabs.issue.list.show_in_console")
                         .style(Style.style(ColorScheme.DONE, TextDecoration.UNDERLINED))
                         .hoverEvent(HoverEvent.showText(translatable("streamlabs.tooltip.show_in_console")))
-                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, ReloadSubCommand.SHOW_IN_CONSOLE))
+                        .clickEvent(ClickEvent.runCommand(ReloadSubCommand.SHOW_IN_CONSOLE))
                         .build())
                 .append(newline());
     }

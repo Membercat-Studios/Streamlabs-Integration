@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 import static io.papermc.paper.command.brigadier.Commands.argument;
 import static io.papermc.paper.command.brigadier.Commands.literal;
 
-@SuppressWarnings({"unused", "UnstableApiUsage"})
+@SuppressWarnings({"unused"})
 public class PlayerSubCommand extends SubCommand {
     public PlayerSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);

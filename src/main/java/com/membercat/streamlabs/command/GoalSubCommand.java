@@ -14,7 +14,7 @@ import static io.papermc.paper.command.brigadier.Commands.argument;
 import static io.papermc.paper.command.brigadier.Commands.literal;
 import static net.kyori.adventure.text.Component.text;
 
-@SuppressWarnings({"unused", "UnstableApiUsage"})
+@SuppressWarnings({"unused"})
 public class GoalSubCommand extends SubCommand {
     public GoalSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);

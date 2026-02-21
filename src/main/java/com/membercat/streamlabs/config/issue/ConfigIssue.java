@@ -6,6 +6,7 @@ import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.Set;
@@ -49,17 +50,15 @@ public class ConfigIssue {
     }
 
     public enum Level {
-        ERROR(ColorScheme.ERROR, java.util.logging.Level.SEVERE, true),
-        WARNING(ColorScheme.INVALID, java.util.logging.Level.WARNING, true),
-        HINT(ColorScheme.COMMENT, java.util.logging.Level.INFO, false),
-        TODO(ColorScheme.TODO, java.util.logging.Level.INFO, false);
+        ERROR(ColorScheme.ERROR, true),
+        WARNING(ColorScheme.INVALID, true),
+        HINT(ColorScheme.COMMENT, false),
+        TODO(ColorScheme.TODO,false);
         private final TextColor color;
-        private final java.util.logging.Level logLevel;
         private final boolean important;
 
-        Level(TextColor color, java.util.logging.Level logLevel, boolean important) {
+        Level(@NotNull TextColor color, boolean important) {
             this.color = color;
-            this.logLevel = logLevel;
             this.important = important;
         }
 
@@ -75,10 +74,6 @@ public class ConfigIssue {
 
         public TextColor getColor() {
             return color;
-        }
-
-        public java.util.logging.Level getLogLevel() {
-            return logLevel;
         }
     }
 }

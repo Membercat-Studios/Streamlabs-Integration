@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import static io.papermc.paper.command.brigadier.Commands.argument;
 import static io.papermc.paper.command.brigadier.Commands.literal;
 
-@SuppressWarnings({"unused", "UnstableApiUsage"})
+@SuppressWarnings({"unused"})
 public class ReloadSubCommand extends SubCommand {
     public static String SHOW_IN_CONSOLE = "/streamlabs reload _console";
 

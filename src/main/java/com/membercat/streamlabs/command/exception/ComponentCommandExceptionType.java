@@ -8,7 +8,6 @@ import com.membercat.streamlabs.util.components.Translations;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 
-@SuppressWarnings("UnstableApiUsage")
 public class ComponentCommandExceptionType implements CommandExceptionType {
     private final Message message;
 

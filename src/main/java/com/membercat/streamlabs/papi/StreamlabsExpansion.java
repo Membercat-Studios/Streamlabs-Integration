@@ -28,13 +28,11 @@ public class StreamlabsExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    @SuppressWarnings("UnstableApiUsage")
     public @NotNull String getAuthor() {
         return String.join(", ", plugin.getPluginMeta().getAuthors());
     }
 
     @Override
-    @SuppressWarnings("UnstableApiUsage")
     public @NotNull String getVersion() {
         return plugin.getPluginMeta().getVersion();
     }

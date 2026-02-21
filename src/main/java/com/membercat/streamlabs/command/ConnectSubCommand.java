@@ -8,7 +8,7 @@ import com.membercat.streamlabs.socket.StreamlabsSocketClient;
 import com.membercat.streamlabs.util.components.ColorScheme;
 import com.membercat.streamlabs.util.components.Translations;
 
-@SuppressWarnings({"unused", "UnstableApiUsage"})
+@SuppressWarnings({"unused"})
 public class ConnectSubCommand extends SubCommand {
     public ConnectSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);

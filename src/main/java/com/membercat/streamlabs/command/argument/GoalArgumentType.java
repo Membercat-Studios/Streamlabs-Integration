@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 
-@SuppressWarnings("UnstableApiUsage")
 public class GoalArgumentType implements CustomArgumentType<DonationGoal, String> {
     private static final ComponentCommandExceptionType GOAL_NOT_FOUND = new ComponentCommandExceptionType("streamlabs.commands.error.unknown_goal_type", ColorScheme.INVALID);
     private final PluginConfig config;

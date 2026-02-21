@@ -11,7 +11,7 @@ import net.kyori.adventure.text.Component;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-@SuppressWarnings({"unused", "UnstableApiUsage"})
+@SuppressWarnings({"unused"})
 public class StatusSubCommand extends SubCommand {
     private static final Component CONNECTED = translatable()
             .key("streamlabs.status.connected")

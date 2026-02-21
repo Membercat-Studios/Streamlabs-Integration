@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-@SuppressWarnings("UnstableApiUsage")
 public class EventArgumentType implements CustomArgumentType<StreamlabsEvent, String> {
     private static final List<Class<StreamlabsEvent>> EVENT_CLASSES = ReflectUtil.loadClasses(StreamlabsEvent.class);
     private static final ComponentCommandExceptionType EVENT_NOT_FOUND = new ComponentCommandExceptionType("streamlabs.commands.error.unknown_event_type", ColorScheme.INVALID);

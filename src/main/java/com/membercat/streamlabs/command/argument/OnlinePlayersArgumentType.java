@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-@SuppressWarnings("UnstableApiUsage")
 public class OnlinePlayersArgumentType implements CustomArgumentType<List<Player>, String> {
     private final Server server;
     private final Predicate<Player> allow;

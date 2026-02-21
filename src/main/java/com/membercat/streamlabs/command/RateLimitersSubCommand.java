@@ -10,7 +10,7 @@ import com.membercat.streamlabs.util.components.Translations;
 import static io.papermc.paper.command.brigadier.Commands.literal;
 
 
-@SuppressWarnings({"unused", "UnstableApiUsage"})
+@SuppressWarnings({"unused"})
 public class RateLimitersSubCommand extends SubCommand {
     public RateLimitersSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);

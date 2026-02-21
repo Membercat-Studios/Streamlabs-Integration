@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 import static io.papermc.paper.command.brigadier.Commands.argument;
 import static io.papermc.paper.command.brigadier.Commands.literal;
 
-@SuppressWarnings({"unused", "UnstableApiUsage"})
+@SuppressWarnings({"unused"})
 public class TestSubCommand extends SubCommand {
     public TestSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);

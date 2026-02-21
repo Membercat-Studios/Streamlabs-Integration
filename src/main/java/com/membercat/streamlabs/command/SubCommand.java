@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
-@SuppressWarnings("UnstableApiUsage")
 public abstract class SubCommand {
     private final StreamlabsIntegration pluginInstance;
 
