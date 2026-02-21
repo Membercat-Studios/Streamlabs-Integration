@@ -1,18 +1,31 @@
 package com.membercat.streamlabs.util.components;
 
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.command.ReloadSubCommand;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentIteratorType;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.function.Consumer;
+
 import static net.kyori.adventure.text.Component.*;
+import static net.kyori.adventure.text.minimessage.tag.Tag.selfClosingInserting;
 
 public final class Translations {
     private static final String STATUS_MESSAGE_PERMISSION = "streamlabs.status";
@@ -38,6 +51,38 @@ public final class Translations {
             .key("streamlabs.chat.separator")
             .decorate(TextDecoration.STRIKETHROUGH)
             .color(ColorScheme.STREAMLABS).build();
+
+    public static void printAsciiArt(@NotNull JavaPlugin plugin) {
+        String rawArt = Optional.ofNullable(GlobalTranslator.translator().translate("streamlabs.art", Locale.US))
+                .map(MessageFormat::toPattern).orElse("<red>Missing translation for ASCII art!");
+        Component debug = Optional.ofNullable(GlobalTranslator.translator().translate("streamlabs.art.debug", Locale.US))
+                .map(MessageFormat::toPattern).map(MiniMessage.miniMessage()::deserialize).orElse(text("streamlabs.art.debug"));
+        TagResolver customResolver = TagResolver.builder()
+                .tag("plugin", selfClosingInserting(text(plugin.getPluginMeta().getName())))
+                .tag("ver", selfClosingInserting(text(plugin.getPluginMeta().getVersion())))
+                .tag("server", selfClosingInserting(text(plugin.getServer().getName())))
+                .tag("server-ver", selfClosingInserting(text(plugin.getServer().getVersion())))
+                .tag("docs", selfClosingInserting(text(WIKI_URL).clickEvent(ClickEvent.openUrl(WIKI_URL))))
+                .tag("debug", selfClosingInserting(StreamlabsIntegration.isDebugMode() ? debug : empty()))
+                .build();
+        Component art = MiniMessage.miniMessage().deserialize(rawArt, customResolver);
+        sendComponentsSplit(art, plugin.getComponentLogger()::info);
+        plugin.getComponentLogger().info(empty());
+    }
+
+    public static void sendComponentsSplit(@NotNull Component component, @NotNull Consumer<Component> output) {
+        component = component.replaceText(b -> b.matchLiteral("\n").replacement(Component.newline()));
+        Component build = Component.empty().append(component.children(List.of()));
+        for (Component cp : component.iterable(ComponentIteratorType.DEPTH_FIRST)) {
+            if (cp.equals(component)) continue;
+            if (!Component.newline().equals(cp)) build = build.append(cp.children(List.of()));
+            else {
+                output.accept(build);
+                build = Component.empty();
+            }
+        }
+        if (!build.children().isEmpty()) output.accept(build);
+    }
 
     private static Component createIssue(String baseKey) {
         return translatable()
