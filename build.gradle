@@ -7,7 +7,7 @@ plugins {
     id 'xyz.jpenilla.resource-factory-paper-convention' version '1.2.1'
 }
 
-group = 'me.Domplanto'
+group = 'com.membercat'
 version = '0.2.1'
 description = 'A Minecraft plugin that allows Youtube/Twitch donations to trigger events in your Minecraft world using the Streamlabs API!'
 
@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("me.clip:placeholderapi:2.11.6")
 
     implementation("com.fathzer:javaluator:3.0.3")
@@ -36,8 +36,8 @@ dependencies {
 }
 
 paperPluginYaml {
-    main.set "me.Domplanto.streamLabs.StreamLabs"
-    apiVersion.set "1.21.8"
+    main.set "com.membercat.streamlabs.StreamLabs"
+    apiVersion.set "1.21.11"
     authors.addAll("Membercat Studios", "Domplanto", "codingcat")
     website.set "https://github.com/Membercat-Studios/Streamlabs-Integration/wiki"
 
