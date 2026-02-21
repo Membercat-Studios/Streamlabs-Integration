@@ -1,0 +1,148 @@
+package com.membercat.streamlabs.step.query;
+
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.action.ActionExecutionContext;
+import com.membercat.streamlabs.action.PlayerSelector;
+import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
+import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
+import com.membercat.streamlabs.util.ReflectUtil;
+import com.membercat.streamlabs.util.yaml.YamlProperty;
+import com.membercat.streamlabs.util.yaml.YamlPropertyCustomDeserializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.ComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandException;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
+
+@ReflectUtil.ClassId("command")
+public class CommandQuery extends AbstractQuery<String> {
+    public static final String PLAYER_PLACEHOLDER = "\\{player\\}";
+    private String command;
+    @YamlProperty("output_format")
+    private ComponentSerializer<Component, ?, ?> outputSerializer = PlainTextComponentSerializer.plainText();
+    @YamlProperty("timeout")
+    private Integer timeout = 500;
+    @YamlProperty("context")
+    private PlayerSelector context = null;
+    @YamlProperty("cancel_on_invalid_context")
+    private boolean cancelOnInvalidContext = false;
+
+    @Override
+    public void load(@NotNull String data, @NotNull ConfigIssueHelper issueHelper, @NotNull ConfigurationSection parent) {
+        super.load(data, issueHelper, parent);
+        this.command = data;
+    }
+
+    @Override
+    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+        String command = AbstractPlaceholder.replacePlaceholders(this.command, ctx);
+        Set<String> affectedPlayers = ctx.config().getAffectedPlayers();
+        if (!hasOutput()) {
+            if (!Pattern.compile(PLAYER_PLACEHOLDER).matcher(command).find()) this.dispatch(command, ctx, plugin);
+            else affectedPlayers.forEach(player -> {
+                String replacedCommand = command.replaceAll(PLAYER_PLACEHOLDER, player);
+                this.dispatch(replacedCommand, ctx, plugin);
+            });
+            return null;
+        }
+
+        String firstPlayer = affectedPlayers.stream().findFirst().orElse("");
+        String replacedCommand = command.replaceAll(PLAYER_PLACEHOLDER, firstPlayer);
+        return this.dispatchWithOutput(replacedCommand, plugin);
+    }
+
+    private void dispatch(@NotNull String command, ActionExecutionContext ctx, StreamLabs plugin) {
+        try {
+            runOnServerThread(plugin, this.timeout, () -> actuallyDispatchSafe(getSender(ctx, plugin), command));
+        } catch (TimeoutException e) {
+            StreamLabs.LOGGER.warning("Timeout while running command at %s, try manually specifying a higher timeout value!".formatted(location().toFormattedString()));
+        }
+    }
+
+    private @Nullable String dispatchWithOutput(@NotNull String command, StreamLabs plugin) {
+        CompletableFuture<Component> result = new CompletableFuture<>();
+        CommandSender sender = Bukkit.createCommandSender(result::complete);
+        if (Bukkit.isPrimaryThread()) actuallyDispatchSafe(sender, command);
+        else Bukkit.getGlobalRegionScheduler().run(plugin, task -> actuallyDispatchSafe(sender, command));
+
+        Component output;
+        try {
+            output = result.get(this.timeout, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            output = Component.empty();
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Failed to execute command", e);
+        }
+        return outputSerializer.serialize(output).toString();
+    }
+
+    private void actuallyDispatchSafe(@NotNull CommandSender sender, @NotNull String command) {
+        try {
+            Bukkit.dispatchCommand(sender, command);
+        } catch (CommandException e) {
+            if (e.getCause() instanceof CommandSyntaxException se) {
+                StreamLabs.LOGGER.warning("Command at %s failed to execute due to syntax errors: %s".formatted(location().toFormattedString(), se.getMessage()));
+                return;
+            }
+            StreamLabs.LOGGER.log(Level.SEVERE, "Failed to execute command at %s due to internal server errors:".formatted(location().toFormattedString()), e);
+        }
+    }
+
+    @YamlPropertyCustomDeserializer(propertyName = "output_format")
+    private ComponentSerializer<?, ?, ?> deserializeOutputFormat(@Nullable String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        if (input == null) return this.outputSerializer;
+        return Map.of(
+                "text", PlainTextComponentSerializer.plainText(),
+                "json", GsonComponentSerializer.gson(),
+                "minimessage", MiniMessage.miniMessage(),
+                "legacy_section", LegacyComponentSerializer.legacySection(),
+                "legacy_ampersand", LegacyComponentSerializer.legacyAmpersand()
+        ).get(input.toLowerCase());
+    }
+
+    @YamlPropertyCustomDeserializer(propertyName = "context")
+    private PlayerSelector deserializeContext(@NotNull String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+        return PlayerSelector.parse(input, issueHelper);
+    }
+
+    private @NotNull CommandSender getSender(@NotNull ActionExecutionContext ctx, StreamLabs plugin) {
+        if (this.context == null) return Bukkit.getConsoleSender();
+        List<Player> selected = this.context.resolve(ctx, plugin);
+        if (selected.isEmpty()) {
+            if (cancelOnInvalidContext) return Bukkit.getConsoleSender();
+            StreamLabs.LOGGER.warning("No entity found for command context / %s, defaulting to console context!".formatted(this.context.getName()));
+            return Bukkit.getConsoleSender();
+        }
+
+        return selected.getFirst();
+    }
+
+    @Override
+    protected boolean isOptional() {
+        return true;
+    }
+
+    @Override
+    public @NotNull Class<String> getExpectedDataType() {
+        return String.class;
+    }
+}
