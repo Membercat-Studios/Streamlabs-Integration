@@ -3,7 +3,7 @@ package com.membercat.streamlabs.command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.command.argument.OnlinePlayersArgumentType;
 import com.membercat.streamlabs.util.components.ColorScheme;
 import com.membercat.streamlabs.util.components.Translations;
@@ -18,7 +18,7 @@ import static io.papermc.paper.command.brigadier.Commands.literal;
 
 @SuppressWarnings({"unused", "UnstableApiUsage"})
 public class PlayerSubCommand extends SubCommand {
-    public PlayerSubCommand(StreamLabs pluginInstance) {
+    public PlayerSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);
     }
 

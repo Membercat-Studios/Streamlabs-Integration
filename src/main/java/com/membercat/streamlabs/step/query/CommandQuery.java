@@ -1,7 +1,7 @@
 package com.membercat.streamlabs.step.query;
 
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.membercat.streamlabs.StreamLabs;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.action.PlayerSelector;
 import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
@@ -53,7 +53,7 @@ public class CommandQuery extends AbstractQuery<String> {
     }
 
     @Override
-    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         String command = AbstractPlaceholder.replacePlaceholders(this.command, ctx);
         Set<String> affectedPlayers = ctx.config().getAffectedPlayers();
         if (!hasOutput()) {
@@ -70,15 +70,15 @@ public class CommandQuery extends AbstractQuery<String> {
         return this.dispatchWithOutput(replacedCommand, plugin);
     }
 
-    private void dispatch(@NotNull String command, ActionExecutionContext ctx, StreamLabs plugin) {
+    private void dispatch(@NotNull String command, ActionExecutionContext ctx, StreamlabsIntegration plugin) {
         try {
             runOnServerThread(plugin, this.timeout, () -> actuallyDispatchSafe(getSender(ctx, plugin), command));
         } catch (TimeoutException e) {
-            StreamLabs.LOGGER.warning("Timeout while running command at %s, try manually specifying a higher timeout value!".formatted(location().toFormattedString()));
+            StreamlabsIntegration.LOGGER.warning("Timeout while running command at %s, try manually specifying a higher timeout value!".formatted(location().toFormattedString()));
         }
     }
 
-    private @Nullable String dispatchWithOutput(@NotNull String command, StreamLabs plugin) {
+    private @Nullable String dispatchWithOutput(@NotNull String command, StreamlabsIntegration plugin) {
         CompletableFuture<Component> result = new CompletableFuture<>();
         CommandSender sender = Bukkit.createCommandSender(result::complete);
         if (Bukkit.isPrimaryThread()) actuallyDispatchSafe(sender, command);
@@ -100,10 +100,10 @@ public class CommandQuery extends AbstractQuery<String> {
             Bukkit.dispatchCommand(sender, command);
         } catch (CommandException e) {
             if (e.getCause() instanceof CommandSyntaxException se) {
-                StreamLabs.LOGGER.warning("Command at %s failed to execute due to syntax errors: %s".formatted(location().toFormattedString(), se.getMessage()));
+                StreamlabsIntegration.LOGGER.warning("Command at %s failed to execute due to syntax errors: %s".formatted(location().toFormattedString(), se.getMessage()));
                 return;
             }
-            StreamLabs.LOGGER.log(Level.SEVERE, "Failed to execute command at %s due to internal server errors:".formatted(location().toFormattedString()), e);
+            StreamlabsIntegration.LOGGER.log(Level.SEVERE, "Failed to execute command at %s due to internal server errors:".formatted(location().toFormattedString()), e);
         }
     }
 
@@ -124,12 +124,12 @@ public class CommandQuery extends AbstractQuery<String> {
         return PlayerSelector.parse(input, issueHelper);
     }
 
-    private @NotNull CommandSender getSender(@NotNull ActionExecutionContext ctx, StreamLabs plugin) {
+    private @NotNull CommandSender getSender(@NotNull ActionExecutionContext ctx, StreamlabsIntegration plugin) {
         if (this.context == null) return Bukkit.getConsoleSender();
         List<Player> selected = this.context.resolve(ctx, plugin);
         if (selected.isEmpty()) {
             if (cancelOnInvalidContext) return Bukkit.getConsoleSender();
-            StreamLabs.LOGGER.warning("No entity found for command context / %s, defaulting to console context!".formatted(this.context.getName()));
+            StreamlabsIntegration.LOGGER.warning("No entity found for command context / %s, defaulting to console context!".formatted(this.context.getName()));
             return Bukkit.getConsoleSender();
         }
 

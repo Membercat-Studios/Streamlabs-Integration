@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.papi;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.config.issue.ConfigIssue;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.issue.ConfigLoadedWithIssuesException;
@@ -26,7 +26,7 @@ public class HistorySubPlaceholder extends SubPlaceholder implements HistoryChan
     private final HashMap<String, String> values = new HashMap<>();
     private final static Map<String, EventHistorySelector> DEFAULT_SELECTORS;
 
-    public HistorySubPlaceholder(StreamLabs plugin) {
+    public HistorySubPlaceholder(StreamlabsIntegration plugin) {
         super(plugin, "history");
         this.history = plugin.getExecutor().getEventHistory();
         this.history.registerListeners(this);

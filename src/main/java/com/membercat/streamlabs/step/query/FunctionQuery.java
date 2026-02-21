@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step.query;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
 import com.membercat.streamlabs.config.PluginConfig;
@@ -48,11 +48,11 @@ public class FunctionQuery extends AbstractQuery<String> {
     }
 
     @Override
-    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         String functionId = AbstractPlaceholder.replacePlaceholders(this.functionId, ctx);
         PluginConfig.Function function = ctx.config().getFunction(functionId);
         if (function == null) {
-            StreamLabs.LOGGER.warning("No function with ID \"%s\" (resolved from \"%s\") could be found at %s, skipping!".formatted(functionId, this.functionId, location().toFormattedString()));
+            StreamlabsIntegration.LOGGER.warning("No function with ID \"%s\" (resolved from \"%s\") could be found at %s, skipping!".formatted(functionId, this.functionId, location().toFormattedString()));
             return null;
         }
 
@@ -66,7 +66,7 @@ public class FunctionQuery extends AbstractQuery<String> {
         if (hasOutput() && function.getOutput() != null)
             output = AbstractPlaceholder.replacePlaceholders(function.getOutput(), ctx);
         else if (hasOutput())
-            StreamLabs.LOGGER.warning("Tried to get output of function %s, but function doesn't have an output (at %s)".formatted(functionId, location().toFormattedString()));
+            StreamlabsIntegration.LOGGER.warning("Tried to get output of function %s, but function doesn't have an output (at %s)".formatted(functionId, location().toFormattedString()));
         ctx.scopeStack().pop();
         return output;
     }

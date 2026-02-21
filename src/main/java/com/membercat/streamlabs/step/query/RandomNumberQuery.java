@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step.query;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.issue.ConfigLoadedWithIssuesException;
@@ -41,7 +41,7 @@ public class RandomNumberQuery extends AbstractQuery<String> {
     }
 
     @Override
-    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         NumRange range = this.range;
         if (placeholders) {
             ComponentLogger logger = ComponentLogger.logger(RandomNumberQuery.class);
@@ -51,7 +51,7 @@ public class RandomNumberQuery extends AbstractQuery<String> {
             try {
                 issueHelper.complete();
             } catch (ConfigLoadedWithIssuesException e) {
-                StreamLabs.LOGGER.warning("Failed to parse placeholder number range at %s (from %s)".formatted(location().toFormattedString(), rangeVal));
+                StreamlabsIntegration.LOGGER.warning("Failed to parse placeholder number range at %s (from %s)".formatted(location().toFormattedString(), rangeVal));
                 return null;
             }
         }

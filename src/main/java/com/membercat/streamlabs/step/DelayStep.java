@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
@@ -51,16 +51,16 @@ public class DelayStep extends AbstractStep<String> {
         try {
             delay = Long.parseLong(parsed);
             if (delay < 1) {
-                StreamLabs.LOGGER.warning("Zero or negative delay %sms (resolved from \"%s\") detected at %s, skipping!".formatted(delay, this.delay, getLocation().toFormattedString()));
+                StreamlabsIntegration.LOGGER.warning("Zero or negative delay %sms (resolved from \"%s\") detected at %s, skipping!".formatted(delay, this.delay, getLocation().toFormattedString()));
                 return;
             }
         } catch (NumberFormatException e) {
-            StreamLabs.LOGGER.warning("Failed to parse delay \"%s\" (resolved from \"%s\") at %s, skipping!".formatted(parsed, this.delay, getLocation().toFormattedString()));
+            StreamlabsIntegration.LOGGER.warning("Failed to parse delay \"%s\" (resolved from \"%s\") at %s, skipping!".formatted(parsed, this.delay, getLocation().toFormattedString()));
             return;
         }
 
         if (Bukkit.isPrimaryThread())
-            StreamLabs.LOGGER.warning("Delay step at %s is running on the main server thread, this will freeze your server! Read more at %s".formatted(getLocation().toFormattedString(), THREAD_WARNING_URL));
+            StreamlabsIntegration.LOGGER.warning("Delay step at %s is running on the main server thread, this will freeze your server! Read more at %s".formatted(getLocation().toFormattedString(), THREAD_WARNING_URL));
         try {
             Thread.sleep(delay);
         } catch (InterruptedException ignore) {

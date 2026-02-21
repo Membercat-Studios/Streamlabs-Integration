@@ -36,7 +36,7 @@ dependencies {
 }
 
 paperPluginYaml {
-    main.set "com.membercat.streamlabs.StreamLabs"
+    main.set "com.membercat.streamlabs.StreamlabsIntegration"
     apiVersion.set "1.21.11"
     authors.addAll("Membercat Studios", "Domplanto", "codingcat")
     website.set "https://github.com/Membercat-Studios/Streamlabs-Integration/wiki"

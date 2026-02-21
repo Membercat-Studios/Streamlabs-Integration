@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.config.placeholder;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
@@ -58,7 +58,7 @@ public class PropertyPlaceholder extends AbstractPlaceholder {
             String key = result.group(1);
             if (key == null) {
                 if (this.defaultValue == null) {
-                    StreamLabs.LOGGER.warning("No property of placeholder \"%s\" specified, and no default value is present".formatted(name()) + scopeName);
+                    StreamlabsIntegration.LOGGER.warning("No property of placeholder \"%s\" specified, and no default value is present".formatted(name()) + scopeName);
                     return "";
                 }
                 return Matcher.quoteReplacement(this.defaultValue);
@@ -68,7 +68,7 @@ public class PropertyPlaceholder extends AbstractPlaceholder {
                     .map(str -> Objects.requireNonNullElse(str.get(), ""))
                     .orElse(null);
             if (value == null)
-                StreamLabs.LOGGER.warning("Attempted to resolve non-existent property \"%s\" of property placeholder \"%s\"".formatted(key, name()) + scopeName);
+                StreamlabsIntegration.LOGGER.warning("Attempted to resolve non-existent property \"%s\" of property placeholder \"%s\"".formatted(key, name()) + scopeName);
             return Matcher.quoteReplacement(Objects.requireNonNullElse(value, ""));
         });
     }

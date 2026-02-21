@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step.query;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.action.collection.NamedCollection;
 import com.membercat.streamlabs.action.collection.NamedCollectionInstance;
@@ -31,7 +31,7 @@ public class RandomElementQuery extends AbstractQuery<NamedCollectionInstance<?>
     }
 
     @Override
-    protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         //noinspection unchecked
         NamedCollection<Object> namedCollection = (NamedCollection<Object>) collection.collection();
         List<?> elements = collection.getElements(plugin.getServer(), ctx).toList();
@@ -42,7 +42,7 @@ public class RandomElementQuery extends AbstractQuery<NamedCollectionInstance<?>
     }
 
     @Override
-    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         return null;
     }
 

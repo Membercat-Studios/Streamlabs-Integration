@@ -1,8 +1,8 @@
 package com.membercat.streamlabs.command;
 
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import com.membercat.streamlabs.StreamLabs;
 import com.membercat.streamlabs.action.ratelimiter.RateLimiter;
 import com.membercat.streamlabs.util.components.ColorScheme;
 import com.membercat.streamlabs.util.components.Translations;
@@ -12,7 +12,7 @@ import static io.papermc.paper.command.brigadier.Commands.literal;
 
 @SuppressWarnings({"unused", "UnstableApiUsage"})
 public class RateLimitersSubCommand extends SubCommand {
-    public RateLimitersSubCommand(StreamLabs pluginInstance) {
+    public RateLimitersSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);
     }
 

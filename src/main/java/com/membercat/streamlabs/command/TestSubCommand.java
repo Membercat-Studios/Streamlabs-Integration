@@ -1,6 +1,7 @@
 package com.membercat.streamlabs.command;
 
 import com.google.gson.JsonObject;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -12,7 +13,6 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
-import com.membercat.streamlabs.StreamLabs;
 import com.membercat.streamlabs.command.argument.EventArgumentType;
 import com.membercat.streamlabs.config.placeholder.ActionPlaceholder;
 import com.membercat.streamlabs.events.StreamlabsEvent;
@@ -34,7 +34,7 @@ import static io.papermc.paper.command.brigadier.Commands.literal;
 
 @SuppressWarnings({"unused", "UnstableApiUsage"})
 public class TestSubCommand extends SubCommand {
-    public TestSubCommand(StreamLabs pluginInstance) {
+    public TestSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);
     }
 

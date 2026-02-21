@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.action.StepExecutor;
 import com.membercat.streamlabs.condition.ConditionGroup;
@@ -36,7 +36,7 @@ public class CheckStep extends ConditionGroup implements StepBase<List>, StepExe
     }
 
     @Override
-    public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws AbstractStep.ActionFailureException {
+    public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) throws AbstractStep.ActionFailureException {
         this.runSteps(ctx, plugin);
     }
 

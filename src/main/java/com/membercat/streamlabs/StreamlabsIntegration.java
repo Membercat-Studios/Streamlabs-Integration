@@ -36,8 +36,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@SuppressWarnings("UnstableApiUsage")
-public class StreamLabs extends JavaPlugin implements SocketEventListener {
+public class StreamlabsIntegration extends JavaPlugin implements SocketEventListener {
     private static final String NAMESPACE = "streamlabs";
     private static final Locale[] SUPPORTED_LOCALES = {Locale.US, Locale.GERMANY};
     private static final String DEFAULT_BUNDLE_ID = "default";

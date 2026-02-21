@@ -3,7 +3,7 @@ package com.membercat.streamlabs.command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.command.argument.GoalArgumentType;
 import com.membercat.streamlabs.statistics.goal.DonationGoal;
 import com.membercat.streamlabs.util.components.ColorScheme;
@@ -16,7 +16,7 @@ import static net.kyori.adventure.text.Component.text;
 
 @SuppressWarnings({"unused", "UnstableApiUsage"})
 public class GoalSubCommand extends SubCommand {
-    public GoalSubCommand(StreamLabs pluginInstance) {
+    public GoalSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);
     }
 

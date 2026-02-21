@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.config.versioning;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -34,7 +34,7 @@ public class ConfigMigrationManager {
             throw new MigrationFailureException();
         }
 
-        StreamLabs.LOGGER.warning("Your configuration file was last used in a lower version of this plugin and will have to be migrated!");
+        StreamlabsIntegration.LOGGER.warning("Your configuration file was last used in a lower version of this plugin and will have to be migrated!");
         try {
             File newFile = getBackupFile(file.getParentFile());
             this.config.save(newFile);
@@ -53,12 +53,12 @@ public class ConfigMigrationManager {
         }
 
         this.config.save(file);
-        StreamLabs.LOGGER.info("Configuration file successfully migrated!");
+        StreamlabsIntegration.LOGGER.info("Configuration file successfully migrated!");
         issueHelper.appendAtPath(HCM0);
     }
 
     private void runMigrators(long targetVersion) {
-        StreamLabs.LOGGER.info("Attempting to migrate config from version %s to %s...".formatted(getVersion(), targetVersion));
+        StreamlabsIntegration.LOGGER.info("Attempting to migrate config from version %s to %s...".formatted(getVersion(), targetVersion));
         ConfigMigrator.MIGRATORS.stream()
                 .filter(migrator -> migrator.shouldUse(targetVersion))
                 .sorted(Comparator.comparing(ConfigMigrator::getPriority))

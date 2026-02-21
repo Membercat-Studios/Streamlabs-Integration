@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step.query;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.action.collection.NamedCollection;
 import com.membercat.streamlabs.action.collection.NamedCollectionInstance;
@@ -25,7 +25,7 @@ public class ExtractQuery extends TransformationQuery<NamedCollectionInstance<?>
     }
 
     @Override
-    protected @Nullable AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         //noinspection unchecked
         NamedCollection<Object> collection = (NamedCollection<Object>) this.extractCollection.collection();
         Object element = this.extract(input, plugin.getServer(), ctx, collection);
@@ -34,7 +34,7 @@ public class ExtractQuery extends TransformationQuery<NamedCollectionInstance<?>
     }
 
     @Override
-    protected @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         return null;
     }
 

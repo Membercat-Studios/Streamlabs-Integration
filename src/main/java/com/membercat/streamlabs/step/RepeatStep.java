@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
@@ -37,11 +37,11 @@ public class RepeatStep extends AbstractLogicStep {
         try {
             amount = Integer.parseInt(parsed);
             if (amount < 0) {
-                StreamLabs.LOGGER.warning("Negative repeat amount found (%s, resolved from \"%s\") at %s, skipping!".formatted(amount, this.amount, getLocation().toFormattedString()));
+                StreamlabsIntegration.LOGGER.warning("Negative repeat amount found (%s, resolved from \"%s\") at %s, skipping!".formatted(amount, this.amount, getLocation().toFormattedString()));
                 return List.of();
             }
         } catch (NumberFormatException e) {
-            StreamLabs.LOGGER.warning("Failed to parse repeat amount \"%s\" (resolved from \"%s\") at %s, skipping!".formatted(parsed, this.amount, getLocation().toFormattedString()));
+            StreamlabsIntegration.LOGGER.warning("Failed to parse repeat amount \"%s\" (resolved from \"%s\") at %s, skipping!".formatted(parsed, this.amount, getLocation().toFormattedString()));
             return List.of();
         }
 

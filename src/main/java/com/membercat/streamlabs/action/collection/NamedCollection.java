@@ -4,7 +4,7 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.TypedKey;
 import io.papermc.paper.registry.tag.Tag;
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.condition.ConditionGroup;
 import com.membercat.streamlabs.config.placeholder.PropertyPlaceholder;
 import net.kyori.adventure.text.Component;
@@ -70,7 +70,7 @@ public abstract class NamedCollection<T> {
         try {
             this.additionalProperties.putAll(this.createAdditionalProperties());
         } catch (Throwable e) {
-            StreamLabs.LOGGER.log(Level.SEVERE, "Failed to create additional properties for named collection:", e);
+            StreamlabsIntegration.LOGGER.log(Level.SEVERE, "Failed to create additional properties for named collection:", e);
         }
         this.created = true;
         return this;
@@ -101,7 +101,7 @@ public abstract class NamedCollection<T> {
                     placeholder.addProperty(entry.getKey() + ":formatted", () -> MiniMessage.miniMessage().serialize((Component) entry.getValue().apply(element)));
                 placeholder.addProperty(entry.getKey(), () -> getPropertyAsString(entry.getValue().apply(element)));
             } catch (Throwable e) {
-                StreamLabs.LOGGER.log(Level.WARNING, "Failed to read property \"%s\" of named collection entry:", e);
+                StreamlabsIntegration.LOGGER.log(Level.WARNING, "Failed to read property \"%s\" of named collection entry:", e);
             }
         }
         return placeholder;

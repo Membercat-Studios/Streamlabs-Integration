@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.action.PlayerSelector;
 import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
@@ -90,7 +90,7 @@ public class MessageStep extends AbstractStep<String> {
         }
 
         final Component finalMessage = message;
-        final StreamLabs plugin = this.getPlugin(); // Prevent an exception by accessing #getPlugin outside the executor function
+        final StreamlabsIntegration plugin = this.getPlugin(); // Prevent an exception by accessing #getPlugin outside the executor function
         runOnServerThread(() -> audience.resolve(ctx, plugin).forEach(player -> {
             if (this.type == MessageType.TITLE) {
                 player.clearTitle();
@@ -102,7 +102,7 @@ public class MessageStep extends AbstractStep<String> {
 
     private Component parsingError(Throwable e) {
         String location = this.getLocation().toFormattedString();
-        StreamLabs.LOGGER.log(Level.WARNING, "Failed to parse message at %s: ".formatted(location), e);
+        StreamlabsIntegration.LOGGER.log(Level.WARNING, "Failed to parse message at %s: ".formatted(location), e);
         return translatable()
                 .key("streamlabs.error.message.parse_failed")
                 .arguments(text(location))

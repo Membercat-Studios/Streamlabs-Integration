@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step.query;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
@@ -21,21 +21,21 @@ public abstract class TransformationQuery<T> extends AbstractQuery<T> {
     }
 
     @Override
-    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         return null;
     }
 
     @Override
-    protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         if (input == null) return null;
         String input = AbstractPlaceholder.replacePlaceholders(this.input, ctx);
         return this.query(input, ctx, plugin);
     }
 
-    protected @Nullable AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         String data = this.runQuery(input, ctx, plugin);
         return this.hasOutput() ? this.createPlaceholder(data) : null;
     }
 
-    protected abstract @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin);
+    protected abstract @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin);
 }

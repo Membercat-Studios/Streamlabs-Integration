@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.issue.ConfigPathSegment;
@@ -14,17 +14,17 @@ import java.util.Optional;
 
 @ConfigPathSegment(id = "step")
 public interface StepBase<T> extends PropertyLoadable<T> {
-    void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws AbstractStep.ActionFailureException;
+    void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) throws AbstractStep.ActionFailureException;
 
     default @NotNull String getStepId() {
         return Optional.ofNullable(getClass().getAnnotation(ReflectUtil.ClassId.class))
                 .map(ReflectUtil.ClassId::value).orElse("unknown");
     }
 
-    static @NotNull StepBase<?> createExecuting(@NotNull FailableBiConsumer<ActionExecutionContext, StreamLabs, AbstractStep.ActionFailureException> action) {
+    static @NotNull StepBase<?> createExecuting(@NotNull FailableBiConsumer<ActionExecutionContext, StreamlabsIntegration, AbstractStep.ActionFailureException> action) {
         return new StepBase<>() {
             @Override
-            public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws AbstractStep.ActionFailureException {
+            public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) throws AbstractStep.ActionFailureException {
                 action.accept(ctx, plugin);
             }
 

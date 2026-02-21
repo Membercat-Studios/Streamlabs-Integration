@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.papi;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutor;
 import com.membercat.streamlabs.statistics.goal.DonationGoal;
 import net.kyori.adventure.text.Component;
@@ -13,7 +13,7 @@ import java.util.Optional;
 public class GoalSubPlaceholder extends SubPlaceholder {
     private final ActionExecutor executor;
 
-    public GoalSubPlaceholder(StreamLabs plugin) {
+    public GoalSubPlaceholder(StreamlabsIntegration plugin) {
         super(plugin, "goal");
         this.executor = plugin.getExecutor();
     }

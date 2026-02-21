@@ -1,7 +1,7 @@
 package com.membercat.streamlabs.action;
 
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.membercat.streamlabs.StreamLabs;
 import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.issue.ConfigPathStack;
@@ -40,7 +40,7 @@ public class PlayerSelector {
         this.isAffectedPlayers = isAffectedPlayers;
     }
 
-    public @NotNull List<Player> resolve(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    public @NotNull List<Player> resolve(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         if (!Bukkit.isPrimaryThread())
             throw new WrongThreadException("Attempted to resolve player selector on non-main thread");
         try {
@@ -62,11 +62,11 @@ public class PlayerSelector {
                             return valid;
                         }).map(e -> (Player) e).toList();
             } catch (IllegalArgumentException e) {
-                StreamLabs.LOGGER.warning("Failed to resolve %s: %s".formatted(getName(), e.getMessage()));
+                StreamlabsIntegration.LOGGER.warning("Failed to resolve %s: %s".formatted(getName(), e.getMessage()));
             }
 
             if (invalidEntities.get() > 0)
-                StreamLabs.LOGGER.warning("%s returned %s non-player entities, consider using @a[options...]".formatted(getName(), invalidEntities));
+                StreamlabsIntegration.LOGGER.warning("%s returned %s non-player entities, consider using @a[options...]".formatted(getName(), invalidEntities));
             return results;
         } catch (Throwable e) {
             throw new RuntimeException("Failed to resolve %s".formatted(getName()), e);

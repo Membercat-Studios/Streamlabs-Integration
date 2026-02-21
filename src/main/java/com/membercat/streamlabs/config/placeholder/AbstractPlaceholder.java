@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.config.placeholder;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.jetbrains.annotations.NotNull;
@@ -28,12 +28,12 @@ public abstract class AbstractPlaceholder {
                 originalString = placeholder.replaceAll(originalString, ctx);
             } catch (Exception e) {
                 ctx.markDirty();
-                StreamLabs.LOGGER.log(Level.WARNING, "Failed to resolve placeholder %s:".formatted(placeholder), e);
+                StreamlabsIntegration.LOGGER.log(Level.WARNING, "Failed to resolve placeholder %s:".formatted(placeholder), e);
                 return originalString;
             }
         }
 
-        if (StreamLabs.isPapiInstalled()) originalString = PlaceholderAPI.setPlaceholders(null, originalString);
+        if (StreamlabsIntegration.isPapiInstalled()) originalString = PlaceholderAPI.setPlaceholders(null, originalString);
         plExecutionCount++;
         if (plExecutionCount > 1000) return "(Infinite placeholder loop detected)";
         if (containsPlaceholders) originalString = replacePlaceholders(originalString, ctx, plExecutionCount);

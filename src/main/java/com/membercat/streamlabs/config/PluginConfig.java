@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.config;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.action.ActionExecutor;
 import com.membercat.streamlabs.action.StepExecutor;
@@ -87,7 +87,7 @@ public class PluginConfig extends ConfigRoot {
         return new HashSet<>(affectedPlayers);
     }
 
-    public void setAffectedPlayers(StreamLabs plugin, Set<String> affectedPlayers) {
+    public void setAffectedPlayers(StreamlabsIntegration plugin, Set<String> affectedPlayers) {
         this.affectedPlayers = new ArrayList<>(affectedPlayers);
         plugin.getConfig().set("affected_players", this.affectedPlayers);
         plugin.saveConfig();
@@ -140,7 +140,7 @@ public class PluginConfig extends ConfigRoot {
 
     @ConfigPathSegment(id = "action")
     public static class Action extends AbstractAction {
-        private static final Set<String> ACTION_IDS = StreamLabs.getCachedEventObjects().stream()
+        private static final Set<String> ACTION_IDS = StreamlabsIntegration.getCachedEventObjects().stream()
                 .map(StreamlabsEvent::getId).collect(Collectors.toSet());
         @YamlProperty("events")
         private Set<String> eventTypes = Set.of();

@@ -8,7 +8,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.command.exception.ComponentCommandExceptionType;
 import com.membercat.streamlabs.events.StreamlabsEvent;
 import com.membercat.streamlabs.util.ReflectUtil;
@@ -53,7 +53,7 @@ public class EventArgumentType implements CustomArgumentType<StreamlabsEvent, St
 
     @Override
     public <S> @NotNull CompletableFuture<Suggestions> listSuggestions(@NotNull CommandContext<S> context, SuggestionsBuilder builder) {
-        StreamLabs.getCachedEventObjects().forEach(event -> builder.suggest(event.getId()));
+        StreamlabsIntegration.getCachedEventObjects().forEach(event -> builder.suggest(event.getId()));
         return builder.buildFuture();
     }
 }

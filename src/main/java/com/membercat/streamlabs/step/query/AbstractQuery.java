@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step.query;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.issue.ConfigPathSegment;
@@ -38,7 +38,7 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
     }
 
     @Override
-    public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws AbstractStep.ActionFailureException {
+    public void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) throws AbstractStep.ActionFailureException {
         if (invalid()) return;
         try {
             AbstractPlaceholder result = this.query(ctx, plugin);
@@ -75,7 +75,7 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
         }
     }
 
-    protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable AbstractPlaceholder query(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         String data = this.runQuery(ctx, plugin);
         return this.hasOutput() ? this.createPlaceholder(data) : null;
     }
@@ -84,7 +84,7 @@ public abstract class AbstractQuery<T> implements StepBase<T> {
         return new QueryPlaceholder(outputName(), Objects.requireNonNullElse(input, ""));
     }
 
-    protected abstract @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin);
+    protected abstract @Nullable String runQuery(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin);
 
     protected ConfigPathStack location() {
         return this.path;

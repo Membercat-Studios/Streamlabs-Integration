@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.action;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.step.AbstractStep;
 import com.membercat.streamlabs.step.StepBase;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +14,7 @@ public interface StepExecutor {
     @SuppressWarnings("rawtypes")
     @NotNull Collection<? extends StepBase> getSteps(ActionExecutionContext ctx);
 
-    default void runSteps(ActionExecutionContext ctx, StreamLabs plugin) {
+    default void runSteps(ActionExecutionContext ctx, StreamlabsIntegration plugin) {
         int id = 0;
         for (StepBase<?> step : this.getSteps(ctx)) {
             try {

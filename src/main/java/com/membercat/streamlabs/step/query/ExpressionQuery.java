@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step.query;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
@@ -44,13 +44,13 @@ public class ExpressionQuery extends TransformationQuery<String> {
     }
 
     @Override
-    protected @NotNull AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @NotNull AbstractPlaceholder query(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         Pattern matchingPattern = this.compiledPattern;
         try {
             if (matchingPattern == null)
                 matchingPattern = Pattern.compile(AbstractPlaceholder.replacePlaceholders(this.pattern, ctx));
         } catch (PatternSyntaxException e) {
-            StreamLabs.LOGGER.warning("Failed to compile expression with placeholders from \"%s\": %s".formatted(this.pattern, e.getDescription()));
+            StreamlabsIntegration.LOGGER.warning("Failed to compile expression with placeholders from \"%s\": %s".formatted(this.pattern, e.getDescription()));
             return createPlaceholder(null);
         }
 
@@ -77,7 +77,7 @@ public class ExpressionQuery extends TransformationQuery<String> {
     }
 
     @Override
-    protected @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) {
+    protected @Nullable String runQuery(@NotNull String input, @NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) {
         return null;
     }
 

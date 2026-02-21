@@ -2,7 +2,7 @@ package com.membercat.streamlabs.action;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.config.PluginConfig;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.events.StreamlabsEvent;
@@ -26,14 +26,14 @@ import static com.membercat.streamlabs.config.issue.Issues.WA2;
 public class ActionExecutor {
     private final PluginConfig pluginConfig;
     private final EventHistory eventHistory;
-    private final StreamLabs plugin;
+    private final StreamlabsIntegration plugin;
     private final ConcurrentMap<String, Set<UUID>> runningActions;
     private final ConcurrentMap<String, Queue<ActionExecutionContext>> queuedActions;
     private final Queue<ActionExecutionContext> globalQueue;
     @Nullable
     private DonationGoal activeGoal;
 
-    public ActionExecutor(PluginConfig pluginConfig, StreamLabs plugin) {
+    public ActionExecutor(PluginConfig pluginConfig, StreamlabsIntegration plugin) {
         this.pluginConfig = pluginConfig;
         this.plugin = plugin;
         this.eventHistory = new EventHistory();
@@ -45,18 +45,18 @@ public class ActionExecutor {
     public void parseAndExecute(JsonElement data) throws SocketSerializerException {
         try {
             if (data.getAsJsonArray().size() < 2 || !data.getAsJsonArray().get(1).isJsonObject()) {
-                if (StreamLabs.isDebugMode())
+                if (StreamlabsIntegration.isDebugMode())
                     plugin.getLogger().info("Skipping streamlabs message with invalid formatting");
                 return;
             }
 
             JsonObject object = data.getAsJsonArray().get(1).getAsJsonObject();
             String type = object.get("type").getAsString();
-            if (StreamLabs.isDebugMode() && (!type.equals("alertPlaying") && !type.equals("streamlabels") && !type.equals("streamlabels.underlying")))
+            if (StreamlabsIntegration.isDebugMode() && (!type.equals("alertPlaying") && !type.equals("streamlabels") && !type.equals("streamlabels.underlying")))
                 plugin.getLogger().info(String.format("Streamlabs message: %s", data));
 
             String platform = object.has("for") ? object.get("for").getAsString() : "streamlabs";
-            Set<? extends StreamlabsEvent> events = StreamLabs.getCachedEventObjects().stream()
+            Set<? extends StreamlabsEvent> events = StreamlabsIntegration.getCachedEventObjects().stream()
                     .filter(e -> e.getApiName().equals(type) && e.getPlatform().compare(platform))
                     .collect(Collectors.toSet());
 
@@ -96,7 +96,7 @@ public class ActionExecutor {
         Set<UUID> instances = runningActions.computeIfAbsent(actionId, s -> new HashSet<>());
         if (getInstanceCount() != 0 && ctx.action().instancingBehaviour == ActionInstancingBehaviour.GLOBAL_QUEUE) {
             this.globalQueue.add(ctx);
-            StreamLabs.LOGGER.info("New execution of action %s will be queued until all other running actions are done. Global queue size is now: %s".formatted(actionId, globalQueue.size()));
+            StreamlabsIntegration.LOGGER.info("New execution of action %s will be queued until all other running actions are done. Global queue size is now: %s".formatted(actionId, globalQueue.size()));
             return;
         }
         if (!instances.isEmpty()) switch (ctx.action().instancingBehaviour) {
@@ -104,7 +104,7 @@ public class ActionExecutor {
             case QUEUE -> {
                 Queue<ActionExecutionContext> queue = this.queuedActions.computeIfAbsent(actionId, s -> new ConcurrentLinkedQueue<>());
                 queue.add(ctx);
-                StreamLabs.LOGGER.info("Queueing new execution of action %s since it is already running. Queue size is now: %s".formatted(actionId, queue.size()));
+                StreamlabsIntegration.LOGGER.info("Queueing new execution of action %s since it is already running. Queue size is now: %s".formatted(actionId, queue.size()));
                 return;
             }
         }
@@ -125,7 +125,7 @@ public class ActionExecutor {
                 ActionExecutionContext queuedCtx = queue.poll();
                 assert queuedCtx != null;
                 if (queue.isEmpty()) queuedActions.remove(actionId);
-                StreamLabs.LOGGER.info("Action %s has finished, now executing queued runs. Queue size is now: %s".formatted(actionId, queue.size()));
+                StreamlabsIntegration.LOGGER.info("Action %s has finished, now executing queued runs. Queue size is now: %s".formatted(actionId, queue.size()));
                 try {
                     Thread.sleep(queuedCtx.action().queueDelay);
                 } catch (InterruptedException ignored) {
@@ -135,7 +135,7 @@ public class ActionExecutor {
             }
             if (getInstanceCount() == 0 && !globalQueue.isEmpty()) {
                 ActionExecutionContext globalQueuedCtx = globalQueue.poll();
-                StreamLabs.LOGGER.info("All actions have finished, now executing globally queued runs. Global queue size is now: %s".formatted(globalQueue.size()));
+                StreamlabsIntegration.LOGGER.info("All actions have finished, now executing globally queued runs. Global queue size is now: %s".formatted(globalQueue.size()));
                 try {
                     Thread.sleep(globalQueuedCtx.action().queueDelay);
                 } catch (InterruptedException ignored) {
@@ -163,7 +163,7 @@ public class ActionExecutor {
     }
 
     public void shutdown() {
-        StreamLabs.LOGGER.info("Attempting to cancel active action runs...");
+        StreamlabsIntegration.LOGGER.info("Attempting to cancel active action runs...");
         this.runningActions.clear();
         this.globalQueue.clear();
         this.queuedActions.clear();

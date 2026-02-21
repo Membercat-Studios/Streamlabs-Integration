@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.papi;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutor;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.ArrayUtils;
@@ -13,7 +13,7 @@ import java.util.Optional;
 public class ExecutorSubPlaceholder extends SubPlaceholder {
     private final ActionExecutor executor;
 
-    public ExecutorSubPlaceholder(StreamLabs plugin) {
+    public ExecutorSubPlaceholder(StreamlabsIntegration plugin) {
         super(plugin, "executor");
         this.executor = plugin.getExecutor();
     }

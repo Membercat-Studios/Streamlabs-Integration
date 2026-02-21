@@ -1,10 +1,10 @@
 package com.membercat.streamlabs.command;
 
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import com.membercat.streamlabs.StreamLabs;
 import com.membercat.streamlabs.util.ReflectUtil;
 import com.membercat.streamlabs.util.components.Translations;
 import org.bukkit.command.CommandSender;
@@ -15,9 +15,9 @@ import java.util.logging.Level;
 
 @SuppressWarnings("UnstableApiUsage")
 public abstract class SubCommand {
-    private final StreamLabs pluginInstance;
+    private final StreamlabsIntegration pluginInstance;
 
-    public SubCommand(StreamLabs pluginInstance) {
+    public SubCommand(StreamlabsIntegration pluginInstance) {
         this.pluginInstance = pluginInstance;
     }
 
@@ -35,11 +35,11 @@ public abstract class SubCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    protected StreamLabs getPlugin() {
+    protected StreamlabsIntegration getPlugin() {
         return this.pluginInstance;
     }
 
-    public static Set<? extends SubCommand> findSubCommandClasses(StreamLabs pluginInstance) {
+    public static Set<? extends SubCommand> findSubCommandClasses(StreamlabsIntegration pluginInstance) {
         return ReflectUtil.initializeClasses(SubCommand.class, pluginInstance);
     }
 }

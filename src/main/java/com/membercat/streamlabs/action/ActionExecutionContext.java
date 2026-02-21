@@ -1,7 +1,7 @@
 package com.membercat.streamlabs.action;
 
 import com.google.gson.JsonObject;
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.config.placeholder.PlaceholderScopeStack;
 import com.membercat.streamlabs.config.PluginConfig;
 import com.membercat.streamlabs.events.StreamlabsEvent;
@@ -68,7 +68,7 @@ public record ActionExecutionContext(
         this.keepExecutingCheck.set(keepExecutingCheck);
     }
 
-    public void runSteps(StepExecutor executor, StreamLabs plugin) {
+    public void runSteps(StepExecutor executor, StreamlabsIntegration plugin) {
         executor.runSteps(this, plugin);
     }
 

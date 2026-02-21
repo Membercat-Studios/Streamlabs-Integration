@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.step;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.issue.ConfigPathStack;
@@ -26,7 +26,7 @@ public abstract class AbstractStep<T> implements StepBase<T> {
     }
 
     private final @NotNull Class<T> expectedDataType;
-    private @Nullable StreamLabs plugin;
+    private @Nullable StreamlabsIntegration plugin;
     private @Nullable ConfigPathStack configLocation;
 
     public AbstractStep(@NotNull Class<T> expectedDataType) {
@@ -41,7 +41,7 @@ public abstract class AbstractStep<T> implements StepBase<T> {
     protected abstract void execute(@NotNull ActionExecutionContext ctx) throws ActionFailureException;
 
     @Override
-    public final void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamLabs plugin) throws ActionFailureException {
+    public final void execute(@NotNull ActionExecutionContext ctx, @NotNull StreamlabsIntegration plugin) throws ActionFailureException {
         this.plugin = plugin;
         try {
             this.execute(ctx);
@@ -56,7 +56,7 @@ public abstract class AbstractStep<T> implements StepBase<T> {
         else Bukkit.getGlobalRegionScheduler().run(this.getPlugin(), task -> action.run());
     }
 
-    protected @NotNull StreamLabs getPlugin() {
+    protected @NotNull StreamlabsIntegration getPlugin() {
         if (plugin == null) throw new IllegalStateException("Tried to access plugin outside of executor function");
         return this.plugin;
     }

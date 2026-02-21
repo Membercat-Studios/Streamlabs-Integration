@@ -3,14 +3,14 @@ package com.membercat.streamlabs.command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.socket.StreamlabsSocketClient;
 import com.membercat.streamlabs.util.components.ColorScheme;
 import com.membercat.streamlabs.util.components.Translations;
 
 @SuppressWarnings({"unused", "UnstableApiUsage"})
 public class ConnectSubCommand extends SubCommand {
-    public ConnectSubCommand(StreamLabs pluginInstance) {
+    public ConnectSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);
     }
 

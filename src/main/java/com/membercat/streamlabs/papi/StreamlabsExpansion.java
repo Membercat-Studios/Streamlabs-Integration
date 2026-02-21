@@ -1,6 +1,6 @@
 package com.membercat.streamlabs.papi;
 
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -15,9 +15,9 @@ import static net.kyori.adventure.text.Component.text;
 
 public class StreamlabsExpansion extends PlaceholderExpansion {
     private final Set<? extends SubPlaceholder> subPlaceholders;
-    private final StreamLabs plugin;
+    private final StreamlabsIntegration plugin;
 
-    public StreamlabsExpansion(StreamLabs plugin) {
+    public StreamlabsExpansion(StreamlabsIntegration plugin) {
         this.plugin = plugin;
         this.subPlaceholders = SubPlaceholder.findSubPlaceholderClasses(plugin);
     }

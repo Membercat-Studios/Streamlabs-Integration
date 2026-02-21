@@ -10,7 +10,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
-import com.membercat.streamlabs.StreamLabs;
+import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.config.issue.ConfigLoadedWithIssuesException;
 import com.membercat.streamlabs.socket.StreamlabsSocketClient;
 import com.membercat.streamlabs.util.components.ColorScheme;
@@ -30,7 +30,7 @@ import static io.papermc.paper.command.brigadier.Commands.literal;
 public class ReloadSubCommand extends SubCommand {
     public static String SHOW_IN_CONSOLE = "/streamlabs reload _console";
 
-    public ReloadSubCommand(StreamLabs pluginInstance) {
+    public ReloadSubCommand(StreamlabsIntegration pluginInstance) {
         super(pluginInstance);
     }
 
