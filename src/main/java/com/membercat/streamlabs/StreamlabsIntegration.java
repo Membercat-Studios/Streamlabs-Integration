@@ -1,10 +1,6 @@
 package com.membercat.streamlabs;
 
 import com.google.gson.JsonElement;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import com.membercat.streamlabs.action.ActionExecutor;
 import com.membercat.streamlabs.command.SubCommand;
 import com.membercat.streamlabs.config.PluginConfig;
@@ -16,13 +12,17 @@ import com.membercat.streamlabs.socket.SocketEventListener;
 import com.membercat.streamlabs.socket.StreamlabsSocketClient;
 import com.membercat.streamlabs.util.components.ColorScheme;
 import com.membercat.streamlabs.util.components.Translations;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationStore;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.java_websocket.handshake.ServerHandshake;
 import org.jetbrains.annotations.NotNull;
@@ -56,14 +56,18 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
         LOGGER = getLogger();
         this.initializeResourceBundles();
         this.pluginConfig = new PluginConfig(getComponentLogger());
+        ConfigIssueHelper.IssueList issueList = null;
         try {
             this.configFile = new File(getDataFolder(), "config.yml");
             this.pluginConfig.load(configFile);
         } catch (ConfigLoadedWithIssuesException e) {
-            this.printIssues(e.getIssues(), Bukkit.getConsoleSender());
+            issueList = e.getIssues();
         }
 
         DEBUG_MODE = pluginConfig.getOptions().debugMode;
+        Translations.printAsciiArt(this);
+        if (issueList != null) this.printIssues(issueList, null);
+        else getComponentLogger().info(Component.text("Configuration loaded successfully, no issues found!", ColorScheme.SUCCESS));
         this.executor = new ActionExecutor(this.pluginConfig, this);
         this.setupPlaceholderExpansions();
         this.registerCommandLoadHandler();
@@ -115,9 +119,10 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
         });
     }
 
-    public void printIssues(ConfigIssueHelper.IssueList issues, CommandSender sender) {
-        boolean isConsole = sender instanceof ConsoleCommandSender;
-        sender.sendMessage(issues.getListMessage(isConsole ? -1 : 7, !isConsole));
+    public void printIssues(ConfigIssueHelper.IssueList issues, @Nullable CommandSender sender) {
+        boolean isConsole = sender == null;
+        Component message = issues.getListMessage(isConsole ? -1 : 7, !isConsole);
+        Translations.sendComponentsSplit(message, isConsole ? getComponentLogger()::info : sender::sendMessage);
     }
 
     @Override

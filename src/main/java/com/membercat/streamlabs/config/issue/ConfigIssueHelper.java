@@ -149,7 +149,7 @@ public class ConfigIssueHelper {
             TextComponent.Builder builder = text()
                     .append(Translations.SEPARATOR_LINE).append(newline())
                     .append(translatable().key("streamlabs.issue.list.title").color(ColorScheme.DISABLE))
-                    .append(text("\n\n"));
+                    .append(newline()).append(newline());
             Set<String> longIds = new HashSet<>();
             int i = 0;
             for (RecordedIssue issue : this) {
@@ -163,7 +163,7 @@ public class ConfigIssueHelper {
                 }
 
                 builder.append(issue.getMessage(count <= 2 || !groupIssues))
-                        .append(text("\n\n"));
+                        .append(newline()).append(newline());
             }
             if (i > limit && limit != -1)
                 builder.append(Translations.withViewInConsole(translatable("streamlabs.issue.list.view_more", ColorScheme.DISABLE, text(i - limit))));

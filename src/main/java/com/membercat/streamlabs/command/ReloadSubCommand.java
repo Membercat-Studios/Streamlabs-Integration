@@ -1,5 +1,10 @@
 package com.membercat.streamlabs.command;
 
+import com.membercat.streamlabs.StreamlabsIntegration;
+import com.membercat.streamlabs.config.issue.ConfigLoadedWithIssuesException;
+import com.membercat.streamlabs.socket.StreamlabsSocketClient;
+import com.membercat.streamlabs.util.components.ColorScheme;
+import com.membercat.streamlabs.util.components.Translations;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -10,12 +15,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
-import com.membercat.streamlabs.StreamlabsIntegration;
-import com.membercat.streamlabs.config.issue.ConfigLoadedWithIssuesException;
-import com.membercat.streamlabs.socket.StreamlabsSocketClient;
-import com.membercat.streamlabs.util.components.ColorScheme;
-import com.membercat.streamlabs.util.components.Translations;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -53,7 +52,7 @@ public class ReloadSubCommand extends SubCommand {
         try {
             getPlugin().reloadPluginConfig();
         } catch (ConfigLoadedWithIssuesException e) {
-            getPlugin().printIssues(e.getIssues(), option == Option._CONSOLE ? Bukkit.getConsoleSender() : sender);
+            getPlugin().printIssues(e.getIssues(), option != Option._CONSOLE ? sender : null);
         }
 
         StreamlabsSocketClient client = getPlugin().getSocketClient();
