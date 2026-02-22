@@ -235,8 +235,9 @@ public class PluginConfig extends ConfigRoot {
 
         @YamlPropertyIssueAssigner(propertyName = "debug_mode")
         private void assignToDebugMode(ConfigIssueHelper issueHelper, boolean actuallySet) {
-            if (this.debugMode)
-                issueHelper.appendAtPath(HI0);
+            if (StreamlabsIntegration.isDebugModeDefined()
+                    && this.debugMode != StreamlabsIntegration.isDebugMode()) issueHelper.appendAtPath(WI3);
+            if (this.debugMode) issueHelper.appendAtPath(HI0);
         }
     }
 }

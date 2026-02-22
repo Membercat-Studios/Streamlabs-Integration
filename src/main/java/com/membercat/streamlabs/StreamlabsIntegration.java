@@ -43,7 +43,7 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
     private static final Set<? extends StreamlabsEvent> STREAMLABS_EVENTS = StreamlabsEvent.findEventClasses();
     private final Set<? extends SubCommand> SUB_COMMANDS = SubCommand.findSubCommandClasses(this);
     public static Logger LOGGER;
-    private static boolean DEBUG_MODE = false;
+    private static @Nullable Boolean DEBUG_MODE = null;
     private static boolean PAPI_INSTALLED = false;
     private StreamlabsSocketClient socketClient;
     private PluginConfig pluginConfig;
@@ -67,7 +67,8 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
         DEBUG_MODE = pluginConfig.getOptions().debugMode;
         Translations.printAsciiArt(this);
         if (issueList != null) this.printIssues(issueList, null);
-        else getComponentLogger().info(Component.text("Configuration loaded successfully, no issues found!", ColorScheme.SUCCESS));
+        else
+            getComponentLogger().info(Component.text("Configuration loaded successfully, no issues found!", ColorScheme.SUCCESS));
         this.executor = new ActionExecutor(this.pluginConfig, this);
         this.setupPlaceholderExpansions();
         this.registerCommandLoadHandler();
@@ -175,7 +176,11 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
     }
 
     public static boolean isDebugMode() {
-        return DEBUG_MODE;
+        return DEBUG_MODE != null ? DEBUG_MODE : false;
+    }
+
+    public static boolean isDebugModeDefined() {
+        return DEBUG_MODE != null;
     }
 
     public static boolean isPapiInstalled() {
