@@ -4,7 +4,7 @@
 
 # Features
 - **Respond to any kind of event from both Youtube and Twitch**: The plugin allows you to trigger in-game actions for any kind of donation, subscription, membership, follow, and many more
-- **Fully customizeable event conditions**: Our plugin's condition system is able to check for any value related to any event (such as the amount of gifted memberships on Youtube) and even check for value ranges in different currencies easily
+- **Fully customizable event conditions**: Our plugin's condition system is able to check for any value related to any event (such as the amount of gifted memberships on Youtube) and even check for value ranges in different currencies easily
 - **Execute commands and send messages**: The plugin features a widely customizable command system, allowing you to use data from the event in the command. Chat messages and titles can also be sent to specific players through the easy-to-use message system
 
 # Documentation
