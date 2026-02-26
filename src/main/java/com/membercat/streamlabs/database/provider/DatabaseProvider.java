@@ -16,7 +16,7 @@ import static com.membercat.streamlabs.config.issue.Issues.WDB0;
 @ConfigPathSegment(id = "database_provider")
 public interface DatabaseProvider {
     static @NotNull DatabaseProvider deserialize(@NotNull String input, @Nullable ConfigIssueHelper issueHelper) {
-        if (!input.equals("sqlite") && issueHelper != null) issueHelper.appendAtPath(WDB0.apply(input));
+        if (!input.equalsIgnoreCase("sqlite") && issueHelper != null) issueHelper.appendAtPath(WDB0.apply(input));
         File file = StreamlabsIntegration.dataPath().resolve("_data").toFile();
         //noinspection ResultOfMethodCallIgnored
         file.mkdirs();
