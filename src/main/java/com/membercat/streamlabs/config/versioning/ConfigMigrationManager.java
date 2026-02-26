@@ -12,7 +12,7 @@ import java.util.Comparator;
 import static com.membercat.streamlabs.config.issue.Issues.*;
 
 public class ConfigMigrationManager {
-    private static final long[] VERSIONS = {0, 100, 101};
+    private static final long[] VERSIONS = {0, 100, 101, 102};
     private static final long CONFIG_VERSION = VERSIONS[VERSIONS.length - 1];
     private final YamlConfiguration config;
 
@@ -34,7 +34,7 @@ public class ConfigMigrationManager {
             throw new MigrationFailureException();
         }
 
-        StreamlabsIntegration.LOGGER.warning("Your configuration file was last used in a lower version of this plugin and will have to be migrated!");
+        StreamlabsIntegration.LOGGER.warning("Your configuration file was last used in an older version of this plugin and will have to be migrated!");
         try {
             File newFile = getBackupFile(file.getParentFile());
             this.config.save(newFile);
