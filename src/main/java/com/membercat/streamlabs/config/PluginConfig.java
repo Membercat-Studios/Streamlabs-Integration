@@ -9,6 +9,7 @@ import com.membercat.streamlabs.condition.ConditionGroup;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.issue.ConfigPathSegment;
 import com.membercat.streamlabs.config.placeholder.CustomPlaceholder;
+import com.membercat.streamlabs.database.provider.DatabaseProvider;
 import com.membercat.streamlabs.events.StreamlabsEvent;
 import com.membercat.streamlabs.socket.StreamlabsSocketClient;
 import com.membercat.streamlabs.statistics.goal.DonationGoal;
@@ -31,6 +32,8 @@ import static com.membercat.streamlabs.config.issue.Issues.*;
 public class PluginConfig extends ConfigRoot {
     @YamlProperty(value = "streamlabs")
     private PluginOptions options = new PluginOptions();
+    @YamlProperty(value = "database")
+    private DatabaseOptions databaseOptions = new DatabaseOptions();
     @YamlProperty("affected_players")
     private List<String> affectedPlayers = new ArrayList<>();
     @YamlPropertySection(value = "goal_types", elementClass = DonationGoal.class)
@@ -77,6 +80,10 @@ public class PluginConfig extends ConfigRoot {
 
     public PluginOptions getOptions() {
         return this.options;
+    }
+
+    public DatabaseOptions getDatabaseOptions() {
+        return this.databaseOptions;
     }
 
     public @Nullable Function getFunction(@NotNull String id) {
@@ -238,6 +245,17 @@ public class PluginConfig extends ConfigRoot {
             if (StreamlabsIntegration.isDebugModeDefined()
                     && this.debugMode != StreamlabsIntegration.isDebugMode()) issueHelper.appendAtPath(WI3);
             if (this.debugMode) issueHelper.appendAtPath(HI0);
+        }
+    }
+
+    @ConfigPathSegment(id = "database_options")
+    public static class DatabaseOptions implements YamlPropertyObject {
+        @YamlProperty("provider")
+        public DatabaseProvider provider = DatabaseProvider.deserialize("sqlite", null);
+
+        @YamlPropertyCustomDeserializer(propertyName = "provider")
+        private DatabaseProvider deserializeSteps(@NotNull String string, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+            return DatabaseProvider.deserialize(string, issueHelper);
         }
     }
 }
