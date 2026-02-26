@@ -15,7 +15,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
@@ -52,7 +51,7 @@ public final class Translations {
             .decorate(TextDecoration.STRIKETHROUGH)
             .color(ColorScheme.STREAMLABS).build();
 
-    public static void printAsciiArt(@NotNull JavaPlugin plugin) {
+    public static void printAsciiArt(@NotNull StreamlabsIntegration plugin) {
         String rawArt = Optional.ofNullable(GlobalTranslator.translator().translate("streamlabs.art", Locale.US))
                 .map(MessageFormat::toPattern).orElse("<red>Missing translation for ASCII art!");
         Component debug = Optional.ofNullable(GlobalTranslator.translator().translate("streamlabs.art.debug", Locale.US))
@@ -62,6 +61,7 @@ public final class Translations {
                 .tag("ver", selfClosingInserting(text(plugin.getPluginMeta().getVersion())))
                 .tag("server", selfClosingInserting(text(plugin.getServer().getName())))
                 .tag("server-ver", selfClosingInserting(text(plugin.getServer().getVersion())))
+                .tag("database", selfClosingInserting(text(plugin.dbProvider().getDisplayName())))
                 .tag("docs", selfClosingInserting(text(WIKI_URL).clickEvent(ClickEvent.openUrl(WIKI_URL))))
                 .tag("debug", selfClosingInserting(StreamlabsIntegration.isDebugMode() ? debug : empty()))
                 .build();

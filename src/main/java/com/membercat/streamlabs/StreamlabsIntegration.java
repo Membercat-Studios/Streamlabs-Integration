@@ -6,6 +6,7 @@ import com.membercat.streamlabs.command.SubCommand;
 import com.membercat.streamlabs.config.PluginConfig;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.issue.ConfigLoadedWithIssuesException;
+import com.membercat.streamlabs.database.provider.DatabaseProvider;
 import com.membercat.streamlabs.events.StreamlabsEvent;
 import com.membercat.streamlabs.papi.StreamlabsExpansion;
 import com.membercat.streamlabs.socket.SocketEventListener;
@@ -168,6 +169,10 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
 
     public PluginConfig pluginConfig() {
         return pluginConfig;
+    }
+
+    public DatabaseProvider dbProvider() {
+        return pluginConfig().getDatabaseOptions().provider;
     }
 
     public ActionExecutor getExecutor() {

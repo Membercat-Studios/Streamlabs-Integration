@@ -1,8 +1,8 @@
 <#80F5D2> ________  ___          </#80F5D2>
 <#7DF5C7>|\   ____\|\  \          </#7DF5C7><#80F5D2><b><plugin></b></#80F5D2> <dark_gray>v<ver></dark_gray>
 <#80F5B2>\ \  \___|\ \  \            </#80F5B2><gray>Running on </gray><b><light_purple><server></light_purple></b> <dark_purple><server-ver></dark_purple>
-<#6FF591> \ \_____  \ \  \           </#6FF591><gray>Visit the documentation at </gray><blue><docs></blue>
-<#57F569>  \|____|\  \ \  \____      </#57F569><gray>Made by</gray> <#de9a4c><b>Membercat Studios</b></#de9a4c>
-<#28F515>    ____\_\  \ \_______\    </#28F515><debug>
-<#9CF50C>   |\_________\|_______| </#9CF50C>
+<#6FF591> \ \_____  \ \  \           </#6FF591><gray>Database in use: </gray><b><green><database></green></b>
+<#57F569>  \|____|\  \ \  \____      </#57F569><gray>Visit the documentation at </gray><blue><docs></blue>
+<#28F515>    ____\_\  \ \_______\    </#28F515><gray>Made by</gray> <#de9a4c><b>Membercat Studios</b></#de9a4c>
+<#9CF50C>   |\_________\|_______|    </#9CF50C><debug>
 <#CFF500>   \|_________| </#CFF500>
