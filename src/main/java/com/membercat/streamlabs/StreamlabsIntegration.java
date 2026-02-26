@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -40,6 +41,7 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
     private static final String NAMESPACE = "streamlabs";
     private static final Locale[] SUPPORTED_LOCALES = {Locale.US, Locale.GERMANY};
     private static final String DEFAULT_BUNDLE_ID = "default";
+    private static Path DATA_PATH;
     private static final Set<? extends StreamlabsEvent> STREAMLABS_EVENTS = StreamlabsEvent.findEventClasses();
     private final Set<? extends SubCommand> SUB_COMMANDS = SubCommand.findSubCommandClasses(this);
     public static Logger LOGGER;
@@ -53,6 +55,7 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        DATA_PATH = getDataPath();
         LOGGER = getLogger();
         this.initializeResourceBundles();
         this.pluginConfig = new PluginConfig(getComponentLogger());
@@ -181,6 +184,10 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
 
     public static boolean isDebugModeDefined() {
         return DEBUG_MODE != null;
+    }
+
+    public static @NotNull Path dataPath() {
+        return DATA_PATH;
     }
 
     public static boolean isPapiInstalled() {
