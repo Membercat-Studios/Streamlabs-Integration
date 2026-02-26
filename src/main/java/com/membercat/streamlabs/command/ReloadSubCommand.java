@@ -49,12 +49,14 @@ public class ReloadSubCommand extends SubCommand {
     private void runReload(Option option, CommandSender sender) {
         if (option != Option._CONSOLE)
             Translations.sendPrefixedResponse("streamlabs.commands.config.reload", ColorScheme.DONE, sender);
+        getPlugin().dbManager().close();
         try {
             getPlugin().reloadPluginConfig();
         } catch (ConfigLoadedWithIssuesException e) {
             getPlugin().printIssues(e.getIssues(), option != Option._CONSOLE ? sender : null);
         }
 
+        getPlugin().dbManager().init();
         StreamlabsSocketClient client = getPlugin().getSocketClient();
         client.updateToken(getPlugin().pluginConfig().getOptions().socketToken);
         if (option != null) return;

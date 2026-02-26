@@ -6,6 +6,7 @@ import com.membercat.streamlabs.command.SubCommand;
 import com.membercat.streamlabs.config.PluginConfig;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.issue.ConfigLoadedWithIssuesException;
+import com.membercat.streamlabs.database.DatabaseManager;
 import com.membercat.streamlabs.database.provider.DatabaseProvider;
 import com.membercat.streamlabs.events.StreamlabsEvent;
 import com.membercat.streamlabs.papi.StreamlabsExpansion;
@@ -51,6 +52,7 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
     private StreamlabsSocketClient socketClient;
     private PluginConfig pluginConfig;
     private ActionExecutor executor;
+    private DatabaseManager databaseManager;
     private File configFile;
 
     @Override
@@ -73,6 +75,8 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
         if (issueList != null) this.printIssues(issueList, null);
         else
             getComponentLogger().info(Component.text("Configuration loaded successfully, no issues found!", ColorScheme.SUCCESS));
+        this.databaseManager = new DatabaseManager(this.dbProvider());
+        this.databaseManager.init();
         this.executor = new ActionExecutor(this.pluginConfig, this);
         this.setupPlaceholderExpansions();
         this.registerCommandLoadHandler();
@@ -153,6 +157,7 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
             StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(socketClient);
         }
         if (this.executor != null) this.executor.shutdown();
+        if (this.databaseManager != null) this.databaseManager.close();
     }
 
     public void reloadPluginConfig() throws ConfigLoadedWithIssuesException {
@@ -173,6 +178,10 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
 
     public DatabaseProvider dbProvider() {
         return pluginConfig().getDatabaseOptions().provider;
+    }
+
+    public DatabaseManager dbManager() {
+        return databaseManager;
     }
 
     public ActionExecutor getExecutor() {
