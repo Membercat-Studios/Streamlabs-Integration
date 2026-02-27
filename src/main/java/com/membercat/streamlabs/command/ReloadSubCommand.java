@@ -56,6 +56,7 @@ public class ReloadSubCommand extends SubCommand {
             getPlugin().printIssues(e.getIssues(), option != Option._CONSOLE ? sender : null);
         }
 
+        getPlugin().recreateDatabaseManager();
         getPlugin().dbManager().init();
         StreamlabsSocketClient client = getPlugin().getSocketClient();
         client.updateToken(getPlugin().pluginConfig().getOptions().socketToken);

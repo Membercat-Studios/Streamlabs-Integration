@@ -75,7 +75,7 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
         if (issueList != null) this.printIssues(issueList, null);
         else
             getComponentLogger().info(Component.text("Configuration loaded successfully, no issues found!", ColorScheme.SUCCESS));
-        this.databaseManager = new DatabaseManager(this.dbProvider());
+        this.recreateDatabaseManager();
         this.databaseManager.init();
         this.executor = new ActionExecutor(this.pluginConfig, this);
         this.setupPlaceholderExpansions();
@@ -178,6 +178,10 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
 
     public DatabaseProvider dbProvider() {
         return pluginConfig().getDatabaseOptions().provider;
+    }
+
+    public void recreateDatabaseManager() {
+        this.databaseManager = pluginConfig().getDatabaseOptions().createManager();
     }
 
     public DatabaseManager dbManager() {

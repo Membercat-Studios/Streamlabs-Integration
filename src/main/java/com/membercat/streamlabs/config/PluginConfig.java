@@ -9,6 +9,7 @@ import com.membercat.streamlabs.condition.ConditionGroup;
 import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
 import com.membercat.streamlabs.config.issue.ConfigPathSegment;
 import com.membercat.streamlabs.config.placeholder.CustomPlaceholder;
+import com.membercat.streamlabs.database.DatabaseManager;
 import com.membercat.streamlabs.database.provider.DatabaseProvider;
 import com.membercat.streamlabs.events.StreamlabsEvent;
 import com.membercat.streamlabs.socket.StreamlabsSocketClient;
@@ -252,6 +253,10 @@ public class PluginConfig extends ConfigRoot {
     public static class DatabaseOptions implements YamlPropertyObject {
         @YamlProperty("provider")
         public DatabaseProvider provider = DatabaseProvider.deserialize("sqlite", null);
+
+        public @NotNull DatabaseManager createManager() {
+            return new DatabaseManager(this.provider);
+        }
 
         @YamlPropertyCustomDeserializer(propertyName = "provider")
         private DatabaseProvider deserializeSteps(@NotNull String string, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
