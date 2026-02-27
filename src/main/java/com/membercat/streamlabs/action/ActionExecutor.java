@@ -36,7 +36,7 @@ public class ActionExecutor {
     public ActionExecutor(PluginConfig pluginConfig, StreamlabsIntegration plugin) {
         this.pluginConfig = pluginConfig;
         this.plugin = plugin;
-        this.eventHistory = new EventHistory();
+        this.eventHistory = new EventHistory(plugin::dbManager);
         this.runningActions = new ConcurrentHashMap<>();
         this.queuedActions = new ConcurrentHashMap<>();
         this.globalQueue = new ConcurrentLinkedQueue<>();
@@ -62,7 +62,7 @@ public class ActionExecutor {
 
             for (StreamlabsEvent event : events) {
                 JsonObject baseObject = event.getBaseObject(object);
-                if (!this.checkAndExecute(event, baseObject, false))
+                if (!this.checkAndExecute(event, baseObject, false, false))
                     Translations.sendPrefixedToPlayers(Translations.ACTION_FAILURE, plugin.getServer(), false);
             }
         } catch (Exception e) {
@@ -71,10 +71,10 @@ public class ActionExecutor {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean checkAndExecute(StreamlabsEvent event, JsonObject baseObject, boolean bypassRateLimiters) {
+    public boolean checkAndExecute(StreamlabsEvent event, JsonObject baseObject, boolean bypassRateLimiters, boolean isTest) {
         if (!event.isEventValid(baseObject)) return true;
         event.onExecute(this, baseObject);
-        this.eventHistory.store(event, this.pluginConfig, baseObject);
+        this.eventHistory.store(event, this.pluginConfig, baseObject, isTest);
         List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event);
         boolean successful = true;
         for (PluginConfig.Action action : actions) {

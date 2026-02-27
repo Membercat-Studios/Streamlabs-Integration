@@ -4,24 +4,30 @@ import com.google.gson.JsonObject;
 import com.membercat.streamlabs.action.ActionExecutionContext;
 import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
 import com.membercat.streamlabs.config.PluginConfig;
+import com.membercat.streamlabs.database.DatabaseManager;
 import com.membercat.streamlabs.events.StreamlabsEvent;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class EventHistory {
     private final Stack<LoggedEvent> executionHistory;
     private final HashMap<String, String> giftedMembershipIdMap;
     private final Set<HistoryChangedListener> listeners;
+    private final Supplier<DatabaseManager> dbManager;
 
-    public EventHistory() {
+    public EventHistory(@NotNull Supplier<DatabaseManager> dbManager) {
+        this.dbManager = dbManager;
         this.executionHistory = new Stack<>();
         this.giftedMembershipIdMap = new HashMap<>();
         this.listeners = new HashSet<>();
     }
 
-    public void store(StreamlabsEvent event, PluginConfig config, JsonObject baseObject) {
+    public void store(StreamlabsEvent event, PluginConfig config, JsonObject baseObject, boolean isTest) {
         LoggedEvent newEvent = new LoggedEvent(event, config, baseObject, new Date().getTime());
+        if (!isTest) this.dbManager.get().logEvent(event, baseObject);
         this.executionHistory.push(newEvent);
         this.listeners.forEach(listener -> listener.onHistoryChanged(this, newEvent));
     }
