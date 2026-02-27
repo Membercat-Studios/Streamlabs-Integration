@@ -22,10 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -42,21 +39,24 @@ public class TestSubCommand extends SubCommand {
     public LiteralCommandNode<CommandSourceStack> buildCommand() {
         return literal("test")
                 .then(argument("event", EventArgumentType.event())
-                        .then(placeholderArg(false))
+                        .then(placeholderArg(false, false))
                         .then(literal("bypassratelimiters")
-                                .executes(ctx -> executeTest(ctx, true, Set.of()))
-                                .then(placeholderArg(true)))
-                        .executes(ctx -> executeTest(ctx, false, Set.of()))).build();
+                                .executes(ctx -> executeTest(ctx, true, false, Set.of()))
+                                .then(placeholderArg(true, false)))
+                        .then(literal("disguise")
+                                .executes(ctx -> executeTest(ctx, false, true, Set.of()))
+                                .then(placeholderArg(false, true)))
+                        .executes(ctx -> executeTest(ctx, false, false, Set.of()))).build();
     }
 
-    private CommandNode<CommandSourceStack> placeholderArg(boolean bypassRateLimiters) {
+    private CommandNode<CommandSourceStack> placeholderArg(boolean bypassRateLimiters, boolean disguise) {
         //noinspection unchecked
         return argument("placeholders", new PlaceholderArgumentType("placeholders"))
-                .executes(ctx -> executeTest(ctx, bypassRateLimiters, ctx.getArgument("placeholders", Set.class)))
+                .executes(ctx -> executeTest(ctx, bypassRateLimiters, disguise, ctx.getArgument("placeholders", Set.class)))
                 .build();
     }
 
-    private int executeTest(CommandContext<CommandSourceStack> ctx, boolean bypassRateLimiters, Set<Pair<String, String>> placeholders) {
+    private int executeTest(CommandContext<CommandSourceStack> ctx, boolean bypassRateLimiters, boolean disguise, Set<Pair<String, String>> placeholders) {
         return exceptionHandler(ctx, sender -> {
             StreamlabsEvent event = EventArgumentType.getEvent(ctx, "event");
             JsonObject object = new JsonObject();
@@ -76,7 +76,7 @@ public class TestSubCommand extends SubCommand {
                 }
             }
 
-            if (!getPlugin().getExecutor().checkAndExecute(event, object, bypassRateLimiters) && getPlugin().showStatusMessages())
+            if (!getPlugin().getExecutor().checkAndExecute(event, object, bypassRateLimiters, !disguise) && getPlugin().showStatusMessages())
                 sender.sendMessage(Translations.withPrefix(Translations.ACTION_FAILURE, true));
         });
     }
