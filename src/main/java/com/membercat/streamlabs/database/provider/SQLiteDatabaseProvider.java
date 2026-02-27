@@ -26,6 +26,7 @@ public class SQLiteDatabaseProvider implements DatabaseProvider {
 
     @Override
     public @NotNull String getDisplayName() {
-        return "SQLite";
+        String fileName = this.path.getFileName().toString();
+        return "SQLite (%s)".formatted(fileName);
     }
 }
