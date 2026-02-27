@@ -263,7 +263,7 @@ public class PluginConfig extends ConfigRoot {
         public Set<String> ignoredEvents = Set.of();
 
         public @NotNull DatabaseManager createManager() {
-            return new DatabaseManager(this.provider);
+            return new DatabaseManager(this.provider, this.logEvents, this.ignoredEvents);
         }
 
         @YamlPropertyCustomDeserializer(propertyName = "ignored_events")
