@@ -18,6 +18,8 @@ streamlabs:
 # The plugin uses an external database to store long-term data such as event history
 database:
   provider: sqlite # Which type of database to use, currently only sqlite is supported
+  record_events: false # Whether to log streamlabs events (such as donations, etc.) in the database
+  ignored_events: youtube_subscription,twitch_follow # Events that should not be logged, for example followers/subscribers
 
 # Add your player name here to ensure you'll be able to see messages sent using the "message" step (see "actions" for more info)
 affected_players: # Read more at: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Configuration-and-Issues#affected-players

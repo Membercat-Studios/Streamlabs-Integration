@@ -157,6 +157,10 @@ public class PluginConfig extends ConfigRoot {
 
         @YamlPropertyCustomDeserializer(propertyName = "events")
         public Set<String> deserializeEventTypes(@NotNull String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+            return parseEventTypes(input, issueHelper);
+        }
+
+        public static Set<String> parseEventTypes(@NotNull String input, ConfigIssueHelper issueHelper) {
             String[] data = input.split(",");
             return Arrays.stream(data)
                     .map(String::strip)
@@ -253,9 +257,18 @@ public class PluginConfig extends ConfigRoot {
     public static class DatabaseOptions implements YamlPropertyObject {
         @YamlProperty("provider")
         public DatabaseProvider provider = DatabaseProvider.deserialize("sqlite", null);
+        @YamlProperty("record_events")
+        public boolean logEvents = false;
+        @YamlProperty("ignored_events")
+        public Set<String> ignoredEvents = Set.of();
 
         public @NotNull DatabaseManager createManager() {
             return new DatabaseManager(this.provider);
+        }
+
+        @YamlPropertyCustomDeserializer(propertyName = "ignored_events")
+        public Set<String> deserializeEventTypes(@NotNull String input, ConfigIssueHelper issueHelper, ConfigurationSection parent) {
+            return Action.parseEventTypes(input, issueHelper);
         }
 
         @YamlPropertyCustomDeserializer(propertyName = "provider")

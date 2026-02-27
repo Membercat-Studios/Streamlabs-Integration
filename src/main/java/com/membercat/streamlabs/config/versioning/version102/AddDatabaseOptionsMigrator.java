@@ -24,6 +24,8 @@ public class AddDatabaseOptionsMigrator implements ConfigMigrator {
         if (dbSection != null) return;
         dbSection = root.createSection("database");
         dbSection.set("provider", "sqlite");
+        dbSection.set("record_events", false);
+        dbSection.set("ignored_events", "youtube_subscription,twitch_follow");
         root.setComments("database", List.of("The database is used to store event history data"));
     }
 }
