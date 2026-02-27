@@ -15,6 +15,10 @@ streamlabs:
   show_status_messages: true # Whether the plugin will send status messages in chat (for example "Successfully connected to Streamlabs")
   auto_connect: true # If disabled, the plugin will not try to connect at startup or when using /streamlabs reload (the latter only applies if no connection is currently established)
 
+# The plugin uses an external database to store long-term data such as event history
+database:
+  provider: sqlite # Which type of database to use, currently only sqlite is supported
+
 # Add your player name here to ensure you'll be able to see messages sent using the "message" step (see "actions" for more info)
 affected_players: # Read more at: https://github.com/Membercat-Studios/Streamlabs-Integration/wiki/Configuration-and-Issues#affected-players
   - domplanto # Those are example player names that won't exist on your server, make sure to remove them
