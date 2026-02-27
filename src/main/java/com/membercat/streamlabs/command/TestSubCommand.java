@@ -60,9 +60,14 @@ public class TestSubCommand extends SubCommand {
         return exceptionHandler(ctx, sender -> {
             StreamlabsEvent event = EventArgumentType.getEvent(ctx, "event");
             JsonObject object = new JsonObject();
-            String user = "user%s".formatted(new Random().nextInt(10, 9999999));
+            Optional<String> manualUser = placeholders.stream()
+                    .filter(p -> p.getKey().equals("user"))
+                    .map(Pair::getValue).findAny();
+            String user = manualUser.orElse("user%s".formatted(new Random().nextInt(10, 9999999)));
             event.getPlaceholders().removeIf(pl -> !pl.name().startsWith("_"));
             event.addPlaceholder("user", o -> user);
+            object.addProperty("name", user);
+            object.addProperty("from", user);
             for (Pair<String, String> placeholder : placeholders) {
                 event.addPlaceholder(placeholder.getKey(), o -> placeholder.getValue());
                 try {
