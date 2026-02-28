@@ -65,7 +65,7 @@ public class ConfigIssue {
         public Component translatable() {
             return Component.translatable()
                     .key("streamlabs.issue.level.%s".formatted(this.name().toLowerCase()))
-                    .style(Style.style(this.color, isImportant() ? Set.of(TextDecoration.BOLD) : Set.of())).build();
+                    .style(Style.style(this.color, Set.of(TextDecoration.BOLD))).build();
         }
 
         public boolean isImportant() {
