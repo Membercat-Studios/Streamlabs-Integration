@@ -5,9 +5,12 @@ import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.database.provider.DatabaseProvider;
 import com.membercat.streamlabs.events.StreamlabsEvent;
 import com.membercat.streamlabs.events.streamlabs.BasicDonationEvent;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.Types;
+import java.time.Instant;
 import java.util.Set;
 
 import static com.membercat.streamlabs.StreamlabsIntegration.LOGGER;
@@ -53,6 +56,29 @@ public class DatabaseManager extends StatementExecutor {
                 s.setNull(4, Types.VARCHAR);
             }
         });
+    }
+
+    public @Nullable Integer queryHistoryCount(@Nullable Set<String> eventTypes, boolean onlyDonations, @Nullable Instant start, @Nullable Instant end) {
+        @Language("sql") String statement = "SELECT COUNT(*) FROM event_history";
+        if (onlyDonations) statement += " WHERE donation_amount IS NOT NULL";
+        else if (eventTypes != null) {
+            String placeholders = "?,".repeat(eventTypes.size());
+            placeholders = placeholders.substring(0, placeholders.length() - 1);
+            statement += " WHERE type IN (%s)".formatted(placeholders);
+        }
+        if (start != null && end != null) {
+            statement += (onlyDonations || eventTypes != null) ? " AND" : " WHERE";
+            statement += " unixepoch(timestamp) BETWEEN ? AND ?";
+        }
+
+        return this.queryOne(statement, s -> {
+            int idx = 1;
+            if (!onlyDonations && eventTypes != null) for (String type : eventTypes) s.setString(idx++, type);
+            if (start != null && end != null) {
+                s.setLong(idx++, start.getEpochSecond());
+                s.setLong(idx, end.getEpochSecond());
+            }
+        }, "COUNT(*)", Integer.class);
     }
 
     private void seedDatabase() {
