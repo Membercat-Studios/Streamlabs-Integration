@@ -26,7 +26,6 @@ import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.java_websocket.handshake.ServerHandshake;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -140,15 +139,14 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
     }
 
     @Override
-    public void onConnectionOpen(@NotNull ServerHandshake handshake) {
+    public void onConnectionSuccess() {
         if (this.showStatusMessages())
             Translations.sendPrefixedToPlayers("streamlabs.status.socket_open", ColorScheme.SUCCESS, getServer());
     }
 
     @Override
     public void onConnectionClosed(@NotNull StreamlabsSocketClient.DisconnectReason reason, @Nullable String message) {
-        if (this.showStatusMessages())
-            reason.sendToPlayers(getServer());
+        if (this.showStatusMessages()) reason.sendToPlayers(getServer());
     }
 
     @Override

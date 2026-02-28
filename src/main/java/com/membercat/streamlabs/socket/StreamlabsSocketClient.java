@@ -68,6 +68,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
             }
             case 40 -> {
                 this.logger.info("Successfully connected to Streamlabs!");
+                this.eventListeners.forEach(SocketEventListener::onConnectionSuccess);
                 yield false;
             }
             case 41, 44 -> {
@@ -103,7 +104,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
         this.sessionInfoPresent.set(false);
         if (StreamlabsIntegration.isDebugMode())
             this.logger.info("Established websocket connection, waiting for session info...");
-        this.eventListeners.forEach(listener -> listener.onConnectionOpen(serverHandshake));
+        this.eventListeners.forEach(listener -> listener.onConnectionOpening(serverHandshake));
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {

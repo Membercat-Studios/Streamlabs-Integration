@@ -7,6 +7,11 @@ import org.jetbrains.annotations.Nullable;
 
 public interface SocketEventListener {
     void onEvent(@NotNull JsonElement rawData);
-    void onConnectionOpen(@NotNull ServerHandshake handshake);
+
+    default void onConnectionOpening(@NotNull ServerHandshake handshake) {
+    }
+
+    void onConnectionSuccess();
+
     void onConnectionClosed(@NotNull StreamlabsSocketClient.DisconnectReason reason, @Nullable String message);
 }
