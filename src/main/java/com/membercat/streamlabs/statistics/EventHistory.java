@@ -6,6 +6,7 @@ import com.membercat.streamlabs.config.placeholder.AbstractPlaceholder;
 import com.membercat.streamlabs.config.PluginConfig;
 import com.membercat.streamlabs.database.DatabaseManager;
 import com.membercat.streamlabs.events.StreamlabsEvent;
+import com.membercat.streamlabs.statistics.permanent.PermanentHistorySelector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,6 +39,10 @@ public class EventHistory {
 
     public void registerListeners(HistoryChangedListener... listeners) {
         this.listeners.addAll(Arrays.asList(listeners));
+    }
+
+    public @Nullable Integer queryPermanentSelector(@NotNull PermanentHistorySelector selector) {
+        return selector.queryDatabase(this.dbManager.get());
     }
 
     @Nullable
