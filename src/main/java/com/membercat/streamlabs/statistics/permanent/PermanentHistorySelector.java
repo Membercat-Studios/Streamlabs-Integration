@@ -9,6 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.Set;
@@ -43,14 +46,14 @@ public class PermanentHistorySelector {
         }
 
         Instant start = null;
-        Instant now = Instant.now();
         int endBracketIdx = input.lastIndexOf(']');
         if (bracketIdx != -1 && endBracketIdx != -1) {
             String timeSelector = input.substring(bracketIdx + 1, endBracketIdx);
             Pair<ChronoUnit, Integer> result = parseTimeSelector(timeSelector);
             if (result.getKey().ordinal() > ChronoUnit.YEARS.ordinal())
                 throw new IllegalArgumentException("Time selector unit out of range");
-            start = now.minus(result.getValue(), result.getKey());
+            LocalDateTime date = LocalDateTime.now(ZoneId.of("UTC"));
+            start = date.minus(result.getValue(), result.getKey()).toInstant(ZoneOffset.UTC);
         } else if (bracketIdx != -1) throw new IllegalArgumentException("Missing closing bracket in time selector");
 
         return new PermanentHistorySelector(donations, events, start);
