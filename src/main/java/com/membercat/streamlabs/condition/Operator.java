@@ -58,8 +58,24 @@ public interface Operator {
 
         @Override
         default boolean check(Object element1, Object element2) {
-            if (!(element1 instanceof Double d1) || !(element2 instanceof Double d2)) return false;
-            return this.check(d1, d2);
+            String s1 = element1.toString();
+            String s2 = element2.toString();
+
+            Double d1 = tryParse(s1);
+            Double d2 = tryParse(s2);
+
+            return this.check(
+                d1 != null ? d1 : (double) s1.length(),
+                d2 != null ? d2 : (double) s2.length()
+            );
+        }
+
+        private static Double tryParse(String s) {
+            try {
+                return Double.parseDouble(s);
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
     }
 
