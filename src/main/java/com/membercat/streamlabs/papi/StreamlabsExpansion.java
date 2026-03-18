@@ -55,6 +55,11 @@ public class StreamlabsExpansion extends PlaceholderExpansion {
         }
     }
 
+    @Override
+    public boolean persist() {
+        return true;
+    }
+
     private static String legacy(@NotNull Component input) {
         return LegacyComponentSerializer.legacySection().serialize(input);
     }
