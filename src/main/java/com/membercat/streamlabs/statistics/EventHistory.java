@@ -41,7 +41,7 @@ public class EventHistory {
         this.listeners.addAll(Arrays.asList(listeners));
     }
 
-    public @Nullable Integer queryPermanentSelector(@NotNull PermanentHistorySelector selector) {
+    public <T> @Nullable T queryPermanentSelector(@NotNull PermanentHistorySelector<T> selector) {
         return selector.queryDatabase(this.dbManager.get());
     }
 

@@ -1,8 +1,5 @@
 package com.membercat.streamlabs.statistics.permanent;
 
-import com.membercat.streamlabs.config.PluginConfig;
-import com.membercat.streamlabs.config.issue.ConfigIssueHelper;
-import com.membercat.streamlabs.config.issue.ConfigLoadedWithIssuesException;
 import com.membercat.streamlabs.database.DatabaseManager;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -14,37 +11,22 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
-import java.util.Set;
 
-public class PermanentHistorySelector {
-    private final boolean onlyDonations;
-    private final @Nullable Set<String> events;
-    private final @Nullable Instant start;
+public abstract class PermanentHistorySelector<T> {
+    protected final @Nullable Instant start;
 
-    private PermanentHistorySelector(boolean onlyDonations, @Nullable Set<String> events, @Nullable Instant start) {
-        this.onlyDonations = onlyDonations;
-        this.events = events;
+    protected PermanentHistorySelector(@Nullable Instant start) {
         this.start = start;
     }
 
-    public @Nullable Integer queryDatabase(@NotNull DatabaseManager dbManager) {
-        return dbManager.queryHistoryCount(this.events, this.onlyDonations, this.start, this.start != null ? Instant.now() : null);
+    public final @Nullable T queryDatabase(@NotNull DatabaseManager dbManager) {
+        return this.queryDatabase(dbManager, this.start != null ? Instant.now() : null);
     }
-    
-    public static @NotNull PermanentHistorySelector deserialize(@NotNull String input) throws IllegalArgumentException {
-        ConfigIssueHelper issueHelper = new ConfigIssueHelper(null);
-        int bracketIdx = input.indexOf('[');
-        String eventSelector = input.substring(0, bracketIdx == -1 ? input.length() : bracketIdx);
-        boolean donations = eventSelector.equals("donations");
-        Set<String> events = null;
-        if (!donations && !eventSelector.equals("all"))
-            events = PluginConfig.Action.parseEventTypes(eventSelector, issueHelper);
-        try {
-            issueHelper.complete();
-        } catch (ConfigLoadedWithIssuesException e) {
-            throw new IllegalArgumentException("Invalid event type(s) specified");
-        }
 
+    protected abstract @Nullable T queryDatabase(@NotNull DatabaseManager dbManager, @Nullable Instant end);
+
+    public static @NotNull PermanentHistorySelector<?> deserialize(@NotNull String input) throws IllegalArgumentException {
+        int bracketIdx = input.indexOf('[');
         Instant start = null;
         int endBracketIdx = input.lastIndexOf(']');
         if (bracketIdx != -1 && endBracketIdx != -1) {
@@ -56,7 +38,15 @@ public class PermanentHistorySelector {
             start = date.minus(result.getValue(), result.getKey()).toInstant(ZoneOffset.UTC);
         } else if (bracketIdx != -1) throw new IllegalArgumentException("Missing closing bracket in time selector");
 
-        return new PermanentHistorySelector(donations, events, start);
+        String eventSelector = input.substring(0, bracketIdx == -1 ? input.length() : bracketIdx);
+        int cn = eventSelector.indexOf(':');
+        if (cn == -1) throw new IllegalArgumentException("Missing statistic type");
+        String type = eventSelector.substring(0, cn);
+        String actualSelector = eventSelector.substring(Math.min(cn + 1, eventSelector.length()));
+        return switch (type) {
+            case "ec" -> PermanentHistoryEventSelector.deserialize(actualSelector, start);
+            default -> throw new IllegalArgumentException("Unknown statistic type");
+        };
     }
 
     private static @NotNull Pair<ChronoUnit, Integer> parseTimeSelector(@NotNull String timeSelector) throws IllegalArgumentException {

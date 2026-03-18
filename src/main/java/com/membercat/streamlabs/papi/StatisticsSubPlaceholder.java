@@ -20,7 +20,7 @@ import static net.kyori.adventure.text.Component.text;
 @SuppressWarnings("unused")
 public class StatisticsSubPlaceholder extends SubPlaceholder implements HistoryChangedListener {
     private final EventHistory history;
-    private final Map<String, PermanentHistorySelector> selectorCache = new HashMap<>();
+    private final Map<String, PermanentHistorySelector<?>> selectorCache = new HashMap<>();
     private final Map<String, String> cachedValues = new ConcurrentHashMap<>();
 
     public StatisticsSubPlaceholder(StreamlabsIntegration plugin) {
@@ -31,12 +31,12 @@ public class StatisticsSubPlaceholder extends SubPlaceholder implements HistoryC
 
     @Override
     public @NotNull Optional<Component> onRequest(OfflinePlayer player, @NotNull String params) {
-        PermanentHistorySelector selector = this.selectorCache.computeIfAbsent(params, this::deserializeSelector);
+        PermanentHistorySelector<?> selector = this.selectorCache.computeIfAbsent(params, this::deserializeSelector);
         if (selector != null && !this.cachedValues.containsKey(params)) this.asyncCacheUpdate(params, selector);
         return Optional.of(text(this.cachedValues.getOrDefault(params, "")));
     }
 
-    private @Nullable PermanentHistorySelector deserializeSelector(@NotNull String params) {
+    private @Nullable PermanentHistorySelector<?> deserializeSelector(@NotNull String params) {
         try {
             return PermanentHistorySelector.deserialize(params);
         } catch (IllegalArgumentException e) {
@@ -50,9 +50,9 @@ public class StatisticsSubPlaceholder extends SubPlaceholder implements HistoryC
         this.cachedValues.clear();
     }
 
-    private void asyncCacheUpdate(@NotNull String params, @NotNull PermanentHistorySelector selector) {
+    private void asyncCacheUpdate(@NotNull String params, @NotNull PermanentHistorySelector<?> selector) {
         Bukkit.getScheduler().runTaskAsynchronously(StreamlabsIntegration.getPlugin(StreamlabsIntegration.class), () -> {
-            Integer result = this.history.queryPermanentSelector(selector);
+            Object result = this.history.queryPermanentSelector(selector);
             this.cachedValues.put(params, result != null ? result.toString() : "[DATABASE ERROR]");
         });
     }
