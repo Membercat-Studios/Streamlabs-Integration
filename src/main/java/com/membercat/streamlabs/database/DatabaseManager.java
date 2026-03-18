@@ -9,8 +9,12 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static com.membercat.streamlabs.StreamlabsIntegration.LOGGER;
@@ -79,6 +83,25 @@ public class DatabaseManager extends StatementExecutor {
                 s.setLong(idx, end.getEpochSecond());
             }
         }, "COUNT(*)", Integer.class);
+    }
+
+    public @NotNull List<String> queryHistoryLeaderboard(@Nullable Instant start, @Nullable Instant end) {
+        @Language("sql") String statement = "SELECT related_user,ROW_NUMBER() OVER (ORDER BY COUNT(related_user) DESC) AS rank FROM event_history";
+        if (start != null && end != null) statement += " WHERE unixepoch(timestamp) BETWEEN ? AND ?";
+        statement += " GROUP BY related_user ORDER BY rank";
+        ResultSet set = this.query(statement, s -> {
+            if (start == null || end == null) return;
+            s.setLong(1, start.getEpochSecond());
+            s.setLong(2, end.getEpochSecond());
+        });
+        if (set == null) return List.of();
+        try (set) {
+            List<String> users = new ArrayList<>();
+            while (set.next()) users.add(set.getString(1));
+            return users;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to collect SQL query results", e);
+        }
     }
 
     private void seedDatabase() {

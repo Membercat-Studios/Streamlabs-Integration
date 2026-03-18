@@ -45,6 +45,7 @@ public abstract class PermanentHistorySelector<T> {
         String actualSelector = eventSelector.substring(Math.min(cn + 1, eventSelector.length()));
         return switch (type) {
             case "ec" -> PermanentHistoryEventSelector.deserialize(actualSelector, start);
+            case "lb" -> PermanentHistoryLeaderboardSelector.deserialize(actualSelector, start);
             default -> throw new IllegalArgumentException("Unknown statistic type");
         };
     }
