@@ -58,8 +58,10 @@ public interface Operator {
 
         @Override
         default boolean check(Object element1, Object element2) {
-            if (!(element1 instanceof Double d1) || !(element2 instanceof Double d2)) return false;
-            return this.check(d1, d2);
+            return this.check(
+                    element1 instanceof Double d1 ? d1 : (double) element1.toString().length(),
+                    element2 instanceof Double d2 ? d2 : (double) element2.toString().length()
+            );
         }
     }
 
