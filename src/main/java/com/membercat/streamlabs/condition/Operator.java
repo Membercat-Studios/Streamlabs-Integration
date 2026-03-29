@@ -58,24 +58,10 @@ public interface Operator {
 
         @Override
         default boolean check(Object element1, Object element2) {
-            String s1 = element1.toString();
-            String s2 = element2.toString();
-
-            Double d1 = tryParse(s1);
-            Double d2 = tryParse(s2);
-
             return this.check(
-                d1 != null ? d1 : (double) s1.length(),
-                d2 != null ? d2 : (double) s2.length()
+                    element1 instanceof Double d1 ? d1 : (double) element1.toString().length(),
+                    element2 instanceof Double d2 ? d2 : (double) element2.toString().length()
             );
-        }
-
-        private static Double tryParse(String s) {
-            try {
-                return Double.parseDouble(s);
-            } catch (NumberFormatException e) {
-                return null;
-            }
         }
     }
 
