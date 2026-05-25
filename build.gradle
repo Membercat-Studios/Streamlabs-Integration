@@ -32,7 +32,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.2")
     implementation("io.github.classgraph:classgraph:4.8.184")
     implementation("org.java-websocket:Java-WebSocket:1.6.0")
-    implementation("org.jetbrains:annotations:26.0.2")
+    implementation("org.jetbrains:annotations:26.1.0")
 }
 
 paperPluginYaml {
