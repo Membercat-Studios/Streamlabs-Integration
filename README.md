@@ -1,4 +1,4 @@
-![Streamlabs Integration](https://raw.githubusercontent.com/Membercat-Studios/Streamlabs-Integration/refs/heads/main/streamlabs_integration_banner.png)
+![Streamlabs Integration](https://cdn.modrinth.com/data/TJXZf39H/images/1134939b11943ca29d57e9fa5e1e5df8626e52a9.png)
 
 **Streamlabs Integration** allows your Youtube/Twitch viewers to trigger events in your minecraft world through donations, such as spawning mobs and teleporting the player! The plugin includes a feature-rich command system with placeholders and conditions to ensure maximal customizability.
 
@@ -14,11 +14,11 @@ This plugin can get quite complicated to use, so take a look at our [Wiki](https
 Streamlabs Integration is compatible with **Paper**, **Purpur** and other forks, starting with version **1.21**. To install the plugin, simply save the .jar file into your `plugins` folder and restart your server! Read the [Wiki](https://github.com/Domplanto/StreamLabsPlugin/wiki) to get started with configuring it.
 
 # Support / Credits
-[<img src="https://codingcat2468.github.io/assets/images/membercat_studios.png" height="60" width="200"/>](https://membercat.com)
+[<img src="http://assets.membercat.com/badges/membercat/membercat-project-badge.png" height="60" width="200"/>](https://membercat.com)
 
 This plugin is part of **Membercat Studios** by KasaiSora and has been created by:
 - **codingcat**: Developer
 - **Domplanto**: Developer
 - **Mazurex**: Reminding me that the plugin needs to be able to center messages in chat
 
-To report any issues, receive support or tell us your feedback, join our [Discord Server](https://dc.kasai.gg) or create an issue on [GitHub](https://github.com/Membercat-Studios/StreamLabsPlugin/issues).
+To report any issues, receive support or tell us your feedback, join our [Discord Server](https://dc.kasai.gg) or create an issue on [GitHub](https://github.com/Membercat-Studios/Streamlabs-Integration/issues).
