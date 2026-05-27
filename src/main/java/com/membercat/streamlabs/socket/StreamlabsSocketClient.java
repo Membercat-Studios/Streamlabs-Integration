@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import com.membercat.streamlabs.StreamlabsIntegration;
+import com.membercat.streamlabs.config.PluginConfig;
 import com.membercat.streamlabs.util.components.ColorScheme;
 import com.membercat.streamlabs.util.components.Translations;
 import net.kyori.adventure.text.format.TextColor;
@@ -26,12 +27,16 @@ public class StreamlabsSocketClient extends WebSocketClient {
     private static final long DEFAULT_PING_INTERVAL = 15000;
     private static final long SESSION_INFO_TIMEOUT = 5000;
     private final Logger logger;
+    private final String logPrefix;
+    private final PluginConfig.StreamlabsAccount account;
     private final Set<SocketEventListener> eventListeners;
     private final AtomicReference<Timer> keepAliveTimer = new AtomicReference<>();
     private final AtomicBoolean sessionInfoPresent = new AtomicBoolean();
 
-    public StreamlabsSocketClient(@NotNull String socketToken, Logger logger) {
-        super(createURI(socketToken));
+    public StreamlabsSocketClient(@NotNull PluginConfig.StreamlabsAccount account, Logger logger) {
+        super(createURI(account.socketToken));
+        this.account = account;
+        this.logPrefix = "[%s] ".formatted(this.account.id);
         this.logger = logger;
         this.eventListeners = new HashSet<>();
     }
@@ -48,7 +53,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
         return switch (statusCode) {
             case 0 -> {
                 if (element == null) {
-                    this.logger.warning("Received session info message, but contents are empty or corrupted");
+                    this.logger.warning(logPrefix + "Received session info message, but contents are empty or corrupted");
                     yield false;
                 }
 
@@ -57,22 +62,22 @@ public class StreamlabsSocketClient extends WebSocketClient {
                     interval = element.getAsJsonObject().get("pingInterval").getAsLong();
                     this.sessionInfoPresent.set(true);
                 } catch (Throwable e) {
-                    this.logger.log(Level.WARNING, "Received session info message, but failed to get the ping interval. Did the structure change?", e);
+                    this.logger.log(Level.WARNING, logPrefix + "Received session info message, but failed to get the ping interval. Did the structure change?", e);
                     yield false;
                 }
 
                 if (StreamlabsIntegration.isDebugMode())
-                    this.logger.info("Session info retrieved, starting keep-alive pings using given interval...");
+                    this.logger.info(logPrefix + "Session info retrieved, starting keep-alive pings using given interval...");
                 this.startKeepAliveTimer(interval);
                 yield false;
             }
             case 40 -> {
-                this.logger.info("Successfully connected to Streamlabs!");
-                this.eventListeners.forEach(SocketEventListener::onConnectionSuccess);
+                this.logger.info(logPrefix + "Successfully connected to Streamlabs!");
+                this.eventListeners.forEach(l -> l.onConnectionSuccess(account));
                 yield false;
             }
             case 41, 44 -> {
-                this.logger.warning("Your access token appears to be invalid, cancelling connection...");
+                this.logger.warning(logPrefix + "Your access token appears to be invalid, cancelling connection...");
                 DisconnectReason.INVALID_TOKEN.close(this);
                 yield false;
             }
@@ -83,7 +88,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
 
     public synchronized void startKeepAliveTimer(long interval) {
         if (StreamlabsIntegration.isDebugMode())
-            this.logger.info("Starting keep-alive timer with an interval of %dms".formatted(interval));
+            this.logger.info(logPrefix + "Starting keep-alive timer with an interval of %dms".formatted(interval));
         if (this.keepAliveTimer.get() != null) this.keepAliveTimer.get().cancel();
         this.keepAliveTimer.set(new Timer("Websocket keep-alive-timer"));
         this.keepAliveTimer.get().schedule(new TimerTask() {
@@ -100,16 +105,16 @@ public class StreamlabsSocketClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake serverHandshake) {
-        this.logger.info("Connecting to Streamlabs...");
+        this.logger.info(logPrefix + "Connecting to Streamlabs...");
         this.sessionInfoPresent.set(false);
         if (StreamlabsIntegration.isDebugMode())
-            this.logger.info("Established websocket connection, waiting for session info...");
-        this.eventListeners.forEach(listener -> listener.onConnectionOpening(serverHandshake));
+            this.logger.info(logPrefix + "Established websocket connection, waiting for session info...");
+        this.eventListeners.forEach(listener -> listener.onConnectionOpening(account, serverHandshake));
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 if (!isOpen() || sessionInfoPresent.get()) return;
-                logger.warning("Timed out waiting for session info, now using default ping interval");
+                logger.warning(logPrefix + "Timed out waiting for session info, now using default ping interval");
                 startKeepAliveTimer(DEFAULT_PING_INTERVAL);
             }
         }, SESSION_INFO_TIMEOUT);
@@ -128,10 +133,10 @@ public class StreamlabsSocketClient extends WebSocketClient {
             }
             if (processStatusCode(statusCode, jsonElement)) {
                 JsonElement finalJsonElement = Objects.requireNonNull(jsonElement, "Got event message without valid JSON");
-                this.eventListeners.forEach(listener -> listener.onEvent(finalJsonElement));
+                this.eventListeners.forEach(listener -> listener.onEvent(account, finalJsonElement));
             }
         } catch (Exception e) {
-            this.logger.log(Level.WARNING, "Failed to process Streamlabs message", e);
+            this.logger.log(Level.WARNING, logPrefix + "Failed to process Streamlabs message", e);
         }
     }
 
@@ -152,14 +157,14 @@ public class StreamlabsSocketClient extends WebSocketClient {
         if (this.keepAliveTimer.get() != null) this.keepAliveTimer.get().cancel();
         DisconnectReason reason = DisconnectReason.fromStatusCode(code);
         if (message == null || message.isBlank()) message = reason.getCloseMessage();
-        this.logger.warning(String.format("Lost connection to Streamlabs: %s (%s)", message, reason));
+        this.logger.warning(logPrefix + String.format("Lost connection to Streamlabs: %s (%s)", message, reason));
         final String finalMessage = message;
-        this.eventListeners.forEach(listener -> listener.onConnectionClosed(reason, !finalMessage.isBlank() ? finalMessage : null));
+        this.eventListeners.forEach(listener -> listener.onConnectionClosed(account, reason, !finalMessage.isBlank() ? finalMessage : null));
     }
 
     @Override
     public void onError(Exception e) {
-        this.logger.log(Level.SEVERE, "Unexpected socket error", e);
+        this.logger.log(Level.SEVERE, logPrefix + "Unexpected socket error", e);
     }
 
     public void reconnectAsync() {
@@ -170,9 +175,13 @@ public class StreamlabsSocketClient extends WebSocketClient {
         this.uri = createURI(socketToken);
     }
 
-    public StreamlabsSocketClient registerListeners(@NotNull SocketEventListener... connectionOpenListener) {
-        this.eventListeners.addAll(List.of(connectionOpenListener));
+    public StreamlabsSocketClient registerListeners(@NotNull SocketEventListener... listeners) {
+        this.eventListeners.addAll(List.of(listeners));
         return this;
+    }
+
+    public void intentionallyCloseIfOpen() {
+        if (isOpen()) StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(this);
     }
 
     public enum DisconnectReason {
