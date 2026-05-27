@@ -25,14 +25,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.membercat.streamlabs.config.issue.Issues.*;
 
 public class PluginConfig extends ConfigRoot {
-    @YamlProperty(value = "streamlabs")
-    private PluginOptions options = new PluginOptions();
+    @YamlProperty(value = "accounts")
+    private Map<String, StreamlabsAccount> accounts = new HashMap<>();
     @YamlProperty(value = "database")
     private DatabaseOptions databaseOptions = new DatabaseOptions();
     @YamlProperty("affected_players")
@@ -45,6 +46,8 @@ public class PluginConfig extends ConfigRoot {
     private Map<String, CustomPlaceholder> customPlaceholders = new HashMap<>();
     @YamlPropertySection(value = "functions", elementClass = Function.class)
     private Map<String, Function> functions = new HashMap<>();
+    @YamlProperty("debug_mode")
+    public boolean debugMode = false;
 
     public PluginConfig(ComponentLogger logger) {
         super(logger);
@@ -67,6 +70,19 @@ public class PluginConfig extends ConfigRoot {
                 .collect(Collectors.toSet());
     }
 
+    @YamlPropertyIssueAssigner(propertyName = "accounts")
+    private void assignToAccounts(ConfigIssueHelper issueHelper, boolean actuallySet) {
+        if (!actuallySet || this.accounts.isEmpty()) issueHelper.appendAtPath(WAC0);
+        else if (this.accounts.values().stream().map(a -> a.socketToken).allMatch(String::isBlank))
+            issueHelper.appendAtPath(ES0);
+    }
+
+    @YamlPropertyIssueAssigner(propertyName = "debug_mode")
+    private void assignToDebugMode(ConfigIssueHelper issueHelper, boolean actuallySet) {
+        if (this.debugMode != StreamlabsIntegration.isDebugMode()) issueHelper.appendAtPath(WI3);
+        if (this.debugMode) issueHelper.appendAtPath(HI0);
+    }
+
     public @Nullable DonationGoal getGoal(@NotNull String id) {
         return this.goals.get(id);
     }
@@ -79,8 +95,8 @@ public class PluginConfig extends ConfigRoot {
         return this.customPlaceholders.values();
     }
 
-    public PluginOptions getOptions() {
-        return this.options;
+    public Collection<StreamlabsAccount> getAccounts() {
+        return this.accounts.values();
     }
 
     public DatabaseOptions getDatabaseOptions() {
@@ -213,21 +229,24 @@ public class PluginConfig extends ConfigRoot {
         }
     }
 
-    @ConfigPathSegment(id = "plugin_options")
-    public static class PluginOptions implements YamlPropertyObject {
+    @ConfigPathSegment(id = "streamlabs_account")
+    public static class StreamlabsAccount implements YamlPropertyObject {
+        @YamlProperty("!SECTION")
+        @NotNull
+        public String id;
         @YamlProperty("socket_token")
         public String socketToken = "";
-        @YamlProperty("debug_mode")
-        public boolean debugMode = false;
         @YamlProperty("show_status_messages")
         public boolean showStatusMessages = true;
         @YamlProperty("auto_connect")
         public boolean autoConnect = true;
 
+        public @NotNull StreamlabsSocketClient createClient(@NotNull Logger logger) {
+            return new StreamlabsSocketClient(this, logger);
+        }
+
         @YamlPropertyIssueAssigner(propertyName = "socket_token")
         private void assignToSocketToken(ConfigIssueHelper issueHelper, boolean actuallySet) {
-            if (!actuallySet || this.socketToken.isBlank())
-                issueHelper.appendAtPath(ES0);
             try {
                 StreamlabsSocketClient.createURI(this.socketToken);
             } catch (IllegalArgumentException e) {
@@ -245,11 +264,15 @@ public class PluginConfig extends ConfigRoot {
             }
         }
 
-        @YamlPropertyIssueAssigner(propertyName = "debug_mode")
-        private void assignToDebugMode(ConfigIssueHelper issueHelper, boolean actuallySet) {
-            if (StreamlabsIntegration.isDebugModeDefined()
-                    && this.debugMode != StreamlabsIntegration.isDebugMode()) issueHelper.appendAtPath(WI3);
-            if (this.debugMode) issueHelper.appendAtPath(HI0);
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof StreamlabsAccount that)) return false;
+            return Objects.equals(id, that.id);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(id);
         }
     }
 
