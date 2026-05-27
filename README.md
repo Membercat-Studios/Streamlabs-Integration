@@ -12,6 +12,7 @@ This plugin can get quite complicated to use, so take a look at our [Wiki](https
 
 # Installation
 Streamlabs Integration is compatible with **Paper**, **Purpur** and other forks, starting with version **1.21**. To install the plugin, simply save the .jar file into your `plugins` folder and restart your server! Read the [Wiki](https://github.com/Domplanto/StreamLabsPlugin/wiki) to get started with configuring it.
+> Please note that this plugin requires **Java 25** to run. On most server hosts, this can be accomplished by going to the "Startup" server tab and setting `Docker Image` to `Java 25`!
 
 # Support / Credits
 [<img src="http://assets.membercat.com/badges/membercat/membercat-project-badge.png" height="60" width="200"/>](https://membercat.com)
