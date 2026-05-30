@@ -70,7 +70,7 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
             issueList = e.getIssues();
         }
 
-        DEBUG_MODE = pluginConfig.getOptions().debugMode;
+        DEBUG_MODE = pluginConfig.debugMode;
         Translations.printAsciiArt(this);
         if (issueList != null) this.printIssues(issueList, null);
         else
@@ -210,7 +210,7 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
     }
 
     public static boolean isDebugMode() {
-        return DEBUG_MODE != null ? DEBUG_MODE : false;
+        return Boolean.TRUE.equals(DEBUG_MODE);
     }
 
     public static boolean isDebugModeDefined() {
