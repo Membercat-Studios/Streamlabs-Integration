@@ -81,7 +81,7 @@ public class TestSubCommand extends SubCommand {
                 }
             }
 
-            if (!getPlugin().getExecutor().checkAndExecute(event, object, bypassRateLimiters, !disguise))
+            if (!getPlugin().getExecutor().checkAndExecute(event, object, bypassRateLimiters, !disguise, null))
                 sender.sendMessage(Translations.withPrefix(Translations.ACTION_FAILURE, true));
         });
     }

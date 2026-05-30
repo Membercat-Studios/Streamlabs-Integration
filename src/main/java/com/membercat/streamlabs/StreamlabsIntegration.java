@@ -139,7 +139,7 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
 
     @Override
     public void onEvent(@NotNull PluginConfig.StreamlabsAccount account, @NotNull JsonElement rawData) {
-        this.executor.parseAndExecute(rawData);
+        this.executor.parseAndExecute(rawData, account);
     }
 
     @Override

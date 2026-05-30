@@ -42,7 +42,7 @@ public class ActionExecutor {
         this.globalQueue = new ConcurrentLinkedQueue<>();
     }
 
-    public void parseAndExecute(JsonElement data) throws SocketSerializerException {
+    public void parseAndExecute(JsonElement data, @Nullable PluginConfig.StreamlabsAccount sourceAccount) throws SocketSerializerException {
         try {
             if (data.getAsJsonArray().size() < 2 || !data.getAsJsonArray().get(1).isJsonObject()) {
                 if (StreamlabsIntegration.isDebugMode())
@@ -62,7 +62,7 @@ public class ActionExecutor {
 
             for (StreamlabsEvent event : events) {
                 JsonObject baseObject = event.getBaseObject(object);
-                if (!this.checkAndExecute(event, baseObject, false, false))
+                if (!this.checkAndExecute(event, baseObject, false, false, sourceAccount))
                     Translations.sendPrefixedToPlayers(Translations.ACTION_FAILURE, plugin.getServer(), false);
             }
         } catch (Exception e) {
@@ -71,22 +71,22 @@ public class ActionExecutor {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean checkAndExecute(StreamlabsEvent event, JsonObject baseObject, boolean bypassRateLimiters, boolean isTest) {
+    public boolean checkAndExecute(StreamlabsEvent event, JsonObject baseObject, boolean bypassRateLimiters, boolean isTest, @Nullable PluginConfig.StreamlabsAccount sourceAccount) {
         if (!event.isEventValid(baseObject)) return true;
         event.onExecute(this, baseObject);
-        this.eventHistory.store(event, this.pluginConfig, baseObject, isTest);
+        this.eventHistory.store(event, this.pluginConfig, baseObject, isTest, sourceAccount);
         List<PluginConfig.Action> actions = pluginConfig.getActionsForEvent(event);
         boolean successful = true;
         for (PluginConfig.Action action : actions) {
             try {
-                this.executeAction(new ActionExecutionContext(event, this, this.pluginConfig, action, bypassRateLimiters, false, baseObject));
+                this.executeAction(new ActionExecutionContext(event, this, this.pluginConfig, action, bypassRateLimiters, false, baseObject, sourceAccount));
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing action %s for %s:".formatted(action.id, event.getId()), e);
                 successful = false;
             }
         }
 
-        this.updateGoal(new ActionExecutionContext(event, this, this.pluginConfig, null, bypassRateLimiters, false, baseObject));
+        this.updateGoal(new ActionExecutionContext(event, this, this.pluginConfig, null, bypassRateLimiters, false, baseObject, sourceAccount));
         return successful;
     }
 
@@ -155,7 +155,7 @@ public class ActionExecutor {
             }
 
             if (!this.activeGoal.add(ctx)) return;
-            this.executeAction(new ActionExecutionContext(null, this, this.pluginConfig, goal, false, true, null));
+            this.executeAction(new ActionExecutionContext(null, this, this.pluginConfig, goal, false, true, null, null));
             this.stopGoal();
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Unexpected error while updating goal %s on event %s:".formatted(ctx.event().getId(), this.activeGoal), e);

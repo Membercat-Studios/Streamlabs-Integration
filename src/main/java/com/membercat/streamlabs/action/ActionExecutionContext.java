@@ -2,6 +2,7 @@ package com.membercat.streamlabs.action;
 
 import com.google.gson.JsonObject;
 import com.membercat.streamlabs.StreamlabsIntegration;
+import com.membercat.streamlabs.config.placeholder.ActionPlaceholder;
 import com.membercat.streamlabs.config.placeholder.PlaceholderScopeStack;
 import com.membercat.streamlabs.config.PluginConfig;
 import com.membercat.streamlabs.events.StreamlabsEvent;
@@ -25,16 +26,19 @@ public record ActionExecutionContext(
         AtomicBoolean dirty,
         AtomicReference<Predicate<ActionExecutionContext>> keepExecutingCheck,
         JsonObject baseObject,
-        AtomicBoolean shouldExecute
+        AtomicBoolean shouldExecute,
+        @Nullable PluginConfig.StreamlabsAccount sourceAccount
 ) {
-    public ActionExecutionContext(@Nullable StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, JsonObject jsonObject) {
-        this(event, executor, config, action, false, false, jsonObject);
+    public ActionExecutionContext(@Nullable StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, JsonObject jsonObject, @Nullable PluginConfig.StreamlabsAccount sourceAccount) {
+        this(event, executor, config, action, false, false, jsonObject, sourceAccount);
     }
 
-    public ActionExecutionContext(@Nullable StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, boolean bypassRateLimiters, boolean ignoreConditions, JsonObject jsonObject) {
-        this(event, executor, config, action, new PlaceholderScopeStack(), bypassRateLimiters, ignoreConditions, new AtomicBoolean(), new AtomicReference<>(), jsonObject, new AtomicBoolean(true));
+    public ActionExecutionContext(@Nullable StreamlabsEvent event, ActionExecutor executor, PluginConfig config, PluginConfig.AbstractAction action, boolean bypassRateLimiters, boolean ignoreConditions, JsonObject jsonObject, @Nullable PluginConfig.StreamlabsAccount sourceAccount) {
+        this(event, executor, config, action, new PlaceholderScopeStack(), bypassRateLimiters, ignoreConditions, new AtomicBoolean(), new AtomicReference<>(), jsonObject, new AtomicBoolean(true), sourceAccount);
         if (event != null) event.getPlaceholders().forEach(scopeStack::addPlaceholder);
         if (config != null) config.getCustomPlaceholders().forEach(scopeStack::addPlaceholder);
+        if (sourceAccount != null)
+            scopeStack.addPlaceholder(new ActionPlaceholder("account", ActionPlaceholder.PlaceholderFunction.of(sourceAccount.id)));
         scopeStack.push("action");
     }
 
@@ -47,7 +51,7 @@ public record ActionExecutionContext(
     }
 
     public ActionExecutionContext withAction(@NotNull PluginConfig.AbstractAction action) {
-        return new ActionExecutionContext(event(), executor(), config(), action, baseObject());
+        return new ActionExecutionContext(event(), executor(), config(), action, baseObject(), sourceAccount());
     }
 
     public boolean shouldKeepExecuting() {
@@ -57,7 +61,7 @@ public record ActionExecutionContext(
     }
 
     public ActionExecutionContext cloneScopeStack() {
-        return new ActionExecutionContext(event, executor, config, action, (PlaceholderScopeStack) scopeStack.clone(), bypassRateLimiters, ignoreConditions, dirty, keepExecutingCheck, baseObject, shouldExecute);
+        return new ActionExecutionContext(event, executor, config, action, (PlaceholderScopeStack) scopeStack.clone(), bypassRateLimiters, ignoreConditions, dirty, keepExecutingCheck, baseObject, shouldExecute, sourceAccount);
     }
 
     public boolean shouldStopOnFailure() {

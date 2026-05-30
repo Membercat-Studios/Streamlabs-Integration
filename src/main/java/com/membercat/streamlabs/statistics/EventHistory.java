@@ -26,8 +26,8 @@ public class EventHistory {
         this.listeners = new HashSet<>();
     }
 
-    public void store(StreamlabsEvent event, PluginConfig config, JsonObject baseObject, boolean isTest) {
-        LoggedEvent newEvent = new LoggedEvent(event, config, baseObject, new Date().getTime());
+    public void store(StreamlabsEvent event, PluginConfig config, JsonObject baseObject, boolean isTest, @Nullable PluginConfig.StreamlabsAccount account) {
+        LoggedEvent newEvent = new LoggedEvent(event, config, baseObject, account, new Date().getTime());
         if (!isTest) this.dbManager.get().logEvent(event, baseObject);
         this.executionHistory.push(newEvent);
         this.listeners.forEach(listener -> listener.onHistoryChanged(this, newEvent));
@@ -68,6 +68,7 @@ public class EventHistory {
             StreamlabsEvent event,
             PluginConfig config,
             JsonObject baseObject,
+            @Nullable PluginConfig.StreamlabsAccount account,
             long timestamp
     ) {
         public String replacePlaceholders(String originalString) {
@@ -75,7 +76,7 @@ public class EventHistory {
         }
 
         public ActionExecutionContext createContext() {
-            return new ActionExecutionContext(event, null, config, null, baseObject);
+            return new ActionExecutionContext(event, null, config, null, baseObject, account);
         }
     }
 }
