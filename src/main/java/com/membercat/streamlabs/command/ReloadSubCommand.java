@@ -1,6 +1,7 @@
 package com.membercat.streamlabs.command;
 
 import com.membercat.streamlabs.StreamlabsIntegration;
+import com.membercat.streamlabs.config.PluginConfig;
 import com.membercat.streamlabs.config.issue.ConfigLoadedWithIssuesException;
 import com.membercat.streamlabs.socket.StreamlabsSocketClient;
 import com.membercat.streamlabs.util.components.ColorScheme;
@@ -19,8 +20,10 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static io.papermc.paper.command.brigadier.Commands.argument;
 import static io.papermc.paper.command.brigadier.Commands.literal;
@@ -49,22 +52,25 @@ public class ReloadSubCommand extends SubCommand {
     private void runReload(Option option, CommandSender sender) {
         if (option != Option._CONSOLE)
             Translations.sendPrefixedResponse("streamlabs.commands.config.reload", ColorScheme.DONE, sender);
-        getPlugin().dbManager().close();
+        if (option != Option.NORECONNECT) getPlugin().dbManager().close();
         try {
             getPlugin().reloadPluginConfig();
         } catch (ConfigLoadedWithIssuesException e) {
             getPlugin().printIssues(e.getIssues(), option != Option._CONSOLE ? sender : null);
         }
-
+        if (option == Option.NORECONNECT) return;
         getPlugin().recreateDatabaseManager();
         getPlugin().dbManager().init();
-        StreamlabsSocketClient client = getPlugin().getSocketClient();
-        client.updateToken(getPlugin().pluginConfig().getOptions().socketToken);
-        if (option != null) return;
-        if (client.isOpen() || (getPlugin().pluginConfig().getOptions().autoConnect && !client.isOpen())) {
-            StreamlabsSocketClient.DisconnectReason.PLUGIN_RECONNECTING.close(client);
-            client.reconnectAsync();
-        }
+        getPlugin().synchronizeSocketClients();
+        Map<PluginConfig.StreamlabsAccount, StreamlabsSocketClient> cMap = getPlugin().pluginConfig().getAccounts()
+                .stream().collect(Collectors.toUnmodifiableMap(k -> k, a -> Objects.requireNonNull(getPlugin().getSocketClient(a))));
+        cMap.forEach((a, c) -> c.updateToken(a.socketToken));
+        cMap.entrySet().stream()
+                .filter(e -> e.getValue().isOpen() || (e.getKey().autoConnect && !e.getValue().isOpen()))
+                .map(Map.Entry::getValue).forEach(client -> {
+                    StreamlabsSocketClient.DisconnectReason.PLUGIN_RECONNECTING.close(client);
+                    client.reconnectAsync();
+                });
     }
 
     private static class OptionsArgumentType implements CustomArgumentType<Option, String> {

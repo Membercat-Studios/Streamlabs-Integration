@@ -198,7 +198,7 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
                 });
         pluginConfig().getAccounts().stream()
                 .filter(a -> !this.socketClients.containsKey(a))
-                .forEach(a -> this.socketClients.put(a, a.createClient(getLogger()).registerListeners(this)));
+                .forEach(a -> this.socketClients.put(a, a.createClient(this).registerListeners(this)));
     }
 
     public DatabaseManager dbManager() {

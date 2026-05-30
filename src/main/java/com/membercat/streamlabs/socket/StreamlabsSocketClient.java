@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,15 +28,16 @@ public class StreamlabsSocketClient extends WebSocketClient {
     private static final long SESSION_INFO_TIMEOUT = 5000;
     private final Logger logger;
     private final String logPrefix;
-    private final PluginConfig.StreamlabsAccount account;
+    private final Supplier<PluginConfig.StreamlabsAccount> accountSupplier;
     private final Set<SocketEventListener> eventListeners;
     private final AtomicReference<Timer> keepAliveTimer = new AtomicReference<>();
     private final AtomicBoolean sessionInfoPresent = new AtomicBoolean();
 
-    public StreamlabsSocketClient(@NotNull PluginConfig.StreamlabsAccount account, Logger logger) {
+    public StreamlabsSocketClient(@NotNull Supplier<PluginConfig.StreamlabsAccount> accountSupplier, Logger logger) {
+        PluginConfig.StreamlabsAccount account = accountSupplier.get();
         super(createURI(account.socketToken));
-        this.account = account;
-        this.logPrefix = "[%s] ".formatted(this.account.id);
+        this.accountSupplier = accountSupplier;
+        this.logPrefix = "[%s] ".formatted(account.id);
         this.logger = logger;
         this.eventListeners = new HashSet<>();
     }
@@ -72,7 +74,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
             }
             case 40 -> {
                 this.logger.info(logPrefix + "Successfully connected to Streamlabs!");
-                this.eventListeners.forEach(l -> l.onConnectionSuccess(account));
+                this.eventListeners.forEach(l -> l.onConnectionSuccess(accountSupplier.get()));
                 yield false;
             }
             case 41, 44 -> {
@@ -108,7 +110,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
         this.sessionInfoPresent.set(false);
         if (StreamlabsIntegration.isDebugMode())
             this.logger.info(logPrefix + "Established websocket connection, waiting for session info...");
-        this.eventListeners.forEach(listener -> listener.onConnectionOpening(account, serverHandshake));
+        this.eventListeners.forEach(listener -> listener.onConnectionOpening(accountSupplier.get(), serverHandshake));
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
@@ -132,7 +134,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
             }
             if (processStatusCode(statusCode, jsonElement)) {
                 JsonElement finalJsonElement = Objects.requireNonNull(jsonElement, "Got event message without valid JSON");
-                this.eventListeners.forEach(listener -> listener.onEvent(account, finalJsonElement));
+                this.eventListeners.forEach(listener -> listener.onEvent(accountSupplier.get(), finalJsonElement));
             }
         } catch (Exception e) {
             this.logger.log(Level.WARNING, logPrefix + "Failed to process Streamlabs message", e);
@@ -158,7 +160,7 @@ public class StreamlabsSocketClient extends WebSocketClient {
         if (message == null || message.isBlank()) message = reason.getCloseMessage();
         this.logger.warning(logPrefix + String.format("Lost connection to Streamlabs: %s (%s)", message, reason));
         final String finalMessage = message;
-        this.eventListeners.forEach(listener -> listener.onConnectionClosed(account, reason, !finalMessage.isBlank() ? finalMessage : null));
+        this.eventListeners.forEach(listener -> listener.onConnectionClosed(accountSupplier.get(), reason, !finalMessage.isBlank() ? finalMessage : null));
     }
 
     @Override

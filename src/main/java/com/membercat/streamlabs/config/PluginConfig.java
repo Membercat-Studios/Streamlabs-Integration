@@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.logging.Logger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -242,8 +242,11 @@ public class PluginConfig extends ConfigRoot {
         @YamlProperty("auto_connect")
         public boolean autoConnect = true;
 
-        public @NotNull StreamlabsSocketClient createClient(@NotNull Logger logger) {
-            return new StreamlabsSocketClient(this, logger);
+        public @NotNull StreamlabsSocketClient createClient(@NotNull StreamlabsIntegration plugin) {
+            Supplier<StreamlabsAccount> accountSupplier = () -> plugin.pluginConfig().getAccounts()
+                    .stream().filter(a -> a.id.equals(this.id))
+                    .findAny().orElseThrow();
+            return new StreamlabsSocketClient(accountSupplier, plugin.getLogger());
         }
 
         @YamlPropertyIssueAssigner(propertyName = "socket_token")
