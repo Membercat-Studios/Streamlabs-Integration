@@ -9,6 +9,7 @@ import com.membercat.streamlabs.util.ReflectUtil;
 import com.membercat.streamlabs.util.components.Translations;
 import org.bukkit.command.CommandSender;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -39,6 +40,9 @@ public abstract class SubCommand {
     }
 
     public static Set<? extends SubCommand> findSubCommandClasses(StreamlabsIntegration pluginInstance) {
-        return ReflectUtil.initializeClasses(SubCommand.class, pluginInstance);
+        Set<SubCommand> commands = new HashSet<>(ReflectUtil.initializeClasses(SubCommand.class, pluginInstance));
+        commands.add(ConnectionCommand.connect(pluginInstance));
+        commands.add(ConnectionCommand.disconnect(pluginInstance));
+        return commands;
     }
 }

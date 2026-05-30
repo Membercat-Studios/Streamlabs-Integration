@@ -62,7 +62,9 @@ public final class ReflectUtil {
         try (ScanResult result = graph.scan()) {
             return (superType.isInterface() ? result.getClassesImplementing(superType) : result.getSubclasses(superType))
                     .loadClasses(superType, false).stream()
-                    .filter(cls -> !Modifier.isAbstract(cls.getModifiers()) && !cls.isAnonymousClass()).toList();
+                    .filter(cls -> !Modifier.isAbstract(cls.getModifiers()) && !cls.isAnonymousClass())
+                    .filter(cls -> !cls.isAnnotationPresent(Ignore.class))
+                    .toList();
         } catch (Exception e) {
             BASE_LOGGER.log(Level.SEVERE, "Failed to load classes of supertype %s, please report this error to the developers at %s"
                     .formatted(superType.getName(), Translations.ISSUES_URL), e);
@@ -73,5 +75,9 @@ public final class ReflectUtil {
     @Retention(RetentionPolicy.RUNTIME)
     public @interface ClassId {
         String value();
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Ignore {
     }
 }
