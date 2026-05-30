@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 import static com.membercat.streamlabs.config.issue.Issues.*;
 
 public class PluginConfig extends ConfigRoot {
-    @YamlProperty(value = "accounts")
+    @YamlPropertySection(value = "accounts", elementClass = StreamlabsAccount.class)
     private Map<String, StreamlabsAccount> accounts = new HashMap<>();
     @YamlProperty(value = "database")
     private DatabaseOptions databaseOptions = new DatabaseOptions();
