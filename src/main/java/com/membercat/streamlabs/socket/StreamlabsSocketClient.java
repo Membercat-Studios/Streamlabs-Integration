@@ -6,9 +6,8 @@ import com.google.gson.JsonSyntaxException;
 import com.membercat.streamlabs.StreamlabsIntegration;
 import com.membercat.streamlabs.config.PluginConfig;
 import com.membercat.streamlabs.util.components.ColorScheme;
-import com.membercat.streamlabs.util.components.Translations;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.Server;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;
@@ -211,8 +210,8 @@ public class StreamlabsSocketClient extends WebSocketClient {
             return closeMessage;
         }
 
-        public void sendToPlayers(Server server) {
-            Translations.sendPrefixedToPlayers(this.translationKey, this.color, server);
+        public @NotNull Component asComponent() {
+            return Component.translatable(this.translationKey, this.color);
         }
 
         public void close(WebSocketClient client) {

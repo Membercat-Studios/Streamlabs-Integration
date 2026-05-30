@@ -32,11 +32,12 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static net.kyori.adventure.text.Component.*;
 
 public class StreamlabsIntegration extends JavaPlugin implements SocketEventListener {
     private static final String NAMESPACE = "streamlabs";
@@ -45,10 +46,10 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
     private static Path DATA_PATH;
     private static final Set<? extends StreamlabsEvent> STREAMLABS_EVENTS = StreamlabsEvent.findEventClasses();
     private final Set<? extends SubCommand> SUB_COMMANDS = SubCommand.findSubCommandClasses(this);
+    private final Map<PluginConfig.StreamlabsAccount, StreamlabsSocketClient> socketClients = new ConcurrentHashMap<>();
     public static Logger LOGGER;
     private static @Nullable Boolean DEBUG_MODE = null;
     private static boolean PAPI_INSTALLED = false;
-    private StreamlabsSocketClient socketClient;
     private PluginConfig pluginConfig;
     private ActionExecutor executor;
     private DatabaseManager databaseManager;
@@ -73,25 +74,28 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
         Translations.printAsciiArt(this);
         if (issueList != null) this.printIssues(issueList, null);
         else
-            getComponentLogger().info(Component.text("Configuration loaded successfully, no issues found!", ColorScheme.SUCCESS));
+            getComponentLogger().info(text("Configuration loaded successfully, no issues found!", ColorScheme.SUCCESS));
         this.recreateDatabaseManager();
         this.databaseManager.init();
         this.executor = new ActionExecutor(this.pluginConfig, this);
         this.setupPlaceholderExpansions();
         this.registerCommandLoadHandler();
-        this.socketClient = new StreamlabsSocketClient(pluginConfig.getOptions().socketToken, getLogger())
-                .registerListeners(this);
+        this.synchronizeSocketClients();
         // The StreamlabsSocketClient will not connect at all if a connection in onEnable is not attempted,
         // this is why we need to add it here, this issue should definitely be investigated further in the future!
         new Thread(() -> {
-            try {
-                this.socketClient.connectBlocking();
-            } catch (InterruptedException ignore) {
-            }
-            if (!pluginConfig.getOptions().autoConnect && this.socketClient.isOpen()) {
-                StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(socketClient);
-                getLogger().info("Not connecting to Streamlabs at startup because auto_connect is disabled in the config!");
-            }
+            this.socketClients.values().forEach(c -> {
+                try {
+                    c.connectBlocking();
+                } catch (InterruptedException ignored) {
+                }
+            });
+            this.socketClients.entrySet()
+                    .stream().filter(e -> !e.getKey().autoConnect)
+                    .forEach(e -> {
+                        StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(e.getValue());
+                        getLogger().info("Not connecting account \"%s\" to Streamlabs at startup because auto_connect is disabled in the config!".formatted(e.getKey().id));
+                    });
         }, "Socket startup Thread").start();
     }
 
@@ -134,26 +138,29 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
     }
 
     @Override
-    public void onEvent(@NotNull JsonElement rawData) {
+    public void onEvent(@NotNull PluginConfig.StreamlabsAccount account, @NotNull JsonElement rawData) {
         this.executor.parseAndExecute(rawData);
     }
 
     @Override
-    public void onConnectionSuccess() {
-        if (this.showStatusMessages())
-            Translations.sendPrefixedToPlayers("streamlabs.status.socket_open", ColorScheme.SUCCESS, getServer());
+    public void onConnectionSuccess(@NotNull PluginConfig.StreamlabsAccount account) {
+        this.sendStatusMessage(account, translatable("streamlabs.status.socket_open", ColorScheme.SUCCESS));
     }
 
     @Override
-    public void onConnectionClosed(@NotNull StreamlabsSocketClient.DisconnectReason reason, @Nullable String message) {
-        if (this.showStatusMessages()) reason.sendToPlayers(getServer());
+    public void onConnectionClosed(@NotNull PluginConfig.StreamlabsAccount account, @NotNull StreamlabsSocketClient.DisconnectReason reason, @Nullable String message) {
+        this.sendStatusMessage(account, reason.asComponent());
+    }
+
+    private void sendStatusMessage(@NotNull PluginConfig.StreamlabsAccount account, @NotNull Component message) {
+        if (!account.showStatusMessages) return;
+        Component prefix = translatable("streamlabs.status.prefix", ColorScheme.COMMENT, text(account.id, ColorScheme.DISABLE));
+        Translations.sendPrefixedToPlayers(empty().append(prefix).appendSpace().append(message), getServer(), false);
     }
 
     @Override
     public void onDisable() {
-        if (socketClient != null && socketClient.isOpen()) {
-            StreamlabsSocketClient.DisconnectReason.PLUGIN_CLOSED_CONNECTION.close(socketClient);
-        }
+        this.socketClients.values().forEach(StreamlabsSocketClient::intentionallyCloseIfOpen);
         if (this.executor != null) this.executor.shutdown();
         if (this.databaseManager != null) this.databaseManager.close();
     }
@@ -162,8 +169,8 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
         this.pluginConfig.load(this.configFile);
     }
 
-    public StreamlabsSocketClient getSocketClient() {
-        return socketClient;
+    public @Nullable StreamlabsSocketClient getSocketClient(@NotNull PluginConfig.StreamlabsAccount account) {
+        return this.socketClients.get(account);
     }
 
     public static Set<? extends StreamlabsEvent> getCachedEventObjects() {
@@ -182,16 +189,24 @@ public class StreamlabsIntegration extends JavaPlugin implements SocketEventList
         this.databaseManager = pluginConfig().getDatabaseOptions().createManager();
     }
 
+    public void synchronizeSocketClients() {
+        new HashMap<>(this.socketClients).entrySet().stream()
+                .filter(e -> !pluginConfig().getAccounts().contains(e.getKey()))
+                .forEach(e -> {
+                    e.getValue().intentionallyCloseIfOpen();
+                    this.socketClients.remove(e.getKey());
+                });
+        pluginConfig().getAccounts().stream()
+                .filter(a -> !this.socketClients.containsKey(a))
+                .forEach(a -> this.socketClients.put(a, a.createClient(getLogger()).registerListeners(this)));
+    }
+
     public DatabaseManager dbManager() {
         return databaseManager;
     }
 
     public ActionExecutor getExecutor() {
         return executor;
-    }
-
-    public boolean showStatusMessages() {
-        return this.pluginConfig.getOptions().showStatusMessages;
     }
 
     public static boolean isDebugMode() {
