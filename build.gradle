@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.66-stable")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.69-stable")
     compileOnly("me.clip:placeholderapi:2.11.6")
 
     implementation("com.fathzer:javaluator:3.0.6")
